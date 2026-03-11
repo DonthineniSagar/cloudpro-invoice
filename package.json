@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "localstack:start": "docker-compose up -d",
+    "localstack:stop": "docker-compose down",
+    "localstack:setup": "./scripts/setup-localstack.sh",
+    "test:integration": "USE_LOCALSTACK=true jest --testPathPattern=integration"
   },
   "dependencies": {
     "@aws-amplify/backend": "^1.21.0",
@@ -23,16 +30,28 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1006.0",
+    "@aws-sdk/client-dynamodb": "^3.1006.0",
+    "@aws-sdk/client-s3": "^3.1006.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "aws-cdk-lib": "^2.242.0",
+    "aws-sdk-client-mock": "^4.1.0",
     "constructs": "^10.5.1",
     "esbuild": "^0.27.3",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "localstack": "^1.0.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5"
   }
