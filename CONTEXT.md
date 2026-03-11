@@ -1,9 +1,9 @@
 # Development Context - CloudPro Invoice
 
-**Last Updated:** March 11, 2026, 23:35 NZDT  
+**Last Updated:** March 12, 2026, 00:05 NZDT  
 **Current Sprint:** Sprint 1 - Foundation & Auth  
-**Current Day:** Day 2 In Progress (55% done)  
-**Status:** AWS deployed, Company Profile working, Login errors improved
+**Current Day:** Day 2 In Progress (65% done)  
+**Status:** Login/signup with email verification working, ready for user profile
 
 ---
 
@@ -26,16 +26,18 @@
 - ✅ S3 buckets
 - ✅ AppSync GraphQL API
 
-### Sprint 1 Day 2 (In Progress - 55%)
+### Sprint 1 Day 2 (In Progress - 65%)
 - ✅ Real AWS Cognito authentication (replaced mock)
 - ✅ Amplify configuration in app
 - ✅ Login page with real Cognito
 - ✅ Signup page with real Cognito
+- ✅ Email verification flow (signup & login)
+- ✅ Professional error messages
+- ✅ Resend verification code
+- ✅ Input text visibility fixed (black text)
 - ✅ Company Profile page (full CRUD)
 - ✅ Dashboard with setup prompt
-- ✅ Professional login error messages
-- ✅ Forgot password link (placeholder page)
-- ⏳ User profile (firstName, lastName) - TODO
+- ⏳ User profile (firstName, lastName) - NEXT
 - ⏳ Settings navigation - TODO
 
 ### Authentication (Real AWS Cognito)

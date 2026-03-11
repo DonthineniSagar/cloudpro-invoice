@@ -14,7 +14,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -59,19 +59,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return result;
   }
 
-  async function handleSignUp(email: string, password: string) {
+  async function handleSignUp(email: string, password: string, firstName: string, lastName: string) {
     await signUp({
       username: email,
       password,
       options: {
         userAttributes: {
           email,
+          given_name: firstName,
+          family_name: lastName,
         },
       },
     });
-    // Auto sign in after signup
-    await signIn({ username: email, password });
-    await checkUser();
   }
 
   async function handleSignOut() {
