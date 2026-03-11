@@ -47,8 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function handleSignIn(email: string, password: string) {
-    await signIn({ username: email, password });
+    const result = await signIn({ username: email, password });
+    
+    if (!result.isSignedIn && result.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {
+      const error = new Error('User is not confirmed');
+      error.name = 'UserNotConfirmedException';
+      throw error;
+    }
+    
     await checkUser();
+    return result;
   }
 
   async function handleSignUp(email: string, password: string) {

@@ -28,9 +28,7 @@ export default function LoginPage() {
       const errorMessage = err?.message || '';
       const errorName = err?.name || '';
       
-      console.log('Login error:', { errorMessage, errorName, err });
-      
-      if (errorMessage.includes('UserNotConfirmedException') || errorName === 'UserNotConfirmedException') {
+      if (errorMessage.includes('not confirmed') || errorName === 'UserNotConfirmedException') {
         setNeedsVerification(true);
         setError('');
         try {
