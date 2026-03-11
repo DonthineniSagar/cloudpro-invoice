@@ -1,601 +1,325 @@
-# Invoice Generator - Product Backlog & Technical Debt
+# CloudPro Invoice - Product Backlog
 
-## 🚨 Critical Security Issues
-
-### SEC-001: Missing Environment Variables Configuration
-**Priority:** P0 - Critical  
-**Status:** Open  
-**Impact:** Application cannot function without proper configuration
-
-**Issues:**
-- No `.env.local` file exists
-- Missing Stripe keys configuration
-- Missing AWS SES sender email configuration
-- No documented environment setup process
-
-**Tasks:**
-- [ ] Create `.env.example` template
-- [ ] Document all required environment variables
-- [ ] Add validation for required env vars on startup
-- [ ] Implement graceful degradation for missing optional configs
+**Launch Date:** April 1, 2026 (20 days)  
+**Last Updated:** March 11, 2026  
+**Focus:** Basics - Invoice, Client, Expenses, User Settings, Enriched Reporting
 
 ---
 
-### SEC-002: Hardcoded Credentials & Sensitive Data
-**Priority:** P0 - Critical  
-**Status:** Open  
-**Impact:** Security vulnerability
+## 🎯 MVP Scope - Core Features Only
 
-**Issues:**
-- Email service has hardcoded fallback email: `noreply@cloudpro-digital.co.nz`
-- Default email in user creation: `default@example.com`
-- Stripe publishable key loaded without validation
+### ✅ 1. Company Profile & Settings
+**Priority:** P0 - Must have for invoice generation
 
-**Tasks:**
-- [ ] Remove all hardcoded credentials
-- [ ] Implement proper secrets management
-- [ ] Add runtime validation for all API keys
-- [ ] Use AWS Secrets Manager for sensitive data
+- [ ] Company profile model (name, email, phone, address)
+- [ ] GST number field
+- [ ] Bank account field
+- [ ] Default currency (NZD)
+- [ ] Default GST rate (15%)
+- [ ] Logo upload to S3
+- [ ] Settings page UI
+- [ ] Auto-populate invoice from profile
 
----
-
-### SEC-003: Insufficient Input Validation
-**Priority:** P1 - High  
-**Status:** Open  
-**Impact:** Data integrity and security risks
-
-**Issues:**
-- No email validation in auth flows
-- Missing sanitization in file uploads
-- Weak validation in GraphQL mutations
-- No rate limiting on API endpoints
-
-**Tasks:**
-- [ ] Add Zod schema validation across all forms
-- [ ] Implement server-side validation for all inputs
-- [ ] Add rate limiting middleware
-- [ ] Sanitize all user inputs before storage
+**Why:** Invoice needs company details - fetch from profile instead of manual entry
 
 ---
 
-### SEC-004: Authentication & Authorization Gaps
-**Priority:** P1 - High  
-**Status:** Open  
-**Impact:** Unauthorized access potential
+### ✅ 2. Client Management
+**Priority:** P0 - Core feature
 
-**Issues:**
-- Complex auth context with multiple fallbacks
-- User creation logic has 3 retry attempts with degrading requirements
-- No session timeout configuration visible
-- Idle timeout implementation exists but needs review
+- [ ] Create client (name, email, phone, address)
+- [ ] List clients with search
+- [ ] View client details
+- [ ] Edit client
+- [ ] Delete client (soft delete)
+- [ ] Client selector in invoice form
+- [ ] Auto-populate client details in invoice
 
-**Tasks:**
-- [ ] Simplify user creation flow
-- [ ] Add comprehensive auth logging
-- [ ] Implement proper session management
-- [ ] Add MFA support
-- [ ] Review and test idle timeout behavior
-
----
-
-## 🔧 Technical Debt & Inconsistencies
-
-### TECH-001: Inconsistent Data Models
-**Priority:** P1 - High  
-**Status:** Open  
-**Impact:** Data integrity issues
-
-**Issues:**
-- User model has `given_name`/`family_name` AND `firstName`/`lastName`
-- Client model has `zipCode` in schema but `postalCode` in types
-- Invoice status enum duplicated across files
-- Inconsistent field naming (camelCase vs snake_case)
-
-**Tasks:**
-- [ ] Standardize all field names to camelCase
-- [ ] Remove duplicate type definitions
-- [ ] Create single source of truth for enums
-- [ ] Update GraphQL schema to match TypeScript types
-- [ ] Run data migration for existing records
+**Fields:**
+- Name, Email, Phone
+- Address, City, State, Postal Code
+- Country (default: New Zealand)
+- Notes
 
 ---
 
-### TECH-002: Overly Complex Auth Context
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Maintainability and bugs
+### ✅ 3. Invoice Management
+**Priority:** P0 - Core feature
 
-**Issues:**
-- 800+ lines in single auth context file
-- Multiple email extraction strategies
-- Global window variable for email storage
-- Nested try-catch blocks with fallbacks
-- `createMinimalUserRecord` as last resort
+#### Invoice Fields
+- [ ] Invoice number (auto-generated: INV-YYMM-XXX)
+- [ ] Client selection (dropdown)
+- [ ] Issue date (default: today)
+- [ ] Due date (default: +30 days)
+- [ ] Payment terms (default: "Due within 30 days")
+- [ ] Currency (default: NZD)
+- [ ] Status (DRAFT, SENT, PAID, OVERDUE, CANCELLED)
 
-**Tasks:**
-- [ ] Split auth context into smaller modules
-- [ ] Simplify user creation to single strategy
-- [ ] Remove global window variable hack
-- [ ] Add proper error handling and logging
-- [ ] Write comprehensive tests
+#### Line Items with WBS
+- [ ] Description (required)
+- [ ] **WBS** (Work Breakdown Structure / Project code)
+- [ ] Quantity (default: 1)
+- [ ] Unit Price (rate)
+- [ ] Amount (auto-calculated: qty × price)
+- [ ] Add/remove line items dynamically
 
----
+#### Calculations
+- [ ] Subtotal (sum of all line items)
+- [ ] GST Rate (default: 15% from company profile)
+- [ ] GST Amount (subtotal × 15%)
+- [ ] Total (subtotal + GST)
 
-### TECH-003: Missing Error Boundaries
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Poor user experience on errors
+#### Company Details (Auto-populated from Profile)
+- [ ] Company name
+- [ ] Company email
+- [ ] Company phone
+- [ ] Company address
+- [ ] GST number
+- [ ] Bank account
 
-**Issues:**
-- No React error boundaries
-- Console.log used for error tracking
-- No centralized error handling
-- No user-friendly error messages
-
-**Tasks:**
-- [ ] Add error boundaries to all major routes
-- [ ] Implement proper logging service (e.g., Sentry)
-- [ ] Create error message dictionary
-- [ ] Add toast notifications for errors
-- [ ] Implement retry mechanisms
-
----
-
-### TECH-004: Incomplete Features
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Incomplete user experience
-
-**Issues:**
-- Settings page is placeholder
-- Preferences page is placeholder
-- No user profile management
-- No company settings page
-
-**Tasks:**
-- [ ] Implement settings page
-- [ ] Implement preferences page
-- [ ] Add user profile editor
-- [ ] Add company profile management
-- [ ] Add invoice template customization
+#### Actions
+- [ ] Save as draft
+- [ ] Mark as sent
+- [ ] Mark as paid (with payment date)
+- [ ] Generate PDF
+- [ ] Download PDF
+- [ ] Delete invoice
 
 ---
 
-### TECH-005: GraphQL Query Inconsistencies
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Performance and maintainability
+### ✅ 4. Invoice PDF Generation
+**Priority:** P0 - Must have
 
-**Issues:**
-- Multiple GraphQL client implementations
-- `simplified-graphql.ts` alongside standard queries
-- `use-safe-graphql` hook for error handling
-- Inconsistent auth modes across queries
-
-**Tasks:**
-- [ ] Consolidate to single GraphQL client pattern
-- [ ] Standardize error handling
-- [ ] Add query caching strategy
-- [ ] Implement optimistic updates
-- [ ] Add loading states management
+- [ ] Professional PDF template
+- [ ] Company logo
+- [ ] Company details (from profile)
+- [ ] Client details
+- [ ] Invoice number, dates
+- [ ] Line items table with WBS column
+- [ ] Subtotal, GST, Total
+- [ ] Payment terms
+- [ ] Bank account details
+- [ ] GST number
+- [ ] Store PDF in S3
+- [ ] Download link
 
 ---
 
-## 🎨 UI/UX Improvements
+### ✅ 5. Expense Tracking
+**Priority:** P1 - Important for reporting
 
-### UX-001: Outdated Design System
-**Priority:** P1 - High  
-**Status:** Open  
-**Impact:** Poor brand perception and user experience
+#### Expense Fields
+- [ ] Description
+- [ ] Category (dropdown: Office, Travel, Equipment, etc.)
+- [ ] Amount (total including GST)
+- [ ] Amount Ex-GST (calculated: amount / 1.15)
+- [ ] GST Amount (calculated: amount - amountExGst)
+- [ ] GST Claimable (boolean, default: true)
+- [ ] Date
+- [ ] Receipt upload (S3)
+- [ ] Notes
+- [ ] Status (PENDING, APPROVED, REJECTED)
 
-**Issues:**
-- Battle green color scheme feels dated
-- Inconsistent spacing and typography
-- No design tokens or theme system
-- Mixed use of custom components and shadcn/ui
-- Dashed borders everywhere (outdated pattern)
+#### Actions
+- [ ] Create expense
+- [ ] List expenses
+- [ ] View expense details
+- [ ] Edit expense
+- [ ] Delete expense
+- [ ] Upload receipt
+- [ ] Approve/reject expense
 
-**Tasks:**
-- [ ] Design modern color palette
-- [ ] Create comprehensive design system
-- [ ] Implement design tokens
-- [ ] Update all components to use new system
-- [ ] Add dark mode support
-- [ ] Improve mobile responsiveness
+---
 
-**Suggested Color Palette:**
+### ✅ 6. Dashboard & Reporting
+**Priority:** P1 - Business insights
+
+#### Basic Metrics
+- [ ] Total revenue (all time)
+- [ ] Revenue ex-GST
+- [ ] GST collected
+- [ ] Outstanding amount
+- [ ] Paid invoices count
+- [ ] Pending invoices count
+- [ ] Total expenses
+- [ ] Expenses ex-GST
+- [ ] GST paid (claimable)
+
+#### Enriched Reporting
+- [ ] Revenue by month (chart)
+- [ ] Expenses by category (chart)
+- [ ] GST position (collected - paid)
+- [ ] Profit/Loss (revenue - expenses, ex-GST)
+- [ ] Invoice status breakdown (pie chart)
+- [ ] Top clients by revenue
+- [ ] Recent invoices (last 10)
+- [ ] Recent expenses (last 10)
+- [ ] Date range filter
+- [ ] Export to CSV
+
+#### NZ Tax Reporting
+- [ ] Revenue ex-GST
+- [ ] GST collected (from invoices)
+- [ ] Expenses ex-GST
+- [ ] GST paid (claimable expenses)
+- [ ] Net GST position
+- [ ] Taxable profit (revenue - expenses, ex-GST)
+
+---
+
+### ✅ 7. User Settings
+**Priority:** P1 - User management
+
+- [ ] User profile (name, email)
+- [ ] Company profile (linked)
+- [ ] Password change
+- [ ] Email preferences
+- [ ] Logout
+
+---
+
+## 🚫 Explicitly OUT of MVP
+
+### Not Now
+- ❌ Stripe payment integration
+- ❌ Email sending (invoice delivery)
+- ❌ Payment reminders
+- ❌ Recurring invoices
+- ❌ Multiple invoice templates
+- ❌ Multi-currency (only NZD for now)
+- ❌ Client portal
+- ❌ Team collaboration
+- ❌ Mobile app
+- ❌ Integrations (QuickBooks, Xero)
+- ❌ Receipt OCR (Textract)
+- ❌ Time tracking
+- ❌ Mileage tracking
+
+---
+
+## 📊 Sprint Breakdown (20 Days)
+
+### Sprint 1: Foundation (Days 1-5) - March 12-16
+**Goal:** Auth, data models, company profile
+
+- [ ] Day 1: Auth setup (Cognito)
+- [ ] Day 2: Data models (User, CompanyProfile, Client)
+- [ ] Day 3: Company profile UI
+- [ ] Day 4: User settings page
+- [ ] Day 5: Testing & fixes
+
+### Sprint 2: Clients & Invoices (Days 6-10) - March 17-21
+**Goal:** Client CRUD, invoice creation
+
+- [ ] Day 6: Client list & create
+- [ ] Day 7: Client edit & delete
+- [ ] Day 8: Invoice form with line items
+- [ ] Day 9: Invoice calculations & WBS
+- [ ] Day 10: Save invoice, list view
+
+### Sprint 3: PDF & Expenses (Days 11-15) - March 22-26
+**Goal:** PDF generation, expense tracking
+
+- [ ] Day 11: PDF template design
+- [ ] Day 12: PDF generation & S3 upload
+- [ ] Day 13: Expense model & create
+- [ ] Day 14: Expense list & GST calculations
+- [ ] Day 15: Receipt upload
+
+### Sprint 4: Dashboard & Launch (Days 16-20) - March 27-31
+**Goal:** Reporting, polish, deploy
+
+- [ ] Day 16: Dashboard metrics
+- [ ] Day 17: Charts & enriched reporting
+- [ ] Day 18: NZ tax reporting
+- [ ] Day 19: UI polish & testing
+- [ ] Day 20: Deploy & launch (April 1)
+
+---
+
+## 🎨 Data Model Summary
+
+```typescript
+CompanyProfile {
+  companyName, companyEmail, companyPhone, companyAddress
+  gstNumber, bankAccount
+  defaultCurrency: 'NZD'
+  defaultGstRate: 15
+  logoUrl
+}
+
+Client {
+  name, email, phone
+  address, city, state, postalCode, country
+  notes
+}
+
+Invoice {
+  invoiceNumber, issueDate, dueDate
+  clientName, clientEmail, clientAddress
+  subtotal, gstRate, gstAmount, total
+  currency: 'NZD'
+  status: DRAFT | SENT | PAID | OVERDUE | CANCELLED
+  paymentTerms, notes
+  // Company snapshot
+  companyName, companyEmail, gstNumber, bankAccount
+  pdfUrl
+}
+
+InvoiceItem {
+  description
+  wbs  // ← Work Breakdown Structure
+  quantity, unitPrice, amount
+}
+
+Expense {
+  description, category
+  amount, amountExGst, gstAmount
+  gstClaimable
+  date, receiptUrl, notes
+  status: PENDING | APPROVED | REJECTED
+}
 ```
-Primary: #6366F1 (Indigo)
-Secondary: #8B5CF6 (Purple)
-Accent: #EC4899 (Pink)
-Success: #10B981 (Green)
-Warning: #F59E0B (Amber)
-Error: #EF4444 (Red)
-Neutral: Modern gray scale
-```
 
 ---
 
-### UX-002: Poor Navigation & Information Architecture
-**Priority:** P1 - High  
-**Status:** Open  
-**Impact:** User confusion and low engagement
+## 🔒 Security Checklist
 
-**Issues:**
-- No clear dashboard hierarchy
-- Placeholder pages in navigation
-- No breadcrumbs
-- Inconsistent navigation patterns
-- No quick actions or shortcuts
-
-**Tasks:**
-- [ ] Redesign navigation structure
-- [ ] Add breadcrumb navigation
-- [ ] Implement command palette (Cmd+K)
-- [ ] Add quick action buttons
-- [ ] Create onboarding flow
-- [ ] Add contextual help
+- [ ] Owner-based authorization (users see only their data)
+- [ ] No hardcoded credentials
+- [ ] Environment variables in `.env.local`
+- [ ] Input validation with Zod
+- [ ] S3 bucket private with signed URLs
+- [ ] HTTPS only in production
 
 ---
 
-### UX-003: Weak Branding
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Brand recognition and trust
+## 📈 Success Metrics (First 30 Days)
 
-**Issues:**
-- Generic "CloudPro" branding
-- No unique value proposition visible
-- Inconsistent logo usage
-- No brand personality
-- Generic metadata and SEO
+### User Metrics
+- 50 signups
+- 30 active users (created invoice)
+- 100 invoices created
+- $50K tracked in invoices
 
-**Tasks:**
-- [ ] Develop unique brand identity
-- [ ] Create brand guidelines
-- [ ] Design professional logo
-- [ ] Write compelling copy
-- [ ] Update all metadata and SEO
-- [ ] Add brand story/about page
+### Technical Metrics
+- Page load < 2s
+- 99.9% uptime
+- Zero critical bugs
 
 ---
 
-### UX-004: Limited Invoice Customization
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** User flexibility
+## 🚀 Post-Launch (Phase 2 - April-May)
 
-**Issues:**
-- Single invoice template
-- No color customization
-- No logo upload for invoices
-- Limited field customization
-- No multi-currency support visible
-
-**Tasks:**
-- [ ] Add multiple invoice templates
-- [ ] Allow custom branding on invoices
-- [ ] Add logo upload functionality
-- [ ] Support custom fields
-- [ ] Add multi-currency support
-- [ ] Add tax configuration options
+### Month 2 Priorities
+1. Email sending (invoice delivery)
+2. Payment reminders
+3. Invoice templates
+4. Receipt OCR
+5. Advanced analytics
 
 ---
 
-### UX-005: Missing Dashboard Insights
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Limited business intelligence
-
-**Issues:**
-- Basic metrics only
-- No trend analysis
-- No forecasting
-- Limited date range selection
-- No export functionality
-
-**Tasks:**
-- [ ] Add revenue trends chart
-- [ ] Add payment status breakdown
-- [ ] Add client analytics
-- [ ] Add expense tracking dashboard
-- [ ] Add export to CSV/Excel
-- [ ] Add custom date ranges
-- [ ] Add year-over-year comparisons
-
----
-
-## 🚀 New Features
-
-### FEAT-001: Enhanced Client Management
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Better relationship management
-
-**Tasks:**
-- [ ] Add client portal for invoice viewing
-- [ ] Add client payment history
-- [ ] Add client notes and tags
-- [ ] Add client communication log
-- [ ] Add client document storage
-- [ ] Add bulk client import
-- [ ] Add client segmentation
-
----
-
-### FEAT-002: Recurring Invoices
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Automation and time savings
-
-**Tasks:**
-- [ ] Add recurring invoice templates
-- [ ] Add scheduling options (weekly, monthly, etc.)
-- [ ] Add automatic sending
-- [ ] Add end date configuration
-- [ ] Add pause/resume functionality
-- [ ] Add notifications for recurring invoices
-
----
-
-### FEAT-003: Payment Integration
-**Priority:** P1 - High  
-**Status:** Partial (Stripe setup exists)  
-**Impact:** Faster payments
-
-**Tasks:**
-- [ ] Complete Stripe integration
-- [ ] Add payment links to invoices
-- [ ] Add payment status tracking
-- [ ] Add payment reminders
-- [ ] Add partial payment support
-- [ ] Add refund functionality
-- [ ] Add payment receipts
-
----
-
-### FEAT-004: Advanced Expense Tracking
-**Priority:** P2 - Medium  
-**Status:** Partial (basic structure exists)  
-**Impact:** Better financial management
-
-**Tasks:**
-- [ ] Complete expense categorization
-- [ ] Add receipt OCR (Textract integration exists)
-- [ ] Add expense reports
-- [ ] Add expense approval workflow
-- [ ] Add mileage tracking
-- [ ] Add time tracking
-- [ ] Add expense analytics
-
----
-
-### FEAT-005: Reporting & Analytics
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Business insights
-
-**Tasks:**
-- [ ] Add profit & loss report
-- [ ] Add tax summary report
-- [ ] Add aging report
-- [ ] Add custom report builder
-- [ ] Add scheduled reports
-- [ ] Add report sharing
-- [ ] Add data visualization improvements
-
----
-
-### FEAT-006: Team Collaboration
-**Priority:** P3 - Low  
-**Status:** Open  
-**Impact:** Multi-user support
-
-**Tasks:**
-- [ ] Add team member invites
-- [ ] Add role-based permissions
-- [ ] Add activity log
-- [ ] Add comments on invoices
-- [ ] Add approval workflows
-- [ ] Add team dashboard
-
----
-
-### FEAT-007: Mobile App
-**Priority:** P3 - Low  
-**Status:** Open  
-**Impact:** Mobile accessibility
-
-**Tasks:**
-- [ ] Design mobile-first responsive layouts
-- [ ] Add PWA support
-- [ ] Add mobile receipt capture
-- [ ] Add push notifications
-- [ ] Consider native app (React Native)
-
----
-
-### FEAT-008: Integrations
-**Priority:** P3 - Low  
-**Status:** Open  
-**Impact:** Ecosystem connectivity
-
-**Tasks:**
-- [ ] Add QuickBooks integration
-- [ ] Add Xero integration
-- [ ] Add Zapier integration
-- [ ] Add Slack notifications
-- [ ] Add Google Calendar sync
-- [ ] Add email client integration
-
----
-
-## 📊 Data Migration Strategy
-
-### MIG-001: Field Standardization Migration
-**Priority:** P1 - High  
-**Status:** Open  
-**Impact:** Data consistency
-
-**Plan:**
-1. Create backup of all data
-2. Write migration scripts for:
-   - User name fields consolidation
-   - Client postal code field rename
-   - Invoice status standardization
-3. Test migration on staging
-4. Run migration with rollback plan
-5. Verify data integrity
-6. Update application code
-7. Deploy
-
-**Tasks:**
-- [ ] Write migration scripts
-- [ ] Test on staging environment
-- [ ] Create rollback procedures
-- [ ] Schedule maintenance window
-- [ ] Execute migration
-- [ ] Verify and monitor
-
----
-
-## 🧪 Testing & Quality
-
-### TEST-001: Add Comprehensive Testing
-**Priority:** P1 - High  
-**Status:** Open  
-**Impact:** Code quality and reliability
-
-**Tasks:**
-- [ ] Add unit tests (Jest)
-- [ ] Add integration tests
-- [ ] Add E2E tests (Playwright/Cypress)
-- [ ] Add visual regression tests
-- [ ] Set up CI/CD pipeline
-- [ ] Add test coverage reporting
-- [ ] Aim for 80%+ coverage
-
----
-
-### TEST-002: Performance Optimization
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** User experience
-
-**Tasks:**
-- [ ] Add performance monitoring
-- [ ] Optimize bundle size
-- [ ] Implement code splitting
-- [ ] Add image optimization
-- [ ] Optimize GraphQL queries
-- [ ] Add caching strategy
-- [ ] Implement lazy loading
-
----
-
-## 📝 Documentation
-
-### DOC-001: Technical Documentation
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** Developer onboarding
-
-**Tasks:**
-- [ ] Write architecture documentation
-- [ ] Document API endpoints
-- [ ] Create component library docs
-- [ ] Write deployment guide
-- [ ] Create troubleshooting guide
-- [ ] Add code comments
-- [ ] Create video tutorials
-
----
-
-### DOC-002: User Documentation
-**Priority:** P2 - Medium  
-**Status:** Open  
-**Impact:** User adoption
-
-**Tasks:**
-- [ ] Create user guide
-- [ ] Add in-app help
-- [ ] Create FAQ section
-- [ ] Add video tutorials
-- [ ] Create knowledge base
-- [ ] Add tooltips and hints
-
----
-
-## 🎯 Priority Matrix
-
-### Immediate (Sprint 1-2)
-1. SEC-001: Environment configuration
-2. SEC-002: Remove hardcoded credentials
-3. TECH-001: Standardize data models
-4. UX-001: Design system refresh
-5. FEAT-003: Complete payment integration
-
-### Short-term (Sprint 3-6)
-1. SEC-003: Input validation
-2. SEC-004: Auth improvements
-3. TECH-002: Simplify auth context
-4. UX-002: Navigation improvements
-5. TECH-004: Complete placeholder pages
-6. FEAT-001: Enhanced client management
-7. FEAT-004: Complete expense tracking
-
-### Medium-term (Sprint 7-12)
-1. TECH-003: Error boundaries
-2. UX-003: Branding refresh
-3. UX-004: Invoice customization
-4. UX-005: Dashboard insights
-5. FEAT-002: Recurring invoices
-6. FEAT-005: Reporting
-7. TEST-001: Comprehensive testing
-8. MIG-001: Data migration
-
-### Long-term (Sprint 13+)
-1. FEAT-006: Team collaboration
-2. FEAT-007: Mobile app
-3. FEAT-008: Integrations
-4. TEST-002: Performance optimization
-5. DOC-001: Technical docs
-6. DOC-002: User docs
-
----
-
-## 📈 Success Metrics
-
-### Technical Health
-- Test coverage > 80%
-- Zero critical security vulnerabilities
-- Page load time < 2s
-- Zero data inconsistencies
-- Error rate < 0.1%
-
-### User Experience
-- User satisfaction score > 4.5/5
-- Task completion rate > 90%
-- Mobile responsiveness score > 95
-- Accessibility score (WCAG AA)
-- Net Promoter Score > 50
-
-### Business Impact
-- User retention rate > 80%
-- Feature adoption rate > 60%
-- Support ticket reduction by 50%
-- Time to invoice creation < 2 minutes
-- Payment collection time reduced by 30%
-
----
-
-## 🔄 Continuous Improvement
-
-This backlog should be reviewed and updated:
-- Weekly: Priority adjustments
-- Bi-weekly: Sprint planning
-- Monthly: Strategic review
-- Quarterly: Roadmap alignment
-
-**Last Updated:** 2026-03-11  
-**Next Review:** 2026-03-18
+**Next Review:** March 18, 2026  
+**Status:** In Development  
+**Team:** Solo developer
