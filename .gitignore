@@ -1,9 +1,47 @@
-# LocalStack data directory
-localstack-data/
-.env.creds
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# Test coverage
+# Testing
 coverage/
 .nyc_output/
-node_modules
-t
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env*.local
+.env.creds
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Amplify
+amplify_outputs.json
+.amplify/
+
+# LocalStack
+localstack-data/
+
+# Misc
+*.tsbuildinfo
+.cache/
