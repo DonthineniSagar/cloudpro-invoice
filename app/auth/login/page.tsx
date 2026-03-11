@@ -21,8 +21,18 @@ export default function LoginPage() {
     try {
       await signIn(email, password);
       router.push('/dashboard');
-    } catch (err) {
-      setError('Failed to sign in');
+    } catch (err: any) {
+      const errorMessage = err?.message || '';
+      
+      if (errorMessage.includes('UserNotFoundException') || errorMessage.includes('NotAuthorizedException')) {
+        setError('Incorrect email or password. Please try again or sign up if you don\'t have an account.');
+      } else if (errorMessage.includes('UserNotConfirmedException')) {
+        setError('Please verify your email address before signing in.');
+      } else if (errorMessage.includes('TooManyRequestsException')) {
+        setError('Too many login attempts. Please try again later.');
+      } else {
+        setError('Unable to sign in. Please check your credentials and try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -38,8 +48,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-              {error}
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg text-sm">
+              <p className="font-medium mb-1">Sign in failed</p>
+              <p>{error}</p>
             </div>
           )}
 
@@ -58,9 +69,14 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <Link href="/auth/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-700">
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
