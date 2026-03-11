@@ -26,8 +26,11 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: any) {
       const errorMessage = err?.message || '';
+      const errorName = err?.name || '';
       
-      if (errorMessage.includes('UserNotConfirmedException')) {
+      console.log('Login error:', { errorMessage, errorName, err });
+      
+      if (errorMessage.includes('UserNotConfirmedException') || errorName === 'UserNotConfirmedException') {
         setNeedsVerification(true);
         setError('');
         try {
@@ -35,6 +38,7 @@ export default function LoginPage() {
         } catch (resendErr) {
           console.error('Failed to resend code:', resendErr);
         }
+        return;
       } else if (errorMessage.includes('UserNotFoundException') || errorMessage.includes('NotAuthorizedException')) {
         setError('Incorrect email or password. Please try again or sign up if you don\'t have an account.');
       } else if (errorMessage.includes('TooManyRequestsException')) {
