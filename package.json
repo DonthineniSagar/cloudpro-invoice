@@ -13,7 +13,9 @@
     "localstack:start": "docker-compose up -d",
     "localstack:stop": "docker-compose down",
     "localstack:setup": "./scripts/setup-localstack.sh",
-    "test:integration": "USE_LOCALSTACK=true jest --testPathPattern=integration"
+    "test:integration": "USE_LOCALSTACK=true jest --testPathPattern=integration",
+    "sandbox": "source .env.creds && export AWS_REGION=ap-southeast-2 && npx ampx sandbox",
+    "sandbox:bg": "./scripts/start-sandbox.sh"
   },
   "dependencies": {
     "@aws-amplify/backend": "^1.21.0",

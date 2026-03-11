@@ -1,8 +1,8 @@
 # Development Context - CloudPro Invoice
 
-**Last Updated:** March 11, 2026, 23:23 NZDT  
+**Last Updated:** March 11, 2026, 23:27 NZDT  
 **Current Sprint:** Sprint 1 - Foundation & Auth  
-**Current Day:** Day 1 Complete, AWS Deployed ✅
+**Current Day:** Day 1 Complete + Day 2 Started ✅
 
 ---
 
@@ -15,14 +15,20 @@
 
 ---
 
-## ✅ What's Built (Sprint 1 Day 1)
+## ✅ What's Built (Sprint 1 Day 1-2)
 
-### Authentication System
-- **Mock Auth** (`lib/mock-auth.ts`) - Simple in-memory auth
-- **Auth Context** (`lib/auth-context.tsx`) - React hooks for auth state
+### Authentication System (Real AWS Cognito)
+- **AWS Cognito** (`lib/auth-context.tsx`) - Real authentication
+- **Amplify Config** (`lib/amplify-config.tsx`) - AWS configuration
 - **Login Page** (`/auth/login`) - Email/password sign in
-- **Signup Page** (`/auth/signup`) - Account creation
-- **Dashboard** (`/dashboard`) - Protected route with metrics
+- **Signup Page** (`/auth/signup`) - Account creation with Cognito
+- **Dashboard** (`/dashboard`) - Protected route with setup prompt
+
+### Company Profile (Real DynamoDB)
+- **Company Profile Page** (`/settings/company`) - Full CRUD
+- **Fields:** Company name, email, phone, address, city, state, postal code, country
+- **Tax Fields:** GST number, bank account, default currency (NZD), GST rate (15%)
+- **Owner Authorization:** Users see only their own data
 
 ### Data Layer
 - **Mock Database** (`lib/local-db.ts`) - In-memory CRUD operations
@@ -118,20 +124,20 @@ cloudpro-invoice/
 ## 🎯 Current Status
 
 ### Working Features
-✅ User signup/login/logout  
+✅ User signup/login/logout (AWS Cognito)  
 ✅ Protected dashboard route  
-✅ Mock data persistence (in-memory)  
-✅ Clean UI with Indigo theme  
+✅ Company profile CRUD (DynamoDB)  
+✅ Real AWS backend (Sydney region)  
+✅ Owner-based authorization  
 ✅ GST calculations (15% NZ rate)  
 
 ### Not Yet Implemented
-❌ Company profile  
 ❌ User profile (firstName, lastName)  
 ❌ Client management  
 ❌ Invoice creation  
 ❌ Expense tracking  
-❌ Real AWS integration  
-❌ Data persistence (localStorage or DB)  
+❌ PDF generation  
+❌ S3 file uploads  
 
 ---
 
