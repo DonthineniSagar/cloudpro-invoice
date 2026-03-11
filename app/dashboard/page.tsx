@@ -84,6 +84,18 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+
+        {/* Setup Guide */}
+        <div className="bg-indigo-50 border border-indigo-200 p-6 rounded-xl">
+          <h3 className="text-lg font-semibold text-indigo-900 mb-2">Complete Your Setup</h3>
+          <p className="text-indigo-700 mb-4">Set up your company profile to start creating invoices</p>
+          <button
+            onClick={() => router.push('/settings/company')}
+            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+          >
+            Set Up Company Profile
+          </button>
+        </div>
       </main>
     </div>
   );

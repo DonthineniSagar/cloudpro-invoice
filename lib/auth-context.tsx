@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { mockAuth } from './mock-auth';
+import { signUp, signIn, signOut, getCurrentUser, fetchUserAttributes } from 'aws-amplify/auth';
 
 interface User {
   id: string;
@@ -30,8 +30,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function checkUser() {
     try {
-      const currentUser = await mockAuth.getCurrentUser();
-      setUser(currentUser);
+      const currentUser = await getCurrentUser();
+      const attributes = await fetchUserAttributes();
+      
+      setUser({
+        id: currentUser.userId,
+        email: attributes.email || '',
+        firstName: attributes.given_name,
+        lastName: attributes.family_name,
+      });
     } catch (error) {
       setUser(null);
     } finally {
@@ -39,23 +46,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signIn(email: string, password: string) {
-    const { user } = await mockAuth.signIn(email, password);
-    setUser(user);
+  async function handleSignIn(email: string, password: string) {
+    await signIn({ username: email, password });
+    await checkUser();
   }
 
-  async function signUp(email: string, password: string) {
-    const { user } = await mockAuth.signUp(email, password);
-    setUser(user);
+  async function handleSignUp(email: string, password: string) {
+    await signUp({
+      username: email,
+      password,
+      options: {
+        userAttributes: {
+          email,
+        },
+      },
+    });
+    // Auto sign in after signup
+    await signIn({ username: email, password });
+    await checkUser();
   }
 
-  async function signOut() {
-    await mockAuth.signOut();
+  async function handleSignOut() {
+    await signOut();
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      signIn: handleSignIn, 
+      signUp: handleSignUp, 
+      signOut: handleSignOut 
+    }}>
       {children}
     </AuthContext.Provider>
   );
