@@ -67,7 +67,7 @@ const schema = a.schema({
       gstAmount: a.float(),
       total: a.float().required(),
       currency: a.string().default('NZD'),
-      status: a.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED']).default('DRAFT'),
+      status: a.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED']),
       pdfUrl: a.string(),
       // Company details at time of invoice (snapshot)
       companyName: a.string(),
@@ -106,7 +106,7 @@ const schema = a.schema({
       date: a.datetime().required(),
       receiptUrl: a.string(),
       notes: a.string(),
-      status: a.enum(['PENDING', 'APPROVED', 'REJECTED']).default('PENDING'),
+      status: a.enum(['PENDING', 'APPROVED', 'REJECTED']),
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })

@@ -1,0 +1,116 @@
+type CompanyProfile @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  companyName: String!
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  companyCity: String
+  companyState: String
+  companyPostalCode: String
+  companyCountry: String @default(value: "New Zealand")
+  gstNumber: String
+  bankAccount: String
+  defaultCurrency: String @default(value: "NZD")
+  defaultGstRate: Float @default(value: "15")
+  logoUrl: String
+  userId: String!
+  user: User @belongsTo(references: ["userId"])
+}
+
+type User @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  email: String!
+  firstName: String
+  lastName: String
+  companyProfile: CompanyProfile @hasOne(references: ["userId"])
+  invoices: [Invoice] @hasMany(references: ["userId"])
+  clients: [Client] @hasMany(references: ["userId"])
+  expenses: [Expense] @hasMany(references: ["userId"])
+}
+
+type Client @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  name: String!
+  email: String
+  phone: String
+  address: String
+  city: String
+  state: String
+  postalCode: String
+  country: String @default(value: "New Zealand")
+  notes: String
+  userId: String!
+  user: User @belongsTo(references: ["userId"])
+  invoices: [Invoice] @hasMany(references: ["clientId"])
+}
+
+type Invoice @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  invoiceNumber: String!
+  clientName: String!
+  clientEmail: String
+  clientAddress: String
+  issueDate: AWSDateTime!
+  dueDate: AWSDateTime
+  items: [InvoiceItem] @hasMany(references: ["invoiceId"])
+  notes: String
+  paymentTerms: String @default(value: "Due within 30 days")
+  subtotal: Float!
+  gstRate: Float @default(value: "15")
+  gstAmount: Float
+  total: Float!
+  currency: String @default(value: "NZD")
+  status: InvoiceStatus
+  pdfUrl: String
+  companyName: String
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  gstNumber: String
+  bankAccount: String
+  userId: String!
+  user: User @belongsTo(references: ["userId"])
+  clientId: String
+  client: Client @belongsTo(references: ["clientId"])
+}
+
+type InvoiceItem @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  description: String!
+  wbs: String
+  quantity: Float!
+  unitPrice: Float!
+  amount: Float!
+  invoiceId: String!
+  invoice: Invoice @belongsTo(references: ["invoiceId"])
+}
+
+type Expense @model @auth(rules: [{allow: owner, ownerField: "owner"}])
+{
+  description: String!
+  category: String
+  amount: Float!
+  amountExGst: Float
+  gstAmount: Float
+  gstClaimable: Boolean @default(value: "true")
+  date: AWSDateTime!
+  receiptUrl: String
+  notes: String
+  status: ExpenseStatus
+  userId: String!
+  user: User @belongsTo(references: ["userId"])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

@@ -1,7 +1,9 @@
 # LocalStack data directory
 localstack-data/
+.env.creds
 
 # Test coverage
 coverage/
 .nyc_output/
 node_modules
+t

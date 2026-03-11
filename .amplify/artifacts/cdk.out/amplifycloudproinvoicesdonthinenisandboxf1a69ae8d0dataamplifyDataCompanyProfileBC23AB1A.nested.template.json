@@ -1,0 +1,2249 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResourceEECFBC8EOutputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataAmplifyTableMana1E9A1797": {
+   "Type": "String"
+  },
+  "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName": {
+   "Type": "String"
+  },
+  "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef": {
+   "Type": "String"
+  },
+  "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef": {
+   "Type": "String"
+  },
+  "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "CompanyProfileTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResourceEECFBC8EOutputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataAmplifyTableMana1E9A1797"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "CompanyProfile-",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "id",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "userId",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "id",
+      "keyType": "HASH"
+     }
+    ],
+    "globalSecondaryIndexes": [
+     {
+      "indexName": "gsi-User.companyProfile",
+      "keySchema": [
+       {
+        "attributeName": "userId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/CompanyProfileTable/Default/Default"
+   }
+  },
+  "CompanyProfileIAMRole666F9A29": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "CompanyProfile-",
+                {
+                 "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "CompanyProfile-",
+                {
+                 "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "CompanyProfileIAMRolc6a9dc-",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/CompanyProfileIAMRole/Resource"
+   }
+  },
+  "CompanyProfileDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "CompanyProfileTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "CompanyProfileTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "CompanyProfileIAMRole666F9A29",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "CompanyProfileIAMRole666F9A29"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/CompanyProfileDataSource/Resource"
+   }
+  },
+  "QuerygetCompanyProfileauth0FunctionQuerygetCompanyProfileauth0FunctionAppSyncFunction3E98F62F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetCompanyProfileauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6b25c9b572c67e0f7ad41cb8019a90825f3db4b02a0a15b837c7a82dcb302060.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/QuerygetCompanyProfileauth0Function/QuerygetCompanyProfileauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetCompanyProfilepostAuth0FunctionQuerygetCompanyProfilepostAuth0FunctionAppSyncFunctionA1DB1734": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetCompanyProfilepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/QuerygetCompanyProfilepostAuth0Function/QuerygetCompanyProfilepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetCompanyProfileDataResolverFnQueryGetCompanyProfileDataResolverFnAppSyncFunction98FEDABC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CompanyProfileDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetCompanyProfileDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "CompanyProfileDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/QueryGetCompanyProfileDataResolverFn/QueryGetCompanyProfileDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "getCompanyProfile",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetCompanyProfileauth0FunctionQuerygetCompanyProfileauth0FunctionAppSyncFunction3E98F62F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetCompanyProfilepostAuth0FunctionQuerygetCompanyProfilepostAuth0FunctionAppSyncFunctionA1DB1734",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetCompanyProfileDataResolverFnQueryGetCompanyProfileDataResolverFnAppSyncFunction98FEDABC",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getCompanyProfile\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CompanyProfileTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/queryGetCompanyProfileResolver"
+   }
+  },
+  "QuerylistCompanyProfilesauth0FunctionQuerylistCompanyProfilesauth0FunctionAppSyncFunction14A29B05": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistCompanyProfilesauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6b25c9b572c67e0f7ad41cb8019a90825f3db4b02a0a15b837c7a82dcb302060.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/QuerylistCompanyProfilesauth0Function/QuerylistCompanyProfilesauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistCompanyProfilespostAuth0FunctionQuerylistCompanyProfilespostAuth0FunctionAppSyncFunction6AACC28B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistCompanyProfilespostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/QuerylistCompanyProfilespostAuth0Function/QuerylistCompanyProfilespostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListCompanyProfilesDataResolverFnQueryListCompanyProfilesDataResolverFnAppSyncFunction9AD1EC4A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CompanyProfileDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListCompanyProfilesDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "CompanyProfileDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/QueryListCompanyProfilesDataResolverFn/QueryListCompanyProfilesDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "listCompanyProfiles",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistCompanyProfilesauth0FunctionQuerylistCompanyProfilesauth0FunctionAppSyncFunction14A29B05",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistCompanyProfilespostAuth0FunctionQuerylistCompanyProfilespostAuth0FunctionAppSyncFunction6AACC28B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListCompanyProfilesDataResolverFnQueryListCompanyProfilesDataResolverFnAppSyncFunction9AD1EC4A",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listCompanyProfiles\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CompanyProfileTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/queryListCompanyProfilesResolver"
+   }
+  },
+  "MutationcreateCompanyProfileinit0FunctionMutationcreateCompanyProfileinit0FunctionAppSyncFunction2658EFD3": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCompanyProfileinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a183ddccbd956316c38ef97177b8f088ef0826f62023323f5ae6053d348ccffc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationcreateCompanyProfileinit0Function/MutationcreateCompanyProfileinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateCompanyProfileinit1FunctionMutationcreateCompanyProfileinit1FunctionAppSyncFunctionA35E02EC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCompanyProfileinit1Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/96ba56b0a6cf669471441d968e3e200c024e6c6f6b2a942df18bcb01138b224f.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationcreateCompanyProfileinit1Function/MutationcreateCompanyProfileinit1Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateCompanyProfileauth0FunctionMutationcreateCompanyProfileauth0FunctionAppSyncFunction41ABD14B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCompanyProfileauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e8b3ab8324700c688809789dc3c9904a1092c21e7804f574acfbb0f7ded92422.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationcreateCompanyProfileauth0Function/MutationcreateCompanyProfileauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateCompanyProfilepostAuth0FunctionMutationcreateCompanyProfilepostAuth0FunctionAppSyncFunctionD19239FD": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateCompanyProfilepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationcreateCompanyProfilepostAuth0Function/MutationcreateCompanyProfilepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateCompanyProfileDataResolverFnMutationCreateCompanyProfileDataResolverFnAppSyncFunctionA1CF6441": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CompanyProfileDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateCompanyProfileDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2e501f8ed1a86c9039c19863828971cc82da90854dd1e7e66d25c23f38c517f6.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "CompanyProfileDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationCreateCompanyProfileDataResolverFn/MutationCreateCompanyProfileDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "createCompanyProfile",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCompanyProfileinit0FunctionMutationcreateCompanyProfileinit0FunctionAppSyncFunction2658EFD3",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCompanyProfileinit1FunctionMutationcreateCompanyProfileinit1FunctionAppSyncFunctionA35E02EC",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCompanyProfileauth0FunctionMutationcreateCompanyProfileauth0FunctionAppSyncFunction41ABD14B",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateCompanyProfilepostAuth0FunctionMutationcreateCompanyProfilepostAuth0FunctionAppSyncFunctionD19239FD",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateCompanyProfileDataResolverFnMutationCreateCompanyProfileDataResolverFnAppSyncFunctionA1CF6441",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createCompanyProfile\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CompanyProfileTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/mutationCreateCompanyProfileResolver"
+   }
+  },
+  "MutationupdateCompanyProfileinit0FunctionMutationupdateCompanyProfileinit0FunctionAppSyncFunctionA525C70F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateCompanyProfileinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationupdateCompanyProfileinit0Function/MutationupdateCompanyProfileinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateCompanyProfileauth0FunctionMutationupdateCompanyProfileauth0FunctionAppSyncFunction058107F0": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CompanyProfileDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateCompanyProfileauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f23015a3b32b2c1916c0ff3175ca32a26a03116e29a7ba53a7fd6906446ddf7.vtl"
+    }
+   },
+   "DependsOn": [
+    "CompanyProfileDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationupdateCompanyProfileauth0Function/MutationupdateCompanyProfileauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateCompanyProfilepostAuth0FunctionMutationupdateCompanyProfilepostAuth0FunctionAppSyncFunction6024B8F3": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateCompanyProfilepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationupdateCompanyProfilepostAuth0Function/MutationupdateCompanyProfilepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateCompanyProfileDataResolverFnMutationUpdateCompanyProfileDataResolverFnAppSyncFunction92D06B90": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CompanyProfileDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateCompanyProfileDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "CompanyProfileDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationUpdateCompanyProfileDataResolverFn/MutationUpdateCompanyProfileDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "updateCompanyProfile",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateCompanyProfileinit0FunctionMutationupdateCompanyProfileinit0FunctionAppSyncFunctionA525C70F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateCompanyProfileauth0FunctionMutationupdateCompanyProfileauth0FunctionAppSyncFunction058107F0",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateCompanyProfilepostAuth0FunctionMutationupdateCompanyProfilepostAuth0FunctionAppSyncFunction6024B8F3",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateCompanyProfileDataResolverFnMutationUpdateCompanyProfileDataResolverFnAppSyncFunction92D06B90",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateCompanyProfile\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CompanyProfileTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/mutationUpdateCompanyProfileResolver"
+   }
+  },
+  "MutationdeleteCompanyProfileauth0FunctionMutationdeleteCompanyProfileauth0FunctionAppSyncFunction61A037D8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CompanyProfileDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteCompanyProfileauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/867fb7d7eb8e4127b6d0136b82c5c3f74a52eb410297086859986f8e7e4b02aa.vtl"
+    }
+   },
+   "DependsOn": [
+    "CompanyProfileDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationdeleteCompanyProfileauth0Function/MutationdeleteCompanyProfileauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteCompanyProfilepostAuth0FunctionMutationdeleteCompanyProfilepostAuth0FunctionAppSyncFunctionBDB941B0": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteCompanyProfilepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationdeleteCompanyProfilepostAuth0Function/MutationdeleteCompanyProfilepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteCompanyProfileDataResolverFnMutationDeleteCompanyProfileDataResolverFnAppSyncFunction4100F2A6": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "CompanyProfileDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteCompanyProfileDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "CompanyProfileDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/MutationDeleteCompanyProfileDataResolverFn/MutationDeleteCompanyProfileDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "deleteCompanyProfile",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteCompanyProfileauth0FunctionMutationdeleteCompanyProfileauth0FunctionAppSyncFunction61A037D8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteCompanyProfilepostAuth0FunctionMutationdeleteCompanyProfilepostAuth0FunctionAppSyncFunctionBDB941B0",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteCompanyProfileDataResolverFnMutationDeleteCompanyProfileDataResolverFnAppSyncFunction4100F2A6",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteCompanyProfile\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "CompanyProfileTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/mutationDeleteCompanyProfileResolver"
+   }
+  },
+  "SubscriptiononCreateCompanyProfileauth0FunctionSubscriptiononCreateCompanyProfileauth0FunctionAppSyncFunction260FBAE5": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateCompanyProfileauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b6d810ef43cdbd93ef462c40b0df0328b89e04f1473a4f82f1178da1f1d5aa0.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptiononCreateCompanyProfileauth0Function/SubscriptiononCreateCompanyProfileauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateCompanyProfilepostAuth0FunctionSubscriptiononCreateCompanyProfilepostAuth0FunctionAppSyncFunction4C9C3323": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateCompanyProfilepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptiononCreateCompanyProfilepostAuth0Function/SubscriptiononCreateCompanyProfilepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateCompanyProfileDataResolverFnSubscriptionOnCreateCompanyProfileDataResolverFnAppSyncFunction970C3FD1": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateCompanyProfileDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptionOnCreateCompanyProfileDataResolverFn/SubscriptionOnCreateCompanyProfileDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "onCreateCompanyProfile",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateCompanyProfileauth0FunctionSubscriptiononCreateCompanyProfileauth0FunctionAppSyncFunction260FBAE5",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateCompanyProfilepostAuth0FunctionSubscriptiononCreateCompanyProfilepostAuth0FunctionAppSyncFunction4C9C3323",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateCompanyProfileDataResolverFnSubscriptionOnCreateCompanyProfileDataResolverFnAppSyncFunction970C3FD1",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateCompanyProfile\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/subscriptionOnCreateCompanyProfileResolver"
+   }
+  },
+  "SubscriptiononUpdateCompanyProfileauth0FunctionSubscriptiononUpdateCompanyProfileauth0FunctionAppSyncFunctionD270275A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateCompanyProfileauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b6d810ef43cdbd93ef462c40b0df0328b89e04f1473a4f82f1178da1f1d5aa0.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptiononUpdateCompanyProfileauth0Function/SubscriptiononUpdateCompanyProfileauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateCompanyProfilepostAuth0FunctionSubscriptiononUpdateCompanyProfilepostAuth0FunctionAppSyncFunction9F0F40EF": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateCompanyProfilepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptiononUpdateCompanyProfilepostAuth0Function/SubscriptiononUpdateCompanyProfilepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateCompanyProfileDataResolverFnSubscriptionOnUpdateCompanyProfileDataResolverFnAppSyncFunction6451F5F4": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateCompanyProfileDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptionOnUpdateCompanyProfileDataResolverFn/SubscriptionOnUpdateCompanyProfileDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "onUpdateCompanyProfile",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateCompanyProfileauth0FunctionSubscriptiononUpdateCompanyProfileauth0FunctionAppSyncFunctionD270275A",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateCompanyProfilepostAuth0FunctionSubscriptiononUpdateCompanyProfilepostAuth0FunctionAppSyncFunction9F0F40EF",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateCompanyProfileDataResolverFnSubscriptionOnUpdateCompanyProfileDataResolverFnAppSyncFunction6451F5F4",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateCompanyProfile\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/subscriptionOnUpdateCompanyProfileResolver"
+   }
+  },
+  "SubscriptiononDeleteCompanyProfileauth0FunctionSubscriptiononDeleteCompanyProfileauth0FunctionAppSyncFunctionC56C62CF": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteCompanyProfileauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3b6d810ef43cdbd93ef462c40b0df0328b89e04f1473a4f82f1178da1f1d5aa0.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptiononDeleteCompanyProfileauth0Function/SubscriptiononDeleteCompanyProfileauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteCompanyProfilepostAuth0FunctionSubscriptiononDeleteCompanyProfilepostAuth0FunctionAppSyncFunctionD640EC95": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteCompanyProfilepostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptiononDeleteCompanyProfilepostAuth0Function/SubscriptiononDeleteCompanyProfilepostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteCompanyProfileDataResolverFnSubscriptionOnDeleteCompanyProfileDataResolverFnAppSyncFunction764E64FB": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteCompanyProfileDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/SubscriptionOnDeleteCompanyProfileDataResolverFn/SubscriptionOnDeleteCompanyProfileDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteCompanyProfileResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "onDeleteCompanyProfile",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteCompanyProfileauth0FunctionSubscriptiononDeleteCompanyProfileauth0FunctionAppSyncFunctionC56C62CF",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteCompanyProfilepostAuth0FunctionSubscriptiononDeleteCompanyProfilepostAuth0FunctionAppSyncFunctionD640EC95",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteCompanyProfileDataResolverFnSubscriptionOnDeleteCompanyProfileDataResolverFnAppSyncFunction764E64FB",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteCompanyProfile\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/subscriptionOnDeleteCompanyProfileResolver"
+   }
+  },
+  "CompanyProfileOwnerDataResolverFnCompanyProfileOwnerDataResolverFnAppSyncFunction3759FD0F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPINONEDS88C4D36FName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "CompanyProfileOwnerDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/041534e5fd916595f752318f161512d7c7f83b9f2cf32d0f0be381c12253ff68.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/064303962e481067b44300212516363b99aaee539b6bafaf756fdd83ff0b60f0.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/CompanyProfileOwnerDataResolverFn/CompanyProfileOwnerDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CompanyProfileownerResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+    },
+    "FieldName": "owner",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "CompanyProfileOwnerDataResolverFnCompanyProfileOwnerDataResolverFnAppSyncFunction3759FD0F",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"CompanyProfile\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"owner\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthauthenticatedUserRole83FF4C5CRef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthunauthenticatedUserRoleCA54F3CARef"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authNestedStackauthNestedStackResource7BA6EEC7Outputsamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0authamplifyAuthIdentityPool86337171Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "CompanyProfile"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/companyProfileOwnerResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WQQW+DMAyFf8vuwZtYpZ1X0I7bRHuvTGJQCiQodlpViP++hE6ddnr+5Cf72SWUuxJenvDKhTZDMdoWlk9iIXMQ1IOqOveNAScSChkq74wV651qiH0MmlQVWfz0h5171GnsaTE3h5M3LRyxHWmPTMriBEvjx7s76apwnvnmNCz1Zq/bGgUPj5H/6SM6nUOkNJ3tY8At0e/m8UJhVfx6QmYShvcsiWEf9UCSA6zZ+xVljqK2djq2t65flfOG4MzPl3IHb+kxZ7a2CNGJnQiau/4AwdRfaDUBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-cloudproinvoice-sdonthineni-sandbox-f1a69ae8d0/data/amplifyData/CompanyProfile/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttCompanyProfileTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "CompanyProfileTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "GetAtt:CompanyProfileTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttCompanyProfileTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "CompanyProfile-",
+      {
+       "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataGraphQLAPI7AFB9568ApiId"
+       },
+       "GetAtt:CompanyProfileTable:Name"
+      ]
+     ]
+    }
+   }
+  },
+  "amplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataCompanyProfileCompanyProfileDataSource39A8C480Name": {
+   "Value": {
+    "Fn::GetAtt": [
+     "CompanyProfileDataSource",
+     "Name"
+    ]
+   }
+  },
+  "amplifycloudproinvoicesdonthinenisandboxf1a69ae8d0dataamplifyDataCompanyProfileCompanyProfileTableE9333986TableArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "CompanyProfileTable",
+     "TableArn"
+    ]
+   }
+  }
+ }
+}

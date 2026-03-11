@@ -1,0 +1,961 @@
+type CompanyProfile @aws_iam @aws_cognito_user_pools {
+  companyName: String!
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  companyCity: String
+  companyState: String
+  companyPostalCode: String
+  companyCountry: String
+  gstNumber: String
+  bankAccount: String
+  defaultCurrency: String
+  defaultGstRate: Float
+  logoUrl: String
+  userId: String!
+  user: User
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type User @aws_iam @aws_cognito_user_pools {
+  email: String!
+  firstName: String
+  lastName: String
+  companyProfile: CompanyProfile
+  invoices(filter: ModelInvoiceFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInvoiceConnection
+  clients(filter: ModelClientFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelClientConnection
+  expenses(filter: ModelExpenseFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelExpenseConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Client @aws_iam @aws_cognito_user_pools {
+  name: String!
+  email: String
+  phone: String
+  address: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  notes: String
+  userId: String!
+  user: User
+  invoices(filter: ModelInvoiceFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInvoiceConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Invoice @aws_iam @aws_cognito_user_pools {
+  invoiceNumber: String!
+  clientName: String!
+  clientEmail: String
+  clientAddress: String
+  issueDate: AWSDateTime!
+  dueDate: AWSDateTime
+  items(filter: ModelInvoiceItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInvoiceItemConnection
+  notes: String
+  paymentTerms: String
+  subtotal: Float!
+  gstRate: Float
+  gstAmount: Float
+  total: Float!
+  currency: String
+  status: InvoiceStatus
+  pdfUrl: String
+  companyName: String
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  gstNumber: String
+  bankAccount: String
+  userId: String!
+  user: User
+  clientId: String
+  client: Client
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type InvoiceItem @aws_iam @aws_cognito_user_pools {
+  description: String!
+  wbs: String
+  quantity: Float!
+  unitPrice: Float!
+  amount: Float!
+  invoiceId: String!
+  invoice: Invoice
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Expense @aws_iam @aws_cognito_user_pools {
+  description: String!
+  category: String
+  amount: Float!
+  amountExGst: Float
+  gstAmount: Float
+  gstClaimable: Boolean
+  date: AWSDateTime!
+  receiptUrl: String
+  notes: String
+  status: ExpenseStatus
+  userId: String!
+  user: User
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelCompanyProfileConnection @aws_iam @aws_cognito_user_pools {
+  items: [CompanyProfile]!
+  nextToken: String
+}
+
+input ModelCompanyProfileFilterInput {
+  companyName: ModelStringInput
+  companyEmail: ModelStringInput
+  companyPhone: ModelStringInput
+  companyAddress: ModelStringInput
+  companyCity: ModelStringInput
+  companyState: ModelStringInput
+  companyPostalCode: ModelStringInput
+  companyCountry: ModelStringInput
+  gstNumber: ModelStringInput
+  bankAccount: ModelStringInput
+  defaultCurrency: ModelStringInput
+  defaultGstRate: ModelFloatInput
+  logoUrl: ModelStringInput
+  userId: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCompanyProfileFilterInput]
+  or: [ModelCompanyProfileFilterInput]
+  not: ModelCompanyProfileFilterInput
+  owner: ModelStringInput
+}
+
+type Query {
+  getCompanyProfile(id: ID!): CompanyProfile @aws_iam @aws_cognito_user_pools
+  listCompanyProfiles(filter: ModelCompanyProfileFilterInput, limit: Int, nextToken: String): ModelCompanyProfileConnection @aws_iam @aws_cognito_user_pools
+  getUser(id: ID!): User @aws_iam @aws_cognito_user_pools
+  listUsers(filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection @aws_iam @aws_cognito_user_pools
+  getClient(id: ID!): Client @aws_iam @aws_cognito_user_pools
+  listClients(filter: ModelClientFilterInput, limit: Int, nextToken: String): ModelClientConnection @aws_iam @aws_cognito_user_pools
+  getInvoice(id: ID!): Invoice @aws_iam @aws_cognito_user_pools
+  listInvoices(filter: ModelInvoiceFilterInput, limit: Int, nextToken: String): ModelInvoiceConnection @aws_iam @aws_cognito_user_pools
+  getInvoiceItem(id: ID!): InvoiceItem @aws_iam @aws_cognito_user_pools
+  listInvoiceItems(filter: ModelInvoiceItemFilterInput, limit: Int, nextToken: String): ModelInvoiceItemConnection @aws_iam @aws_cognito_user_pools
+  getExpense(id: ID!): Expense @aws_iam @aws_cognito_user_pools
+  listExpenses(filter: ModelExpenseFilterInput, limit: Int, nextToken: String): ModelExpenseConnection @aws_iam @aws_cognito_user_pools
+}
+
+input ModelCompanyProfileConditionInput {
+  companyName: ModelStringInput
+  companyEmail: ModelStringInput
+  companyPhone: ModelStringInput
+  companyAddress: ModelStringInput
+  companyCity: ModelStringInput
+  companyState: ModelStringInput
+  companyPostalCode: ModelStringInput
+  companyCountry: ModelStringInput
+  gstNumber: ModelStringInput
+  bankAccount: ModelStringInput
+  defaultCurrency: ModelStringInput
+  defaultGstRate: ModelFloatInput
+  logoUrl: ModelStringInput
+  userId: ModelStringInput
+  and: [ModelCompanyProfileConditionInput]
+  or: [ModelCompanyProfileConditionInput]
+  not: ModelCompanyProfileConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateCompanyProfileInput {
+  companyName: String!
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  companyCity: String
+  companyState: String
+  companyPostalCode: String
+  companyCountry: String
+  gstNumber: String
+  bankAccount: String
+  defaultCurrency: String
+  defaultGstRate: Float
+  logoUrl: String
+  userId: String!
+  id: ID
+}
+
+input UpdateCompanyProfileInput {
+  companyName: String
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  companyCity: String
+  companyState: String
+  companyPostalCode: String
+  companyCountry: String
+  gstNumber: String
+  bankAccount: String
+  defaultCurrency: String
+  defaultGstRate: Float
+  logoUrl: String
+  userId: String
+  id: ID!
+}
+
+input DeleteCompanyProfileInput {
+  id: ID!
+}
+
+type Mutation {
+  createCompanyProfile(input: CreateCompanyProfileInput!, condition: ModelCompanyProfileConditionInput): CompanyProfile @aws_iam @aws_cognito_user_pools
+  updateCompanyProfile(input: UpdateCompanyProfileInput!, condition: ModelCompanyProfileConditionInput): CompanyProfile @aws_iam @aws_cognito_user_pools
+  deleteCompanyProfile(input: DeleteCompanyProfileInput!, condition: ModelCompanyProfileConditionInput): CompanyProfile @aws_iam @aws_cognito_user_pools
+  createUser(input: CreateUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  updateUser(input: UpdateUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  deleteUser(input: DeleteUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  createClient(input: CreateClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  updateClient(input: UpdateClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  deleteClient(input: DeleteClientInput!, condition: ModelClientConditionInput): Client @aws_iam @aws_cognito_user_pools
+  createInvoice(input: CreateInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  updateInvoice(input: UpdateInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  deleteInvoice(input: DeleteInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  createInvoiceItem(input: CreateInvoiceItemInput!, condition: ModelInvoiceItemConditionInput): InvoiceItem @aws_iam @aws_cognito_user_pools
+  updateInvoiceItem(input: UpdateInvoiceItemInput!, condition: ModelInvoiceItemConditionInput): InvoiceItem @aws_iam @aws_cognito_user_pools
+  deleteInvoiceItem(input: DeleteInvoiceItemInput!, condition: ModelInvoiceItemConditionInput): InvoiceItem @aws_iam @aws_cognito_user_pools
+  createExpense(input: CreateExpenseInput!, condition: ModelExpenseConditionInput): Expense @aws_iam @aws_cognito_user_pools
+  updateExpense(input: UpdateExpenseInput!, condition: ModelExpenseConditionInput): Expense @aws_iam @aws_cognito_user_pools
+  deleteExpense(input: DeleteExpenseInput!, condition: ModelExpenseConditionInput): Expense @aws_iam @aws_cognito_user_pools
+}
+
+input ModelSubscriptionCompanyProfileFilterInput {
+  companyName: ModelSubscriptionStringInput
+  companyEmail: ModelSubscriptionStringInput
+  companyPhone: ModelSubscriptionStringInput
+  companyAddress: ModelSubscriptionStringInput
+  companyCity: ModelSubscriptionStringInput
+  companyState: ModelSubscriptionStringInput
+  companyPostalCode: ModelSubscriptionStringInput
+  companyCountry: ModelSubscriptionStringInput
+  gstNumber: ModelSubscriptionStringInput
+  bankAccount: ModelSubscriptionStringInput
+  defaultCurrency: ModelSubscriptionStringInput
+  defaultGstRate: ModelSubscriptionFloatInput
+  logoUrl: ModelSubscriptionStringInput
+  userId: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionCompanyProfileFilterInput]
+  or: [ModelSubscriptionCompanyProfileFilterInput]
+  owner: ModelStringInput
+}
+
+type Subscription {
+  onCreateCompanyProfile(filter: ModelSubscriptionCompanyProfileFilterInput, owner: String): CompanyProfile @aws_subscribe(mutations: ["createCompanyProfile"]) @aws_iam @aws_cognito_user_pools
+  onUpdateCompanyProfile(filter: ModelSubscriptionCompanyProfileFilterInput, owner: String): CompanyProfile @aws_subscribe(mutations: ["updateCompanyProfile"]) @aws_iam @aws_cognito_user_pools
+  onDeleteCompanyProfile(filter: ModelSubscriptionCompanyProfileFilterInput, owner: String): CompanyProfile @aws_subscribe(mutations: ["deleteCompanyProfile"]) @aws_iam @aws_cognito_user_pools
+  onCreateUser(filter: ModelSubscriptionUserFilterInput, owner: String): User @aws_subscribe(mutations: ["createUser"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUser(filter: ModelSubscriptionUserFilterInput, owner: String): User @aws_subscribe(mutations: ["updateUser"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUser(filter: ModelSubscriptionUserFilterInput, owner: String): User @aws_subscribe(mutations: ["deleteUser"]) @aws_iam @aws_cognito_user_pools
+  onCreateClient(filter: ModelSubscriptionClientFilterInput, owner: String): Client @aws_subscribe(mutations: ["createClient"]) @aws_iam @aws_cognito_user_pools
+  onUpdateClient(filter: ModelSubscriptionClientFilterInput, owner: String): Client @aws_subscribe(mutations: ["updateClient"]) @aws_iam @aws_cognito_user_pools
+  onDeleteClient(filter: ModelSubscriptionClientFilterInput, owner: String): Client @aws_subscribe(mutations: ["deleteClient"]) @aws_iam @aws_cognito_user_pools
+  onCreateInvoice(filter: ModelSubscriptionInvoiceFilterInput, owner: String): Invoice @aws_subscribe(mutations: ["createInvoice"]) @aws_iam @aws_cognito_user_pools
+  onUpdateInvoice(filter: ModelSubscriptionInvoiceFilterInput, owner: String): Invoice @aws_subscribe(mutations: ["updateInvoice"]) @aws_iam @aws_cognito_user_pools
+  onDeleteInvoice(filter: ModelSubscriptionInvoiceFilterInput, owner: String): Invoice @aws_subscribe(mutations: ["deleteInvoice"]) @aws_iam @aws_cognito_user_pools
+  onCreateInvoiceItem(filter: ModelSubscriptionInvoiceItemFilterInput, owner: String): InvoiceItem @aws_subscribe(mutations: ["createInvoiceItem"]) @aws_iam @aws_cognito_user_pools
+  onUpdateInvoiceItem(filter: ModelSubscriptionInvoiceItemFilterInput, owner: String): InvoiceItem @aws_subscribe(mutations: ["updateInvoiceItem"]) @aws_iam @aws_cognito_user_pools
+  onDeleteInvoiceItem(filter: ModelSubscriptionInvoiceItemFilterInput, owner: String): InvoiceItem @aws_subscribe(mutations: ["deleteInvoiceItem"]) @aws_iam @aws_cognito_user_pools
+  onCreateExpense(filter: ModelSubscriptionExpenseFilterInput, owner: String): Expense @aws_subscribe(mutations: ["createExpense"]) @aws_iam @aws_cognito_user_pools
+  onUpdateExpense(filter: ModelSubscriptionExpenseFilterInput, owner: String): Expense @aws_subscribe(mutations: ["updateExpense"]) @aws_iam @aws_cognito_user_pools
+  onDeleteExpense(filter: ModelSubscriptionExpenseFilterInput, owner: String): Expense @aws_subscribe(mutations: ["deleteExpense"]) @aws_iam @aws_cognito_user_pools
+}
+
+type ModelUserConnection @aws_iam @aws_cognito_user_pools {
+  items: [User]!
+  nextToken: String
+}
+
+input ModelUserFilterInput {
+  email: ModelStringInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserFilterInput]
+  or: [ModelUserFilterInput]
+  not: ModelUserFilterInput
+  owner: ModelStringInput
+}
+
+input ModelUserConditionInput {
+  email: ModelStringInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  and: [ModelUserConditionInput]
+  or: [ModelUserConditionInput]
+  not: ModelUserConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateUserInput {
+  email: String!
+  firstName: String
+  lastName: String
+  id: ID
+}
+
+input UpdateUserInput {
+  email: String
+  firstName: String
+  lastName: String
+  id: ID!
+}
+
+input DeleteUserInput {
+  id: ID!
+}
+
+input ModelSubscriptionUserFilterInput {
+  email: ModelSubscriptionStringInput
+  firstName: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionUserFilterInput]
+  or: [ModelSubscriptionUserFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelClientConnection @aws_iam @aws_cognito_user_pools {
+  items: [Client]!
+  nextToken: String
+}
+
+input ModelClientFilterInput {
+  name: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  city: ModelStringInput
+  state: ModelStringInput
+  postalCode: ModelStringInput
+  country: ModelStringInput
+  notes: ModelStringInput
+  userId: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelClientFilterInput]
+  or: [ModelClientFilterInput]
+  not: ModelClientFilterInput
+  owner: ModelStringInput
+}
+
+input ModelClientConditionInput {
+  name: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  city: ModelStringInput
+  state: ModelStringInput
+  postalCode: ModelStringInput
+  country: ModelStringInput
+  notes: ModelStringInput
+  userId: ModelStringInput
+  and: [ModelClientConditionInput]
+  or: [ModelClientConditionInput]
+  not: ModelClientConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateClientInput {
+  name: String!
+  email: String
+  phone: String
+  address: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  notes: String
+  userId: String!
+  id: ID
+}
+
+input UpdateClientInput {
+  name: String
+  email: String
+  phone: String
+  address: String
+  city: String
+  state: String
+  postalCode: String
+  country: String
+  notes: String
+  userId: String
+  id: ID!
+}
+
+input DeleteClientInput {
+  id: ID!
+}
+
+input ModelSubscriptionClientFilterInput {
+  name: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  address: ModelSubscriptionStringInput
+  city: ModelSubscriptionStringInput
+  state: ModelSubscriptionStringInput
+  postalCode: ModelSubscriptionStringInput
+  country: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  userId: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionClientFilterInput]
+  or: [ModelSubscriptionClientFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelInvoiceConnection @aws_iam @aws_cognito_user_pools {
+  items: [Invoice]!
+  nextToken: String
+}
+
+input ModelInvoiceStatusInput {
+  eq: InvoiceStatus
+  ne: InvoiceStatus
+}
+
+input ModelInvoiceFilterInput {
+  invoiceNumber: ModelStringInput
+  clientName: ModelStringInput
+  clientEmail: ModelStringInput
+  clientAddress: ModelStringInput
+  issueDate: ModelStringInput
+  dueDate: ModelStringInput
+  notes: ModelStringInput
+  paymentTerms: ModelStringInput
+  subtotal: ModelFloatInput
+  gstRate: ModelFloatInput
+  gstAmount: ModelFloatInput
+  total: ModelFloatInput
+  currency: ModelStringInput
+  status: ModelInvoiceStatusInput
+  pdfUrl: ModelStringInput
+  companyName: ModelStringInput
+  companyEmail: ModelStringInput
+  companyPhone: ModelStringInput
+  companyAddress: ModelStringInput
+  gstNumber: ModelStringInput
+  bankAccount: ModelStringInput
+  userId: ModelStringInput
+  clientId: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelInvoiceFilterInput]
+  or: [ModelInvoiceFilterInput]
+  not: ModelInvoiceFilterInput
+  owner: ModelStringInput
+}
+
+input ModelInvoiceConditionInput {
+  invoiceNumber: ModelStringInput
+  clientName: ModelStringInput
+  clientEmail: ModelStringInput
+  clientAddress: ModelStringInput
+  issueDate: ModelStringInput
+  dueDate: ModelStringInput
+  notes: ModelStringInput
+  paymentTerms: ModelStringInput
+  subtotal: ModelFloatInput
+  gstRate: ModelFloatInput
+  gstAmount: ModelFloatInput
+  total: ModelFloatInput
+  currency: ModelStringInput
+  status: ModelInvoiceStatusInput
+  pdfUrl: ModelStringInput
+  companyName: ModelStringInput
+  companyEmail: ModelStringInput
+  companyPhone: ModelStringInput
+  companyAddress: ModelStringInput
+  gstNumber: ModelStringInput
+  bankAccount: ModelStringInput
+  userId: ModelStringInput
+  clientId: ModelStringInput
+  and: [ModelInvoiceConditionInput]
+  or: [ModelInvoiceConditionInput]
+  not: ModelInvoiceConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateInvoiceInput {
+  invoiceNumber: String!
+  clientName: String!
+  clientEmail: String
+  clientAddress: String
+  issueDate: AWSDateTime!
+  dueDate: AWSDateTime
+  notes: String
+  paymentTerms: String
+  subtotal: Float!
+  gstRate: Float
+  gstAmount: Float
+  total: Float!
+  currency: String
+  status: InvoiceStatus
+  pdfUrl: String
+  companyName: String
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  gstNumber: String
+  bankAccount: String
+  userId: String!
+  clientId: String
+  id: ID
+}
+
+input UpdateInvoiceInput {
+  invoiceNumber: String
+  clientName: String
+  clientEmail: String
+  clientAddress: String
+  issueDate: AWSDateTime
+  dueDate: AWSDateTime
+  notes: String
+  paymentTerms: String
+  subtotal: Float
+  gstRate: Float
+  gstAmount: Float
+  total: Float
+  currency: String
+  status: InvoiceStatus
+  pdfUrl: String
+  companyName: String
+  companyEmail: String
+  companyPhone: String
+  companyAddress: String
+  gstNumber: String
+  bankAccount: String
+  userId: String
+  clientId: String
+  id: ID!
+}
+
+input DeleteInvoiceInput {
+  id: ID!
+}
+
+input ModelSubscriptionInvoiceFilterInput {
+  invoiceNumber: ModelSubscriptionStringInput
+  clientName: ModelSubscriptionStringInput
+  clientEmail: ModelSubscriptionStringInput
+  clientAddress: ModelSubscriptionStringInput
+  issueDate: ModelSubscriptionStringInput
+  dueDate: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  paymentTerms: ModelSubscriptionStringInput
+  subtotal: ModelSubscriptionFloatInput
+  gstRate: ModelSubscriptionFloatInput
+  gstAmount: ModelSubscriptionFloatInput
+  total: ModelSubscriptionFloatInput
+  currency: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  pdfUrl: ModelSubscriptionStringInput
+  companyName: ModelSubscriptionStringInput
+  companyEmail: ModelSubscriptionStringInput
+  companyPhone: ModelSubscriptionStringInput
+  companyAddress: ModelSubscriptionStringInput
+  gstNumber: ModelSubscriptionStringInput
+  bankAccount: ModelSubscriptionStringInput
+  userId: ModelSubscriptionStringInput
+  clientId: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionInvoiceFilterInput]
+  or: [ModelSubscriptionInvoiceFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelInvoiceItemConnection @aws_iam @aws_cognito_user_pools {
+  items: [InvoiceItem]!
+  nextToken: String
+}
+
+input ModelInvoiceItemFilterInput {
+  description: ModelStringInput
+  wbs: ModelStringInput
+  quantity: ModelFloatInput
+  unitPrice: ModelFloatInput
+  amount: ModelFloatInput
+  invoiceId: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelInvoiceItemFilterInput]
+  or: [ModelInvoiceItemFilterInput]
+  not: ModelInvoiceItemFilterInput
+  owner: ModelStringInput
+}
+
+input ModelInvoiceItemConditionInput {
+  description: ModelStringInput
+  wbs: ModelStringInput
+  quantity: ModelFloatInput
+  unitPrice: ModelFloatInput
+  amount: ModelFloatInput
+  invoiceId: ModelStringInput
+  and: [ModelInvoiceItemConditionInput]
+  or: [ModelInvoiceItemConditionInput]
+  not: ModelInvoiceItemConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateInvoiceItemInput {
+  description: String!
+  wbs: String
+  quantity: Float!
+  unitPrice: Float!
+  amount: Float!
+  invoiceId: String!
+  id: ID
+}
+
+input UpdateInvoiceItemInput {
+  description: String
+  wbs: String
+  quantity: Float
+  unitPrice: Float
+  amount: Float
+  invoiceId: String
+  id: ID!
+}
+
+input DeleteInvoiceItemInput {
+  id: ID!
+}
+
+input ModelSubscriptionInvoiceItemFilterInput {
+  description: ModelSubscriptionStringInput
+  wbs: ModelSubscriptionStringInput
+  quantity: ModelSubscriptionFloatInput
+  unitPrice: ModelSubscriptionFloatInput
+  amount: ModelSubscriptionFloatInput
+  invoiceId: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionInvoiceItemFilterInput]
+  or: [ModelSubscriptionInvoiceItemFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelExpenseConnection @aws_iam @aws_cognito_user_pools {
+  items: [Expense]!
+  nextToken: String
+}
+
+input ModelExpenseStatusInput {
+  eq: ExpenseStatus
+  ne: ExpenseStatus
+}
+
+input ModelExpenseFilterInput {
+  description: ModelStringInput
+  category: ModelStringInput
+  amount: ModelFloatInput
+  amountExGst: ModelFloatInput
+  gstAmount: ModelFloatInput
+  gstClaimable: ModelBooleanInput
+  date: ModelStringInput
+  receiptUrl: ModelStringInput
+  notes: ModelStringInput
+  status: ModelExpenseStatusInput
+  userId: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelExpenseFilterInput]
+  or: [ModelExpenseFilterInput]
+  not: ModelExpenseFilterInput
+  owner: ModelStringInput
+}
+
+input ModelExpenseConditionInput {
+  description: ModelStringInput
+  category: ModelStringInput
+  amount: ModelFloatInput
+  amountExGst: ModelFloatInput
+  gstAmount: ModelFloatInput
+  gstClaimable: ModelBooleanInput
+  date: ModelStringInput
+  receiptUrl: ModelStringInput
+  notes: ModelStringInput
+  status: ModelExpenseStatusInput
+  userId: ModelStringInput
+  and: [ModelExpenseConditionInput]
+  or: [ModelExpenseConditionInput]
+  not: ModelExpenseConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateExpenseInput {
+  description: String!
+  category: String
+  amount: Float!
+  amountExGst: Float
+  gstAmount: Float
+  gstClaimable: Boolean
+  date: AWSDateTime!
+  receiptUrl: String
+  notes: String
+  status: ExpenseStatus
+  userId: String!
+  id: ID
+}
+
+input UpdateExpenseInput {
+  description: String
+  category: String
+  amount: Float
+  amountExGst: Float
+  gstAmount: Float
+  gstClaimable: Boolean
+  date: AWSDateTime
+  receiptUrl: String
+  notes: String
+  status: ExpenseStatus
+  userId: String
+  id: ID!
+}
+
+input DeleteExpenseInput {
+  id: ID!
+}
+
+input ModelSubscriptionExpenseFilterInput {
+  description: ModelSubscriptionStringInput
+  category: ModelSubscriptionStringInput
+  amount: ModelSubscriptionFloatInput
+  amountExGst: ModelSubscriptionFloatInput
+  gstAmount: ModelSubscriptionFloatInput
+  gstClaimable: ModelSubscriptionBooleanInput
+  date: ModelSubscriptionStringInput
+  receiptUrl: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  userId: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionExpenseFilterInput]
+  or: [ModelSubscriptionExpenseFilterInput]
+  owner: ModelStringInput
+}
