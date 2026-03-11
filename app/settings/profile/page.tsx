@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -22,6 +23,7 @@ export default function ProfilePage() {
       setFirstName(attributes.given_name || '');
       setLastName(attributes.family_name || '');
       setEmail(attributes.email || '');
+      setPhoneNumber(attributes.phone_number || '');
     } catch (error) {
       console.error('Failed to load profile:', error);
     }
@@ -33,12 +35,16 @@ export default function ProfilePage() {
     setMessage('');
 
     try {
-      await updateUserAttributes({
-        userAttributes: {
-          given_name: firstName,
-          family_name: lastName,
-        },
-      });
+      const updates: any = {
+        given_name: firstName,
+        family_name: lastName,
+      };
+      
+      if (phoneNumber) {
+        updates.phone_number = phoneNumber;
+      }
+
+      await updateUserAttributes({ userAttributes: updates });
       setMessage('Profile updated successfully!');
     } catch (error) {
       setMessage('Failed to update profile');
@@ -89,6 +95,21 @@ export default function ProfilePage() {
               onChange={(e) => setLastName(e.target.value)}
               className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
+          </div>
+
+          <div>
+            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+              Phone Number
+            </label>
+            <input
+              id="phoneNumber"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="+64 21 123 4567"
+              className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <p className="mt-1 text-sm text-gray-500">For 2FA and notifications (optional)</p>
           </div>
 
           <div>
