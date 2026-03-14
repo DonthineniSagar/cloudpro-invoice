@@ -20,13 +20,18 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Fix input text visibility */
-input, textarea, select {
-  color: #000000 !important;
-}
+/* Input text visibility is handled by Tailwind classes per-component */
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
 }

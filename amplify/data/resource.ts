@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { sendInvoiceEmail } from '../functions/send-invoice-email/resource';
 
 const schema = a.schema({
   // Company Profile - stores user's business details
@@ -17,6 +18,11 @@ const schema = a.schema({
       defaultCurrency: a.string().default('NZD'),
       defaultGstRate: a.float().default(15), // NZ GST is 15%
       logoUrl: a.string(),
+      // Email preferences
+      emailSubjectTemplate: a.string().default('Invoice {invoiceNumber} from {companyName}'),
+      emailBodyTemplate: a.string().default('Please find attached invoice {invoiceNumber} for {total}. Payment is due by {dueDate}. Thank you for your business.'),
+      emailReplyTo: a.string(),
+      emailCcSelf: a.boolean().default(true),
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })
@@ -111,6 +117,22 @@ const schema = a.schema({
       user: a.belongsTo('User', 'userId'),
     })
     .authorization((allow) => allow.owner()),
+
+  // Custom mutation for sending invoice emails
+  sendInvoiceEmail: a
+    .mutation()
+    .arguments({
+      to: a.string().required(),
+      cc: a.string(),
+      replyTo: a.string(),
+      subject: a.string().required(),
+      body: a.string().required(),
+      pdfBase64: a.string().required(),
+      fileName: a.string().required(),
+    })
+    .returns(a.json())
+    .authorization((allow) => allow.authenticated())
+    .handler(a.handler.function(sendInvoiceEmail)),
 });
 
 export type Schema = ClientSchema<typeof schema>;

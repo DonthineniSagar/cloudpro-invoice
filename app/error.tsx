@@ -1,0 +1,31 @@
+'use client';
+
+import { useEffect } from 'react';
+
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => {
+    console.error('Unhandled error:', error);
+  }, [error]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="text-center max-w-md">
+        <div className="text-5xl mb-4">⚠️</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
+        <p className="text-gray-600 mb-6">
+          An unexpected error occurred. Please try again or contact support if the problem persists.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <button onClick={reset}
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+            Try again
+          </button>
+          <a href="/dashboard"
+            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            Go to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -47,6 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function handleSignIn(email: string, password: string) {
+    // Clear any existing session first
+    try { await signOut(); } catch {}
+    
     const result = await signIn({ username: email, password });
     
     if (!result.isSignedIn && result.nextStep?.signInStep === 'CONFIRM_SIGN_UP') {

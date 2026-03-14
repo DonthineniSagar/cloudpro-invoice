@@ -1,653 +1,238 @@
 # Development Context - CloudPro Invoice
 
-**Last Updated:** March 12, 2026, 00:16 NZDT  
-**Current Sprint:** Sprint 1 - Foundation & Auth  
-**Current Day:** Day 3 In Progress (50% done)  
-**Status:** Settings pages complete, ready for client management
+**Last Updated:** March 14, 2026, 16:55 NZDT
+**Status:** All MVP + nice-to-have features complete. Ready for testing & deployment.
+**Launch Date:** April 1, 2026 (17 days remaining)
 
 ---
 
 ## 🎯 Project Overview
 
-**Launch Date:** April 1, 2026 (19 days remaining)  
-**Focus:** Invoice, Client, Expenses, User Settings, Enriched Reporting  
-**Tech Stack:** Next.js 14, AWS Amplify Gen 2 (Sydney region)  
-**Development Mode:** Real AWS backend with local frontend
+- **Tech Stack:** Next.js 14, AWS Amplify Gen 2 (Sydney ap-southeast-2)
+- **Database:** DynamoDB via AppSync GraphQL
+- **Auth:** AWS Cognito
+- **Storage:** S3 (invoices, receipts) — owner-scoped via entity_id
+- **Email:** SES via Lambda function (send invoice with PDF attachment)
+- **Validation:** Zod schemas
+- **Development Mode:** Real AWS backend with local frontend
 
 ---
 
-## ✅ What's Built & Working
+## ✅ All Completed Features
 
-### Sprint 1 Day 1 (Complete)
-- ✅ Testing framework (Jest + LocalStack config)
-- ✅ AWS Amplify deployed to Sydney (ap-southeast-2)
-- ✅ Cognito User Pool + Identity Pool
-- ✅ DynamoDB tables (User, Client, Invoice, InvoiceItem, Expense, CompanyProfile)
-- ✅ S3 buckets
-- ✅ AppSync GraphQL API
-
-### Sprint 1 Day 2 (Complete - 100%)
-- ✅ Real AWS Cognito authentication
-- ✅ Login page with professional error handling
-- ✅ Signup page with firstName/lastName
-- ✅ Email verification flow (signup & login)
-- ✅ Resend verification code
-- ✅ Input text visibility (black text)
-- ✅ Company Profile page (full CRUD)
-- ✅ Dashboard showing user's first name
-- ✅ User profile stored in Cognito
-
-### Sprint 1 Day 3 (In Progress - 50%)
-- ✅ Settings page layout with tabs
+### Auth & User Management
+- ✅ Cognito signup/login/logout with email verification
 - ✅ User profile settings (firstName, lastName, phone)
-- ✅ Company profile settings (already working)
-- ✅ Navigation between settings
-- ⏳ Client management - NEXT
-- ⏳ Invoice creation - TODO
+- ✅ Password change (/settings/security)
+- ✅ Protected routes, session management
+- ✅ Forgot password flow (email → code → new password via Cognito)
 
-### Authentication (Real AWS Cognito)
-**Files:**
-- `lib/amplify-config.tsx` - Amplify configuration
-- `lib/auth-context.tsx` - Real Cognito auth (signUp, signIn, signOut)
-- `app/auth/login/page.tsx` - Login form
-- `app/auth/signup/page.tsx` - Signup form
-- `amplify_outputs.json` - AWS config (auto-generated)
+### Company Profile
+- ✅ Full CRUD (name, email, phone, address, GST#, bank account)
+- ✅ Auto-populate on invoice creation
+- ✅ Logo upload to S3 with preview
+- ✅ Company logo on generated PDFs (top-right corner)
 
-**Features:**
-- Email/password authentication
-- Auto sign-in after signup
-- Session management
-- Protected routes
-- User attributes (email, given_name, family_name)
+### Client Management
+- ✅ List, create, edit, delete with search
+- ✅ Client selector in invoice form
 
-### Company Profile (Real DynamoDB)
-**Files:**
-- `app/settings/company/page.tsx` - Company profile CRUD
-- `amplify/data/resource.ts` - Data schema
+### Invoice Management
+- ✅ Create with line items + WBS codes
+- ✅ Auto-generated invoice numbers (INV-YYMM-XXX)
+- ✅ Client auto-populate, company snapshot
+- ✅ GST calculations (15% NZ rate)
+- ✅ List view with status badges, detail view, edit
+- ✅ Status workflow: DRAFT → SENT → PAID / OVERDUE / CANCELLED
+- ✅ Paid/Cancelled invoices locked from editing
+- ✅ PDF generation & download (jsPDF + autotable)
+- ✅ PDF stored in S3 (owner-scoped), pdfUrl saved to invoice record
+- ✅ Re-download from S3 without regeneration
+- ✅ Email invoice to client with PDF attachment via SES
+- ✅ Zod validation (client required, due date ≥ issue date, line items)
+- ✅ Mobile responsive line items (stacked on small screens)
 
-**Fields:**
-- Company: name, email, phone, address, city, state, postalCode, country
-- Tax: gstNumber, bankAccount, defaultCurrency (NZD), defaultGstRate (15%)
-- Owner-based authorization (users see only their data)
+### Expense Tracking
+- ✅ Full CRUD with categories (Travel, Office, Software, etc.)
+- ✅ GST auto-calculation from inclusive amount
+- ✅ GST claimable toggle
+- ✅ Inline approve on list (approved expenses cannot revert to pending)
+- ✅ S3 receipt upload (create + edit) — owner-scoped
+- ✅ Receipt thumbnail display on expense list
+- ✅ Missing receipt warning (IRD: >$50 needs receipt)
+- ✅ Month filter + text search
+- ✅ Zod validation (amount > 0, description required)
 
-**Features:**
-- Create/update company profile
-- Load existing profile
-- Save to DynamoDB
-- Link to user via userId
+### Email Integration
+- ✅ SES Lambda function for sending emails with PDF attachments
+- ✅ Custom GraphQL mutation (sendInvoiceEmail)
+- ✅ Email preferences settings page (/settings/email)
+- ✅ Configurable subject/body templates with token replacement
+- ✅ Reply-to email override
+- ✅ CC self toggle
+- ✅ "Email Invoice" button on invoice detail (replaces Mark as Sent)
 
----
+### Dashboard
+- ✅ Revenue metrics: total, outstanding, paid count, pending count
+- ✅ Expense metrics: total expenses, net GST position, profit (ex-GST)
+- ✅ Monthly revenue vs expenses bar chart (6 months)
+- ✅ Invoice status breakdown (stacked bar + legend)
+- ✅ Recent invoices (last 5) + recent expenses (last 5)
+- ✅ Quick actions, setup guide for new users
 
-## 📊 Data Models (Amplify Gen 2)
+### Reports & Tax (/reports)
+- ✅ NZ GST return summary (collected vs paid, net position)
+- ✅ Date range filter (defaults to NZ financial year Apr-Mar)
+- ✅ Expenses by category horizontal bar chart
+- ✅ Top 5 clients by revenue
+- ✅ CSV export: invoices, expenses, tax summary
 
-### Implemented & Working
-```typescript
-CompanyProfile {
-  companyName*, companyEmail, companyPhone, companyAddress
-  companyCity, companyState, companyPostalCode, companyCountry
-  gstNumber, bankAccount
-  defaultCurrency: 'NZD', defaultGstRate: 15
-  userId* (owner)
-}
+### UI/UX & Polish
+- ✅ Dark/Light theme toggle, consistent across all pages
+- ✅ Shared theme helper (lib/theme-classes.ts)
+- ✅ CloudPro logo in nav
+- ✅ Navigation: Dashboard, Invoices, Clients, Expenses, Reports, Settings
+- ✅ Mobile responsive: hamburger menu, stacked layouts, scrollable tables
+- ✅ Error boundaries (root, dashboard, invoices, expenses)
+- ✅ Toast notification system
 
-User {
-  email*, firstName, lastName
-  companyProfile (hasOne)
-}
-```
+### Security
+- ✅ S3 owner-scoped access (entity_id) — users can only access own files
+- ✅ DynamoDB owner-based authorization on all models
+- ✅ Pre-signed URLs for S3 downloads (time-limited)
 
-### Defined, Not Yet Used
-```typescript
-Client {
-  name*, email, phone
-  address, city, state, postalCode, country
-  notes, userId* (owner)
-}
-
-Invoice {
-  invoiceNumber*, issueDate*, dueDate
-  clientName*, clientEmail, clientAddress
-  subtotal*, gstRate, gstAmount, total*
-  currency, status, pdfUrl
-  companyName, companyEmail, gstNumber, bankAccount
-  userId*, clientId
-  items (hasMany InvoiceItem)
-}
-
-InvoiceItem {
-  description*, wbs, quantity*, unitPrice*, amount*
-  invoiceId*
-}
-
-Expense {
-  description*, category, amount*
-  amountExGst, gstAmount, gstClaimable
-  date*, receiptUrl, notes, status
-  userId*
-}
-```
+### Data Migration
+- ✅ Prod data migrated to sandbox (scripts/migrate-data.py)
+- ✅ Overdue invoice auto-detection (dashboard marks past-due as OVERDUE)
+- ✅ Field mapping: taxRate→gstRate, taxAmount→gstAmount, terms→paymentTerms
+- ✅ Owner/userId remapped for sandbox user
+- ✅ 20 invoices, 66 line items, 72 expenses, 1 client copied
 
 ---
 
 ## 🗂️ File Structure
 
 ```
-cloudpro-invoice/
-├── app/
-│   ├── layout.tsx              ✅ AuthProvider + AmplifyConfig
-│   ├── page.tsx                ✅ Redirects to login
-│   ├── auth/
-│   │   ├── login/page.tsx      ✅ Real Cognito login
-│   │   └── signup/page.tsx     ✅ Real Cognito signup
-│   ├── dashboard/page.tsx      ✅ Dashboard with setup prompt
-│   └── settings/
-│       └── company/page.tsx    ✅ Company profile CRUD
-├── lib/
-│   ├── amplify-config.tsx      ✅ AWS configuration
-│   ├── auth-context.tsx        ✅ Real Cognito auth
-│   ├── gst-calculations.ts     ✅ GST utilities
-│   ├── local-db.ts             ⚠️  Mock DB (not used anymore)
-│   ├── mock-auth.ts            ⚠️  Mock auth (not used anymore)
-│   └── aws-clients.ts          ✅ AWS SDK clients
-├── amplify/
-│   ├── package.json            ✅ {"type": "module"}
-│   ├── tsconfig.json           ✅ ES2022 config
-│   ├── backend.ts              ✅ Auth + Data + Storage
-│   ├── auth/resource.ts        ✅ Cognito config
-│   ├── data/resource.ts        ✅ GraphQL schema
-│   └── storage/resource.ts     ✅ S3 config
-├── amplify_outputs.json        ✅ AWS config (auto-generated)
-├── .env.creds                  ✅ AWS credentials (not in git)
-├── .env.local                  ✅ Sydney region config
-├── CONTEXT.md                  ← This file
-├── DEV_GUIDE.md                ✅ Development instructions
-├── TEST_NOW.md                 ✅ Testing instructions
-├── BACKLOG.md                  ✅ Sprint tasks
-├── SPRINT1_DAY1.md             ✅ Day 1 summary
-└── START_HERE.md               ✅ Quick start
+app/
+├── auth/login, signup, forgot-password
+├── dashboard/
+│   ├── page.tsx                Dashboard with charts & metrics
+│   └── error.tsx               Dashboard error boundary
+├── invoices/
+│   ├── page.tsx                Invoice list
+│   ├── new/page.tsx            Create invoice (Zod validated)
+│   ├── [id]/page.tsx           Invoice detail + PDF + Email
+│   ├── [id]/edit/page.tsx      Invoice edit (responsive)
+│   └── error.tsx               Invoices error boundary
+├── clients/
+│   ├── page.tsx                Client list
+│   ├── new/page.tsx            Create client
+│   └── [id]/edit/page.tsx      Edit client
+├── expenses/
+│   ├── page.tsx                Expense list + thumbnails + month filter
+│   ├── new/page.tsx            Create expense (Zod validated)
+│   ├── [id]/edit/page.tsx      Edit expense + receipt upload
+│   └── error.tsx               Expenses error boundary
+├── reports/page.tsx            NZ Tax report + CSV exports
+├── settings/
+│   ├── layout.tsx              Settings tabs (Profile, Company, Email, Security)
+│   ├── profile/page.tsx        User profile
+│   ├── company/page.tsx        Company profile + logo upload
+│   ├── email/page.tsx          Email preferences & templates
+│   └── security/page.tsx       Password change
+└── error.tsx                   Root error boundary
+
+lib/
+├── auth-context.tsx            Cognito auth provider
+├── amplify-config.tsx          Amplify setup
+├── theme-context.tsx           Dark/light theme
+├── theme-classes.ts            Shared theme CSS classes
+├── gst-calculations.ts         GST math utilities
+├── generate-pdf.ts             Invoice PDF generation (with logo)
+├── csv-export.ts               CSV download utility
+├── validation.ts               Zod schemas (invoice, expense, client, company)
+├── aws-clients.ts              AWS SDK clients
+├── local-db.ts                 ⚠️ Legacy (unused)
+└── mock-auth.ts                ⚠️ Legacy (unused)
+
+components/
+└── AppLayout.tsx               Nav bar + hamburger menu + theme wrapper
+
+amplify/
+├── auth/resource.ts            Cognito config
+├── data/resource.ts            GraphQL schema (6 models + sendInvoiceEmail mutation)
+├── storage/resource.ts         S3 (invoices/{entity_id}/*, receipts/{entity_id}/*)
+├── functions/
+│   └── send-invoice-email/
+│       ├── resource.ts         Function definition
+│       └── handler.ts          SES raw email with PDF attachment
+└── backend.ts                  Backend entry point + SES IAM policy
+
+scripts/
+├── migrate-data.py             Prod→sandbox data migration
+├── setup-localstack.sh         LocalStack setup
+└── start-sandbox.sh            Sandbox launcher
 ```
 
 ---
 
-## 🎯 Current Status
+## 📋 Pre-Launch Checklist
 
-### Working Features
-✅ User signup/login/logout (AWS Cognito)  
-✅ Protected dashboard route  
-✅ Company profile CRUD (DynamoDB)  
-✅ Real AWS backend (Sydney region)  
-✅ Owner-based authorization  
-✅ GST calculations (15% NZ rate)  
-✅ Auto-generated GraphQL API  
+### Before Deployment
+- [ ] Verify SES sending domain/email in production
+- [ ] Request SES production access (exit sandbox)
+- [ ] Update SES_FROM_EMAIL env var to verified domain
+- [ ] End-to-end test: create invoice → email → PDF download
+- [ ] Test on mobile devices (iOS Safari, Android Chrome)
+- [ ] Remove legacy files (lib/local-db.ts, lib/mock-auth.ts)
+- [ ] Run `npm audit fix`
+- [ ] Deploy to production (`npx ampx pipeline-deploy`)
 
-### In Progress (Day 2)
-⏳ User profile (firstName, lastName)  
-⏳ Settings page navigation  
-
-### Not Yet Started
-❌ Client management  
-❌ Invoice creation  
-❌ Expense tracking  
-❌ PDF generation  
-❌ S3 file uploads  
-❌ Dashboard metrics (real data)  
-
----
-
-## 📋 Next Tasks (Day 2 Continued)
-
-### Priority 1: User Profile
-- [ ] Add firstName, lastName to signup
-- [ ] Create user profile page
-- [ ] Update user attributes in Cognito
-- [ ] Link user to company profile
-- [ ] Show user name in dashboard header
-
-### Priority 2: Settings Navigation
-- [ ] Create settings layout
-- [ ] Add navigation tabs (Profile, Company)
-- [ ] User settings page
-- [ ] Company settings page (already exists)
-
-### Priority 3: Dashboard Improvements
-- [ ] Check if company profile exists
-- [ ] Hide setup prompt if profile complete
-- [ ] Add navigation to clients/invoices
+### Long-Term Roadmap
+- [ ] Multi-user / team access (Cognito groups + companyId scoping)
+- [ ] Recurring invoices
+- [ ] Payment integration (Stripe)
+- [ ] Client portal (view/pay invoices)
 
 ---
 
 ## 🔧 Development Commands
 
 ```bash
-# AWS Sandbox (Terminal 1 - keep running)
-npm run sandbox          # Start Amplify sandbox (foreground)
-npm run sandbox:bg       # Start Amplify sandbox (background)
+# Terminal 1: AWS Sandbox
+npm run sandbox
 
-# Frontend (Terminal 2)
-npm run dev              # Start Next.js dev server
+# Terminal 2: Frontend
+npm run dev
 
 # Testing
-npm test                 # Run tests
-npm run test:watch       # Watch mode
-npm run test:coverage    # Coverage report
+npm test
+npm run test:watch
 
-# Deployment
+# Data migration
 source .env.creds && export AWS_REGION=ap-southeast-2
-npx ampx sandbox --once  # One-time deploy
+python3 scripts/migrate-data.py
 ```
-
----
-
-## 🚀 How to Resume Development
-
-### 1. Read This File
-Understand current state and what's built.
-
-### 2. Start AWS Sandbox (Terminal 1)
-```bash
-cd /Users/sdonthineni/projects/cloudpro-invoice
-npm run sandbox
-```
-Keep this running - it syncs AWS backend.
-
-### 3. Start Frontend (Terminal 2)
-```bash
-cd /Users/sdonthineni/projects/cloudpro-invoice
-npm run dev
-```
-Visit: http://localhost:3000
-
-### 4. Test Current Features
-- Sign up with email/password
-- Go to dashboard
-- Click "Set Up Company Profile"
-- Fill in company details
-- Save and verify data persists
-
-### 5. Continue Day 2 Tasks
-Pick up from "Next Tasks" section above.
-
----
-
-## 🐛 Known Issues
-
-### Minor
-- No firstName/lastName in signup yet
-- No settings navigation
-- Dashboard metrics show $0 (no real data yet)
-- No error toast notifications
-
-### To Fix Later
-- Add loading states everywhere
-- Add error boundaries
-- Add form validation with Zod
-- Add success/error toasts
-- Improve mobile responsiveness
-
----
-
-## 💡 Key Decisions & Learnings
-
-### Why Real AWS Now?
-- Faster to build with real backend
-- No migration needed later
-- Test auth/data flows early
-- Owner authorization works out of the box
-
-### Critical Fix for Amplify
-- Must add `amplify/package.json` with `{"type": "module"}`
-- Must use ES2022 module resolution in tsconfig
-- Cannot use `.default()` on enums in schema
-
-### Data Model Decisions
-- CompanyProfile separate from User (1:1 relationship)
-- Invoice stores company snapshot (for historical accuracy)
-- Owner-based auth on all models
-- Default currency: NZD, GST rate: 15%
-
----
-
-## 📚 Important Files to Reference
-
-### Planning
-- `BACKLOG.md` - All sprint tasks
-- `IMPLEMENTATION_PLAN.md` - 20-day breakdown
-- `ARCHITECTURE.md` - System design
-
-### Development
-- `DEV_GUIDE.md` - How to run everything
-- `TEST_NOW.md` - What to test
-- `lib/auth-context.tsx` - Auth implementation
-- `amplify/data/resource.ts` - Data schema
-
-### Testing
-- `TESTING.md` - Testing guide
-- `__tests__/unit/lib/gst-calculations.test.ts` - Example tests
-
----
-
-## 🎨 Design System
-
-### Colors
-- **Primary:** Indigo (#6366F1)
-- **Secondary:** Purple (#A855F7)
-- **Success:** Green (#10B981)
-- **Error:** Red (#EF4444)
-
-### Components
-- **Buttons:** `bg-indigo-600 hover:bg-indigo-700 rounded-lg px-6 py-3`
-- **Inputs:** `border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500`
-- **Cards:** `bg-white rounded-xl shadow-sm border border-gray-200 p-6`
-
----
-
-## 📊 Progress Tracking
-
-### Sprint 1 (Days 1-5): Foundation & Auth
-- ✅ Day 1: Auth setup, AWS deployment (100%)
-- ⏳ Day 2: Company profile, user profile (50%)
-- ⏳ Day 3: Settings, polish (0%)
-- ⏳ Day 4: Testing, fixes (0%)
-- ⏳ Day 5: Sprint review (0%)
-
-**Overall Progress:** 30% of Sprint 1 complete
-
-### Timeline
-- **Today:** March 11, 2026
-- **Launch:** April 1, 2026
-- **Days Remaining:** 19 days
 
 ---
 
 ## 🔐 AWS Configuration
 
-### Region
-- **Primary:** ap-southeast-2 (Sydney)
-
-### Services Deployed
-- **Cognito:** User Pool + Identity Pool
-- **AppSync:** GraphQL API
-- **DynamoDB:** 6 tables (User, Client, Invoice, InvoiceItem, Expense, CompanyProfile)
-- **S3:** Storage buckets
-- **IAM:** Roles and policies
-
-### Credentials
-- Stored in `.env.creds` (not in git)
-- Session token expires - need to refresh periodically
+- **Region:** ap-southeast-2 (Sydney)
+- **Services:** Cognito, AppSync, DynamoDB (6 tables), S3, SES, Lambda, IAM
+- **Sandbox API ID:** kdhpyo3bhnenbm2vgxgy2qo24u
+- **Prod API ID:** gpvtefxrxvgbbj2kqzt5ri7x5e
+- **Credentials:** `.env.creds` (session token, not in git)
 
 ---
 
-## 📝 Notes for Next Session
+## 📊 Sprint Progress
 
-### Session Workflow
-1. Read CONTEXT.md (this file)
-2. Start sandbox: `npm run sandbox`
-3. Start frontend: `npm run dev`
-4. Test current features
-5. Continue Day 2 tasks
-6. Commit progress
-7. Update CONTEXT.md
+| Sprint | Planned | Status |
+|--------|---------|--------|
+| 1: Foundation (Days 1-5) | Auth, models, company profile | ✅ Complete |
+| 2: Clients & Invoices (Days 6-10) | Client CRUD, invoice creation | ✅ Complete |
+| 3: PDF & Expenses (Days 11-15) | PDF gen, expense tracking | ✅ Complete |
+| 4: Dashboard & Launch (Days 16-20) | Reporting, polish, deploy | ✅ Complete |
 
-### Git Workflow
-```bash
-git add -A
-git commit -m "feat: [description]"
-git push origin main
-```
-
-### After Each Logical Work
-1. Commit code with clear message
-2. Update CONTEXT.md with progress
-3. Create/update day summary if needed
-
----
-
-## ✅ Ready to Continue!
-
-**Current State:** AWS deployed, Company Profile working  
-**Next:** User profile + Settings navigation  
-**Then:** Client management → Invoice creation  
-
-**Everything is connected to real AWS!** 🚀
-
-### Amplify Schema (`amplify/data/resource.ts`)
-```typescript
-CompanyProfile {
-  companyName, companyEmail, companyPhone, companyAddress
-  gstNumber, bankAccount
-  defaultCurrency: 'NZD'
-  defaultGstRate: 15
-  logoUrl
-}
-
-User {
-  email, firstName, lastName
-  companyProfile (hasOne)
-}
-
-Client {
-  name, email, phone
-  address, city, state, postalCode, country
-}
-
-Invoice {
-  invoiceNumber, issueDate, dueDate
-  clientName, clientEmail, clientAddress
-  subtotal, gstRate, gstAmount, total
-  currency: 'NZD'
-  status: DRAFT | SENT | PAID | OVERDUE | CANCELLED
-  items (hasMany InvoiceItem)
-}
-
-InvoiceItem {
-  description, wbs, quantity, unitPrice, amount
-}
-
-Expense {
-  description, category
-  amount, amountExGst, gstAmount, gstClaimable
-  date, receiptUrl, status
-}
-```
-
----
-
-## 🗂️ File Structure
-
-```
-cloudpro-invoice/
-├── app/
-│   ├── layout.tsx              ✅ AuthProvider added
-│   ├── page.tsx                ✅ Redirects to login
-│   ├── auth/
-│   │   ├── login/page.tsx      ✅ Login form
-│   │   └── signup/page.tsx     ✅ Signup form
-│   └── dashboard/page.tsx      ✅ Basic dashboard
-├── lib/
-│   ├── auth-context.tsx        ✅ Auth hooks
-│   ├── mock-auth.ts            ✅ Mock authentication
-│   ├── local-db.ts             ✅ Mock database
-│   ├── gst-calculations.ts     ✅ GST utilities
-│   └── aws-clients.ts          ✅ AWS client setup (unused)
-├── amplify/
-│   ├── data/resource.ts        ✅ Schema defined
-│   ├── auth/resource.ts        ✅ Cognito config
-│   ├── storage/resource.ts     ✅ S3 config
-│   └── backend.ts              ✅ Backend config
-├── __tests__/
-│   └── unit/lib/
-│       └── gst-calculations.test.ts ✅ 7 tests passing
-├── BACKLOG.md                  ✅ 20-day sprint plan
-├── ARCHITECTURE.md             ✅ System design
-├── PRODUCT_VISION.md           ✅ Vision & roadmap
-├── IMPLEMENTATION_PLAN.md      ✅ Sprint breakdown
-├── DESIGN_SYSTEM.md            ✅ UI guidelines
-├── TESTING.md                  ✅ Testing guide
-├── SPRINT1_DAY1.md             ✅ Day 1 summary
-└── CONTEXT.md                  ← This file
-```
-
----
-
-## 🎯 Current Status
-
-### Working Features
-✅ User signup/login/logout (AWS Cognito)  
-✅ Protected dashboard route  
-✅ Company profile CRUD (DynamoDB)  
-✅ Real AWS backend (Sydney region)  
-✅ Owner-based authorization  
-✅ GST calculations (15% NZ rate)  
-
-### Not Yet Implemented
-❌ User profile (firstName, lastName)  
-❌ Client management  
-❌ Invoice creation  
-❌ Expense tracking  
-❌ PDF generation  
-❌ S3 file uploads  
-
----
-
-## 📋 Next Tasks (Sprint 1 Day 2)
-
-### Priority 1: Company Profile
-- [ ] Create company profile form
-- [ ] Fields: companyName, email, phone, address
-- [ ] Add GST number field
-- [ ] Add bank account field
-- [ ] Add default currency (NZD)
-- [ ] Add default GST rate (15%)
-- [ ] Save to local DB
-- [ ] Link to user
-
-### Priority 2: User Profile
-- [ ] Add firstName, lastName to user
-- [ ] Create user profile page
-- [ ] Link user to company profile
-- [ ] Update auth context
-
-### Priority 3: Settings Page
-- [ ] Create settings layout
-- [ ] User settings section
-- [ ] Company settings section
-- [ ] Navigation between sections
-
----
-
-## 🔧 Development Commands
-
-```bash
-# Development
-npm run dev                     # Start Next.js dev server
-
-# Testing
-npm test                        # Run all tests
-npm run test:watch              # Watch mode
-npm run test:coverage           # Coverage report
-
-# LocalStack (optional, not required for current dev)
-npm run localstack:start        # Start LocalStack
-npm run localstack:setup        # Create AWS resources
-npm run localstack:stop         # Stop LocalStack
-```
-
----
-
-## 🎨 Design System
-
-### Colors
-- **Primary:** Indigo (#6366F1)
-- **Secondary:** Purple (#A855F7)
-- **Success:** Green (#10B981)
-- **Error:** Red (#EF4444)
-
-### Components
-- **Buttons:** `bg-indigo-600 hover:bg-indigo-700 rounded-lg px-6 py-3`
-- **Inputs:** `border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500`
-- **Cards:** `bg-white rounded-xl shadow-sm border border-gray-200 p-6`
-
----
-
-## 🐛 Known Issues
-
-### Minor
-- Data lost on page refresh (in-memory only)
-- No email validation
-- No password strength indicator
-- No loading states on forms
-
-### To Fix Later
-- Add localStorage persistence
-- Add proper validation
-- Add error boundaries
-- Add toast notifications
-
----
-
-## 💡 Key Decisions
-
-### Why Local Mocks?
-- **Fast iteration** - No AWS setup during development
-- **No Docker** - Works without LocalStack
-- **Easy testing** - Simple in-memory data
-- **Later migration** - Easy to swap with real AWS Amplify
-
-### When to Switch to AWS?
-- After MVP features are built and tested locally
-- When ready for production deployment
-- When need real authentication (Cognito)
-- When need persistent storage (DynamoDB)
-
----
-
-## 📚 Important Files to Reference
-
-### Planning
-- `BACKLOG.md` - Sprint tasks and priorities
-- `IMPLEMENTATION_PLAN.md` - Day-by-day breakdown
-- `ARCHITECTURE.md` - System design
-
-### Development
-- `lib/auth-context.tsx` - Auth state management
-- `lib/local-db.ts` - Data operations
-- `amplify/data/resource.ts` - Data schema
-
-### Testing
-- `TESTING.md` - Testing guide
-- `__tests__/unit/lib/gst-calculations.test.ts` - Example tests
-
----
-
-## 🚀 Quick Start for Next Session
-
-1. **Review this file** - Understand current state
-2. **Check SPRINT1_DAY1.md** - See what was completed
-3. **Check BACKLOG.md** - See next tasks
-4. **Start coding** - Continue from Day 2 tasks
-5. **Update this file** - After completing logical work
-
----
-
-## 📝 Notes for Future Sessions
-
-### Session Workflow
-1. Read CONTEXT.md (this file)
-2. Review last day's summary (SPRINT1_DAYX.md)
-3. Check BACKLOG.md for next tasks
-4. Build features
-5. Test locally (npm run dev)
-6. Commit progress
-7. Update CONTEXT.md
-8. Create day summary
-
-### Git Workflow
-```bash
-git add -A
-git commit -m "feat: [description]"
-git push origin main
-```
-
----
-
-**Ready to continue Sprint 1 Day 2!** 🎯
+**All planned features complete. 17 days remaining for testing, polish, and deployment.**

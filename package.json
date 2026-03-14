@@ -20,16 +20,20 @@
   "dependencies": {
     "@aws-amplify/backend": "^1.21.0",
     "@aws-amplify/backend-cli": "^1.8.2",
+    "@aws-sdk/client-sesv2": "^3.1009.0",
     "@radix-ui/react-slot": "^1.2.4",
     "aws-amplify": "^6.16.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.577.0",
     "next": "14.2.35",
     "react": "^18",
     "react-dom": "^18",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "zod": "^3.25.17"
   },
   "devDependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.1006.0",
