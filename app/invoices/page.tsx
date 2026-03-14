@@ -12,6 +12,7 @@ export default function InvoicesPage() {
   const { theme } = useTheme();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,10 +31,16 @@ export default function InvoicesPage() {
     }
   };
 
-  const filteredInvoices = invoices.filter(inv =>
-    inv.invoiceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    inv.clientName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredInvoices = invoices
+    .filter(inv =>
+      inv.invoiceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inv.clientName?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const da = new Date(a.issueDate).getTime();
+      const db = new Date(b.issueDate).getTime();
+      return sortDir === 'desc' ? db - da : da - db;
+    });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -112,8 +119,8 @@ export default function InvoicesPage() {
                   <th className={theme === 'dark' ? 'px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'}>
                     Client
                   </th>
-                  <th className={theme === 'dark' ? 'px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'}>
-                    Date
+                  <th onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')} className={`cursor-pointer select-none ${theme === 'dark' ? 'px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'}`}>
+                    Date {sortDir === 'desc' ? '↓' : '↑'}
                   </th>
                   <th className={theme === 'dark' ? 'px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'}>
                     Amount

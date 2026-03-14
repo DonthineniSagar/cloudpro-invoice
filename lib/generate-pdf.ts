@@ -80,7 +80,7 @@ export function generateInvoicePDF(invoice: InvoiceData): jsPDF {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...grey);
-  for (const line of [invoice.companyName, invoice.companyAddress, invoice.companyPhone, invoice.companyEmail].filter(Boolean) as string[]) {
+  for (const line of [invoice.companyName, invoice.companyAddress, invoice.companyEmail].filter(Boolean) as string[]) {
     if (line === invoice.companyName) doc.setFont('helvetica', 'bold');
     else doc.setFont('helvetica', 'normal');
     const wrapped = doc.splitTextToSize(line, addrMaxW) as string[];
@@ -219,10 +219,13 @@ export function generateInvoicePDF(invoice: InvoiceData): jsPDF {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...grey);
-  const payToMaxW = pw / 2 - m - 5;
-  if (invoice.companyName) { doc.text(`To: ${invoice.companyName}`, m, py); py += 5; }
+  const payToMaxW = pw / 2 - m - 10;
+  if (invoice.companyName) {
+    const nameLines = doc.splitTextToSize(`To: ${invoice.companyName}`, payToMaxW) as string[];
+    for (const nl of nameLines) { doc.text(nl, m, py); py += 5; }
+  }
   if (invoice.companyAddress) {
-    const addrLines = doc.splitTextToSize(invoice.companyAddress, payToMaxW) as string[];
+    const addrLines = doc.splitTextToSize(invoice.companyAddress, payToMaxW - 4) as string[];
     for (const al of addrLines) { doc.text(`  ${al}`, m, py); py += 5; }
   }
 
