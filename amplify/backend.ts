@@ -17,7 +17,7 @@ backend.sendInvoiceEmail.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
     actions: ['ses:SendEmail', 'ses:SendRawEmail'],
-    resources: ['arn:aws:ses:ap-southeast-2:*:identity/cloudpro-digital.co.nz'],
+    resources: ['arn:aws:ses:ap-southeast-2:*:identity/*'],
   })
 );
 

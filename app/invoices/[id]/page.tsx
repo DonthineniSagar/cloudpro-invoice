@@ -96,7 +96,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
     });
   };
 
-  const canEmail = invoice && ['DRAFT', 'OVERDUE'].includes(invoice?.status);
+  const canEmail = invoice && ['DRAFT', 'OVERDUE'].includes(invoice?.status) && invoice.pdfUrl;
 
   const openEmailDialog = async () => {
     if (!invoice?.clientEmail) { toast.error('Client has no email address'); return; }
