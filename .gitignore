@@ -44,4 +44,4 @@ localstack-data/
 
 # Misc
 *.tsbuildinfo
-.cache/
+.cache/*.pdf
