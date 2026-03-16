@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         firstName: attributes.given_name,
         lastName: attributes.family_name,
       });
-    } catch (error) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -59,7 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     await checkUser();
-    return result;
   }
 
   async function handleSignUp(email: string, password: string, firstName: string, lastName: string) {

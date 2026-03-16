@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 
@@ -35,7 +36,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-8">
               <Link href="/dashboard" className="flex items-center gap-3">
-                <img src="/cloudpro-logo.png" alt="CloudPro" className="h-8 w-8" />
+                <Image src="/cloudpro-logo.png" alt="CloudPro" width={32} height={32} className="h-8 w-8" />
                 <span className={dark ? 'text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent' : 'text-xl font-bold text-gray-900'}>
                   CloudPro
                 </span>

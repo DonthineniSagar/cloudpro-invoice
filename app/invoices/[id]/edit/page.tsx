@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { calculateGST, calculateTotal } from '@/lib/gst-calculations';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
+import { useToast } from '@/lib/toast-context';
 
 type LineItem = {
   id: string;
@@ -22,6 +23,7 @@ type LineItem = {
 export default function EditInvoicePage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { theme } = useTheme();
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [clients, setClients] = useState<any[]>([]);

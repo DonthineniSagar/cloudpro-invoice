@@ -24,8 +24,8 @@ export default function SecurityPage() {
       await updatePassword({ oldPassword, newPassword });
       setMessage('Password updated successfully!');
       setOldPassword(''); setNewPassword(''); setConfirmPassword('');
-    } catch (error: any) {
-      setMessage(error?.message || 'Failed to update password');
+    } catch (error: unknown) {
+      setMessage(error instanceof Error ? error.message : 'Failed to update password');
     } finally {
       setLoading(false);
     }

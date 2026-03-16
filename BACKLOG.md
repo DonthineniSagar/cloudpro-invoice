@@ -6,20 +6,23 @@
 
 ---
 
-## 🐛 Bug Fixes & Tech Debt (P0)
+## ✅ Bug Fixes & Tech Debt — DONE
 
-- [ ] Fix missing `toast` import in `app/invoices/[id]/edit/page.tsx:222` — uses `toast.error()` but never imports `useToast`
-- [ ] Fix `SignInOutput` type mismatch in `lib/auth-context.tsx:88`
-- [ ] Pre-existing ESLint warnings: unused vars, `any` types in generate-pdf.ts, auth-context.tsx, settings pages
-- [ ] `<img>` tag in `AppLayout.tsx` — replace with `next/image` for optimised loading
-- [ ] Amplify Node 16 deprecation notice — ensure Lambda runtime is Node 20+
+- [x] Fix missing `useToast` import in `app/invoices/[id]/edit/page.tsx`
+- [x] Fix `SignInOutput` return type mismatch in `lib/auth-context.tsx`
+- [x] Fix unused `error` variable in `lib/auth-context.tsx`
+- [x] Fix ESLint `any` types in `generate-pdf.ts` and `settings/security`
+- [x] Replace `<img>` with `next/image` in `AppLayout.tsx`
+- [x] Set Lambda runtime to Node 20
+- [x] Custom 404 page
+- [x] Favicon updated to CloudPro logo
 
 ---
 
 ## 🚀 Pre-Launch (Before April 1)
 
 ### Deployment & Infrastructure
-- [ ] Connect GitHub repo (`main` branch) to Amplify app `d1tnysmm95p3te` via Console
+- [ ] Connect GitHub repo (`main` branch) to Amplify app via Console
 - [ ] Verify Amplify CI/CD pipeline builds and deploys successfully
 - [ ] Request SES production access (exit sandbox mode)
 - [ ] Set `SES_FROM_EMAIL=noreply@cloudpro-digital.co.nz` for prod environment
@@ -31,142 +34,223 @@
 ### Quick Wins
 - [ ] Add loading skeletons on dashboard, invoice list, client list
 - [ ] Add empty state illustrations (no invoices yet, no clients yet)
-- [ ] Favicon update — use CloudPro logo instead of Next.js default
 - [ ] Meta tags / Open Graph for landing page SEO
-- [ ] 404 page — custom not-found page
 
 ---
 
 ## 📋 Phase 2 — Post-Launch (April–May 2026)
 
-### P1 — High Value
+### 2.1 Payment Reminders & Overdue Automation
+Auto-chase overdue invoices without manual effort.
 
-#### Payment Reminders & Overdue Automation
-- [ ] Auto-send reminder email X days before due date
-- [ ] Auto-mark invoices as OVERDUE when past due (cron/EventBridge)
-- [ ] Overdue notification email to business owner
-- [ ] Configurable reminder schedule (7 days, 3 days, 1 day before)
+**Implementation:**
+- EventBridge scheduled rule (daily at 9am NZST)
+- Lambda function scans invoices: marks past-due as OVERDUE, sends reminders
+- Configurable reminder schedule stored in CompanyProfile
 
-#### Recurring Invoices
-- [ ] Recurring schedule (weekly, fortnightly, monthly, quarterly)
-- [ ] Auto-generate draft invoice from template
-- [ ] Recurring invoice list view
-- [ ] Pause/resume recurring invoices
+**Tasks:**
+- [ ] Add `reminderSchedule` field to CompanyProfile (JSON: `{daysBefore: [7,3,1], daysAfter: [1,7,14]}`)
+- [ ] Create `process-overdue` Lambda (EventBridge → scan DynamoDB → update status)
+- [ ] Send reminder email via SES (reuse existing email Lambda pattern)
+- [ ] Add reminder history to Invoice model (`lastReminderSent`, `reminderCount`)
+- [ ] Settings UI: configure reminder days, enable/disable auto-reminders
+- [ ] Dashboard: overdue count badge, "Send Reminder" quick action on invoice detail
 
-#### Invoice Templates
-- [ ] Multiple PDF templates (modern, classic, minimal)
-- [ ] Template preview in settings
-- [ ] Custom colour scheme per template
-- [ ] Custom footer text / terms
+---
 
-#### Client Portal
-- [ ] Public invoice view link (no login required)
-- [ ] Client can download PDF from portal
-- [ ] Payment status visible to client
-- [ ] Client invoice history page
+### 2.2 Recurring Invoices
+Set-and-forget billing for retainer clients.
 
-### P2 — Nice to Have
+**Implementation:**
+- New `RecurringInvoice` model (template + schedule)
+- EventBridge cron triggers Lambda to generate draft invoices from templates
+- Supports weekly, fortnightly, monthly, quarterly, annually
 
-#### Payment Integration (Stripe)
-- [ ] Stripe Connect onboarding
-- [ ] Pay Now button on client portal
-- [ ] Payment confirmation auto-updates invoice status to PAID
-- [ ] Payment receipt email
-- [ ] Partial payments support
+**Tasks:**
+- [ ] Add `RecurringInvoice` model (clientId, lineItems, frequency, nextDate, endDate, active)
+- [ ] Create `generate-recurring` Lambda (EventBridge daily → check nextDate → create Invoice draft)
+- [ ] Recurring invoice form UI (select client, line items, frequency, start/end date)
+- [ ] Recurring invoice list view with status (Active, Paused, Ended)
+- [ ] Pause/resume toggle
+- [ ] Auto-advance `nextDate` after each generation
+- [ ] Email notification when recurring invoice is generated
 
-#### Receipt OCR (AWS Textract)
-- [ ] Upload receipt photo → auto-extract amount, date, vendor
+---
+
+### 2.3 Invoice Templates
+Multiple professional PDF layouts.
+
+**Implementation:**
+- Template definitions in code (no DB needed for MVP)
+- Template selector on company settings + invoice detail page
+- Each template = different `generate-pdf` layout function
+
+**Tasks:**
+- [ ] Create 3 templates: Modern (current), Classic (serif fonts, traditional), Minimal (clean, no borders)
+- [ ] Template preview thumbnails in settings
+- [ ] Add `defaultTemplate` field to CompanyProfile
+- [ ] Template selector dropdown on invoice detail (override per invoice)
+- [ ] Custom accent colour picker (stored in CompanyProfile)
+- [ ] Custom footer text field (payment terms, legal notices)
+
+---
+
+### 2.4 Client Portal
+Let clients view and download their invoices without logging in.
+
+**Implementation:**
+- Public route `/portal/[token]` — token = signed JWT with invoiceId + expiry
+- No auth required — token-based access
+- Read-only view of invoice + PDF download
+
+**Tasks:**
+- [ ] Generate unique portal token per invoice (JWT signed with app secret, 90-day expiry)
+- [ ] Add `portalToken` field to Invoice model
+- [ ] Public `/portal/[token]` page — verify token, display invoice details
+- [ ] PDF download button on portal page (pre-signed S3 URL)
+- [ ] "View Online" link in email template
+- [ ] Portal shows payment status (Paid/Unpaid/Overdue)
+- [ ] Optional: client can mark as "Disputed" with a note
+
+---
+
+### 2.5 Payment Integration (Stripe)
+Get paid directly from invoices.
+
+**Implementation:**
+- Stripe Checkout session created per invoice
+- Webhook Lambda listens for `checkout.session.completed` → marks invoice PAID
+- Stripe Connect for receiving payments
+
+**Tasks:**
+- [ ] Stripe Connect onboarding flow in settings
+- [ ] Add `stripeAccountId` to CompanyProfile, `stripeSessionId` to Invoice
+- [ ] Create `create-checkout` Lambda (generates Stripe Checkout session)
+- [ ] "Pay Now" button on client portal page
+- [ ] Create `stripe-webhook` Lambda (listens for payment events)
+- [ ] Auto-update invoice status to PAID on successful payment
+- [ ] Payment receipt email to client
+- [ ] Partial payments support (track `amountPaid` on Invoice)
+- [ ] Stripe dashboard link in settings
+
+---
+
+### 2.6 Receipt OCR (AWS Textract)
+Snap a receipt, auto-fill the expense.
+
+**Implementation:**
+- Upload receipt image → S3 → trigger Textract `AnalyzeExpense`
+- Parse response for total, date, vendor name
+- Pre-fill expense form, user confirms/edits
+
+**Tasks:**
+- [ ] Create `process-receipt` Lambda (S3 trigger → Textract AnalyzeExpense)
+- [ ] Parse Textract response: extract TOTAL, DATE, VENDOR_NAME
+- [ ] Store OCR results in new `ReceiptOCR` model (invoiceId, rawResponse, extracted fields)
 - [ ] Pre-fill expense form from OCR results
-- [ ] Confidence score display
-- [ ] Manual correction UI
+- [ ] Confidence score display (highlight low-confidence fields in yellow)
+- [ ] Manual correction UI (edit extracted values before saving)
+- [ ] Support JPEG, PNG, PDF receipt formats
 
-#### Advanced Reporting
-- [ ] Profit & loss statement (printable)
-- [ ] Aged receivables report (30/60/90 days)
-- [ ] Cash flow forecast (based on outstanding invoices + recurring)
-- [ ] Year-over-year comparison
-- [ ] Export to PDF (reports)
+---
 
-#### Multi-Currency
-- [ ] Support AUD, USD, GBP, EUR alongside NZD
-- [ ] Exchange rate lookup (at invoice date)
-- [ ] Currency selector on invoice form
-- [ ] Reporting in base currency (NZD)
+### 2.7 Advanced Reporting
+Deeper financial insights for tax time and business planning.
+
+**Tasks:**
+- [ ] Profit & loss statement (printable PDF)
+- [ ] Aged receivables report (current, 30, 60, 90+ days buckets)
+- [ ] Cash flow forecast (outstanding invoices by due date + recurring projections)
+- [ ] Year-over-year comparison (revenue, expenses, profit)
+- [ ] Export reports to PDF
+- [ ] Monthly email summary (Lambda + EventBridge, first of month)
+
+---
+
+### 2.8 Multi-Currency
+Support international clients.
+
+**Tasks:**
+- [ ] Add `currency` field to Client model (default NZD)
+- [ ] Currency selector on invoice form (NZD, AUD, USD, GBP, EUR)
+- [ ] Exchange rate lookup API (at invoice date) — use exchangerate.host or similar
+- [ ] Store `exchangeRate` and `baseCurrencyTotal` on Invoice
+- [ ] Dashboard reporting always in NZD (converted at invoice exchange rate)
+- [ ] Currency symbol formatting throughout UI
+
+---
+
+### 2.9 Mobile App (PWA)
+Full mobile experience without app store.
+
+**Implementation:**
+- Progressive Web App — add `manifest.json`, service worker, install prompt
+- Optimise existing responsive UI for touch interactions
+- Camera access for receipt capture
+
+**Tasks:**
+- [ ] Add `manifest.json` with app name, icons, theme colour, start URL
+- [ ] Add service worker for offline caching (next-pwa or workbox)
+- [ ] App install prompt banner on mobile
+- [ ] Camera capture button on expense form (receipt photo)
+- [ ] Push notifications via Web Push API (payment received, invoice overdue)
+- [ ] Touch-optimised: larger tap targets, swipe actions on lists
+- [ ] Splash screen with CloudPro branding
+- [ ] Test on iOS Safari, Android Chrome, Samsung Internet
 
 ---
 
 ## 📋 Phase 3 — Growth (June+ 2026)
 
-### P3 — Scale
-
-#### Team & Multi-User
+### Team & Multi-User
 - [ ] Invite team members (Cognito groups)
 - [ ] Role-based access: Admin, Accountant, Viewer
 - [ ] Company-scoped data (companyId on all models)
 - [ ] Activity log / audit trail
 
-#### Integrations
+### Integrations
 - [ ] Xero export (CSV/API)
 - [ ] QuickBooks export
 - [ ] Google Sheets sync
 - [ ] Zapier webhooks (invoice created, paid, overdue)
 
-#### Time Tracking
+### Time Tracking
 - [ ] Timer per project/client
 - [ ] Timesheet entries (date, hours, description, project)
 - [ ] Auto-generate invoice from timesheet
 - [ ] Hourly rate per client/project
 
-#### Mileage Tracking
+### Mileage Tracking
 - [ ] Log trips (date, distance, purpose)
 - [ ] IRD rate auto-calculation
 - [ ] Auto-create expense from mileage
 - [ ] Monthly mileage summary
 
-#### Mobile App
-- [ ] React Native or PWA
-- [ ] Camera receipt capture
-- [ ] Push notifications (payment received, invoice overdue)
-- [ ] Quick invoice creation
-
 ---
 
-## 🔒 Security & Compliance Backlog
+## 🔒 Security & Compliance
 
 - [ ] Rate limiting on API (AppSync WAF)
 - [ ] Input sanitisation audit (XSS prevention)
 - [ ] GDPR/Privacy Act compliance (data export, account deletion)
 - [ ] S3 bucket lifecycle policy (archive old PDFs after 7 years per IRD)
 - [ ] CloudWatch alarms (Lambda errors, API latency)
-- [ ] Backup strategy for DynamoDB (point-in-time recovery)
+- [ ] DynamoDB point-in-time recovery
 
 ---
 
-## 📊 Performance Backlog
+## 📊 Performance
 
-- [ ] Lazy load charts on dashboard (reduce initial bundle)
+- [ ] Lazy load charts on dashboard (dynamic import)
 - [ ] Paginate invoice/expense lists (currently loads all)
-- [ ] Image optimisation — `next/image` for logo, receipts
-- [ ] Bundle analysis — `/invoices/[id]` page is 340kB first load (PDF lib)
-- [ ] Consider code-splitting generate-pdf.ts (dynamic import)
+- [ ] Bundle analysis — `/invoices/[id]` is 345kB first load (PDF lib)
+- [ ] Code-split generate-pdf.ts (dynamic import on demand)
 
 ---
 
 ## ✅ Completed (MVP)
 
-All MVP features shipped — see [CONTEXT.md](./CONTEXT.md) for full list:
-- Auth (Cognito signup/login/forgot password)
-- Company profile with logo upload
-- Client CRUD
-- Invoice CRUD with line items + WBS
-- Professional NZ tax invoice PDF generation
-- Email sending via SES (with review dialog)
-- Expense tracking with receipt upload + GST calculations
-- Dashboard with charts & metrics
-- NZ tax reports with CSV export
-- Dark/light theme
-- Mobile responsive
-- Owner-based data security
+All MVP features shipped — see [CONTEXT.md](./CONTEXT.md) for full list.
 
 ---
 

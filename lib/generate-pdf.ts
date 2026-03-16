@@ -137,14 +137,14 @@ export function generateInvoicePDF(invoice: InvoiceData): jsPDF {
     },
     margin: { left: m, right: m },
     theme: 'plain',
-    didParseCell: (data) => {
+    didParseCell: (data: { section: string; cell: { styles: Record<string, unknown> } }) => {
       if (data.section === 'head') {
-        data.cell.styles.lineWidth = { bottom: 0.3, top: 0, left: 0, right: 0 } as any;
-        data.cell.styles.lineColor = [0, 0, 0] as any;
+        data.cell.styles.lineWidth = { bottom: 0.3, top: 0, left: 0, right: 0 };
+        data.cell.styles.lineColor = [0, 0, 0];
       }
       if (data.section === 'body') {
-        data.cell.styles.lineWidth = { bottom: 0.15, top: 0, left: 0, right: 0 } as any;
-        data.cell.styles.lineColor = [200, 200, 200] as any;
+        data.cell.styles.lineWidth = { bottom: 0.15, top: 0, left: 0, right: 0 };
+        data.cell.styles.lineColor = [200, 200, 200];
       }
     },
   });
