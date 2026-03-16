@@ -1,325 +1,174 @@
-# CloudPro Invoice - Product Backlog
+# CloudPro Invoice - Feature Backlog
 
-**Launch Date:** April 1, 2026 (20 days)  
-**Last Updated:** March 11, 2026  
-**Focus:** Basics - Invoice, Client, Expenses, User Settings, Enriched Reporting
-
----
-
-## 🎯 MVP Scope - Core Features Only
-
-### ✅ 1. Company Profile & Settings
-**Priority:** P0 - Must have for invoice generation
-
-- [ ] Company profile model (name, email, phone, address)
-- [ ] GST number field
-- [ ] Bank account field
-- [ ] Default currency (NZD)
-- [ ] Default GST rate (15%)
-- [ ] Logo upload to S3
-- [ ] Settings page UI
-- [ ] Auto-populate invoice from profile
-
-**Why:** Invoice needs company details - fetch from profile instead of manual entry
+**Launch Date:** April 1, 2026  
+**Last Updated:** March 16, 2026  
+**Status:** MVP complete. Deploying to AWS Amplify. Testing in progress.
 
 ---
 
-### ✅ 2. Client Management
-**Priority:** P0 - Core feature
+## 🐛 Bug Fixes & Tech Debt (P0)
 
-- [ ] Create client (name, email, phone, address)
-- [ ] List clients with search
-- [ ] View client details
-- [ ] Edit client
-- [ ] Delete client (soft delete)
-- [ ] Client selector in invoice form
-- [ ] Auto-populate client details in invoice
-
-**Fields:**
-- Name, Email, Phone
-- Address, City, State, Postal Code
-- Country (default: New Zealand)
-- Notes
+- [ ] Fix missing `toast` import in `app/invoices/[id]/edit/page.tsx:222` — uses `toast.error()` but never imports `useToast`
+- [ ] Fix `SignInOutput` type mismatch in `lib/auth-context.tsx:88`
+- [ ] Pre-existing ESLint warnings: unused vars, `any` types in generate-pdf.ts, auth-context.tsx, settings pages
+- [ ] `<img>` tag in `AppLayout.tsx` — replace with `next/image` for optimised loading
+- [ ] Amplify Node 16 deprecation notice — ensure Lambda runtime is Node 20+
 
 ---
 
-### ✅ 3. Invoice Management
-**Priority:** P0 - Core feature
+## 🚀 Pre-Launch (Before April 1)
 
-#### Invoice Fields
-- [ ] Invoice number (auto-generated: INV-YYMM-XXX)
-- [ ] Client selection (dropdown)
-- [ ] Issue date (default: today)
-- [ ] Due date (default: +30 days)
-- [ ] Payment terms (default: "Due within 30 days")
-- [ ] Currency (default: NZD)
-- [ ] Status (DRAFT, SENT, PAID, OVERDUE, CANCELLED)
+### Deployment & Infrastructure
+- [ ] Connect GitHub repo (`main` branch) to Amplify app `d1tnysmm95p3te` via Console
+- [ ] Verify Amplify CI/CD pipeline builds and deploys successfully
+- [ ] Request SES production access (exit sandbox mode)
+- [ ] Set `SES_FROM_EMAIL=noreply@cloudpro-digital.co.nz` for prod environment
+- [ ] End-to-end test on deployed URL: signup → create invoice → PDF → email
+- [ ] Test on mobile (iOS Safari, Android Chrome)
+- [ ] Set up custom domain (if applicable)
+- [ ] Create `prod` branch on GitHub, connect to Amplify as production environment
 
-#### Line Items with WBS
-- [ ] Description (required)
-- [ ] **WBS** (Work Breakdown Structure / Project code)
-- [ ] Quantity (default: 1)
-- [ ] Unit Price (rate)
-- [ ] Amount (auto-calculated: qty × price)
-- [ ] Add/remove line items dynamically
-
-#### Calculations
-- [ ] Subtotal (sum of all line items)
-- [ ] GST Rate (default: 15% from company profile)
-- [ ] GST Amount (subtotal × 15%)
-- [ ] Total (subtotal + GST)
-
-#### Company Details (Auto-populated from Profile)
-- [ ] Company name
-- [ ] Company email
-- [ ] Company phone
-- [ ] Company address
-- [ ] GST number
-- [ ] Bank account
-
-#### Actions
-- [ ] Save as draft
-- [ ] Mark as sent
-- [ ] Mark as paid (with payment date)
-- [ ] Generate PDF
-- [ ] Download PDF
-- [ ] Delete invoice
+### Quick Wins
+- [ ] Add loading skeletons on dashboard, invoice list, client list
+- [ ] Add empty state illustrations (no invoices yet, no clients yet)
+- [ ] Favicon update — use CloudPro logo instead of Next.js default
+- [ ] Meta tags / Open Graph for landing page SEO
+- [ ] 404 page — custom not-found page
 
 ---
 
-### ✅ 4. Invoice PDF Generation
-**Priority:** P0 - Must have
+## 📋 Phase 2 — Post-Launch (April–May 2026)
 
-- [ ] Professional PDF template
-- [ ] Company logo
-- [ ] Company details (from profile)
-- [ ] Client details
-- [ ] Invoice number, dates
-- [ ] Line items table with WBS column
-- [ ] Subtotal, GST, Total
-- [ ] Payment terms
-- [ ] Bank account details
-- [ ] GST number
-- [ ] Store PDF in S3
-- [ ] Download link
+### P1 — High Value
 
----
+#### Payment Reminders & Overdue Automation
+- [ ] Auto-send reminder email X days before due date
+- [ ] Auto-mark invoices as OVERDUE when past due (cron/EventBridge)
+- [ ] Overdue notification email to business owner
+- [ ] Configurable reminder schedule (7 days, 3 days, 1 day before)
 
-### ✅ 5. Expense Tracking
-**Priority:** P1 - Important for reporting
+#### Recurring Invoices
+- [ ] Recurring schedule (weekly, fortnightly, monthly, quarterly)
+- [ ] Auto-generate draft invoice from template
+- [ ] Recurring invoice list view
+- [ ] Pause/resume recurring invoices
 
-#### Expense Fields
-- [ ] Description
-- [ ] Category (dropdown: Office, Travel, Equipment, etc.)
-- [ ] Amount (total including GST)
-- [ ] Amount Ex-GST (calculated: amount / 1.15)
-- [ ] GST Amount (calculated: amount - amountExGst)
-- [ ] GST Claimable (boolean, default: true)
-- [ ] Date
-- [ ] Receipt upload (S3)
-- [ ] Notes
-- [ ] Status (PENDING, APPROVED, REJECTED)
+#### Invoice Templates
+- [ ] Multiple PDF templates (modern, classic, minimal)
+- [ ] Template preview in settings
+- [ ] Custom colour scheme per template
+- [ ] Custom footer text / terms
 
-#### Actions
-- [ ] Create expense
-- [ ] List expenses
-- [ ] View expense details
-- [ ] Edit expense
-- [ ] Delete expense
-- [ ] Upload receipt
-- [ ] Approve/reject expense
+#### Client Portal
+- [ ] Public invoice view link (no login required)
+- [ ] Client can download PDF from portal
+- [ ] Payment status visible to client
+- [ ] Client invoice history page
 
----
+### P2 — Nice to Have
 
-### ✅ 6. Dashboard & Reporting
-**Priority:** P1 - Business insights
+#### Payment Integration (Stripe)
+- [ ] Stripe Connect onboarding
+- [ ] Pay Now button on client portal
+- [ ] Payment confirmation auto-updates invoice status to PAID
+- [ ] Payment receipt email
+- [ ] Partial payments support
 
-#### Basic Metrics
-- [ ] Total revenue (all time)
-- [ ] Revenue ex-GST
-- [ ] GST collected
-- [ ] Outstanding amount
-- [ ] Paid invoices count
-- [ ] Pending invoices count
-- [ ] Total expenses
-- [ ] Expenses ex-GST
-- [ ] GST paid (claimable)
+#### Receipt OCR (AWS Textract)
+- [ ] Upload receipt photo → auto-extract amount, date, vendor
+- [ ] Pre-fill expense form from OCR results
+- [ ] Confidence score display
+- [ ] Manual correction UI
 
-#### Enriched Reporting
-- [ ] Revenue by month (chart)
-- [ ] Expenses by category (chart)
-- [ ] GST position (collected - paid)
-- [ ] Profit/Loss (revenue - expenses, ex-GST)
-- [ ] Invoice status breakdown (pie chart)
-- [ ] Top clients by revenue
-- [ ] Recent invoices (last 10)
-- [ ] Recent expenses (last 10)
-- [ ] Date range filter
-- [ ] Export to CSV
+#### Advanced Reporting
+- [ ] Profit & loss statement (printable)
+- [ ] Aged receivables report (30/60/90 days)
+- [ ] Cash flow forecast (based on outstanding invoices + recurring)
+- [ ] Year-over-year comparison
+- [ ] Export to PDF (reports)
 
-#### NZ Tax Reporting
-- [ ] Revenue ex-GST
-- [ ] GST collected (from invoices)
-- [ ] Expenses ex-GST
-- [ ] GST paid (claimable expenses)
-- [ ] Net GST position
-- [ ] Taxable profit (revenue - expenses, ex-GST)
+#### Multi-Currency
+- [ ] Support AUD, USD, GBP, EUR alongside NZD
+- [ ] Exchange rate lookup (at invoice date)
+- [ ] Currency selector on invoice form
+- [ ] Reporting in base currency (NZD)
 
 ---
 
-### ✅ 7. User Settings
-**Priority:** P1 - User management
+## 📋 Phase 3 — Growth (June+ 2026)
 
-- [ ] User profile (name, email)
-- [ ] Company profile (linked)
-- [ ] Password change
-- [ ] Email preferences
-- [ ] Logout
+### P3 — Scale
 
----
+#### Team & Multi-User
+- [ ] Invite team members (Cognito groups)
+- [ ] Role-based access: Admin, Accountant, Viewer
+- [ ] Company-scoped data (companyId on all models)
+- [ ] Activity log / audit trail
 
-## 🚫 Explicitly OUT of MVP
+#### Integrations
+- [ ] Xero export (CSV/API)
+- [ ] QuickBooks export
+- [ ] Google Sheets sync
+- [ ] Zapier webhooks (invoice created, paid, overdue)
 
-### Not Now
-- ❌ Stripe payment integration
-- ❌ Email sending (invoice delivery)
-- ❌ Payment reminders
-- ❌ Recurring invoices
-- ❌ Multiple invoice templates
-- ❌ Multi-currency (only NZD for now)
-- ❌ Client portal
-- ❌ Team collaboration
-- ❌ Mobile app
-- ❌ Integrations (QuickBooks, Xero)
-- ❌ Receipt OCR (Textract)
-- ❌ Time tracking
-- ❌ Mileage tracking
+#### Time Tracking
+- [ ] Timer per project/client
+- [ ] Timesheet entries (date, hours, description, project)
+- [ ] Auto-generate invoice from timesheet
+- [ ] Hourly rate per client/project
 
----
+#### Mileage Tracking
+- [ ] Log trips (date, distance, purpose)
+- [ ] IRD rate auto-calculation
+- [ ] Auto-create expense from mileage
+- [ ] Monthly mileage summary
 
-## 📊 Sprint Breakdown (20 Days)
-
-### Sprint 1: Foundation (Days 1-5) - March 12-16
-**Goal:** Auth, data models, company profile
-
-- [ ] Day 1: Auth setup (Cognito)
-- [ ] Day 2: Data models (User, CompanyProfile, Client)
-- [ ] Day 3: Company profile UI
-- [ ] Day 4: User settings page
-- [ ] Day 5: Testing & fixes
-
-### Sprint 2: Clients & Invoices (Days 6-10) - March 17-21
-**Goal:** Client CRUD, invoice creation
-
-- [ ] Day 6: Client list & create
-- [ ] Day 7: Client edit & delete
-- [ ] Day 8: Invoice form with line items
-- [ ] Day 9: Invoice calculations & WBS
-- [ ] Day 10: Save invoice, list view
-
-### Sprint 3: PDF & Expenses (Days 11-15) - March 22-26
-**Goal:** PDF generation, expense tracking
-
-- [ ] Day 11: PDF template design
-- [ ] Day 12: PDF generation & S3 upload
-- [ ] Day 13: Expense model & create
-- [ ] Day 14: Expense list & GST calculations
-- [ ] Day 15: Receipt upload
-
-### Sprint 4: Dashboard & Launch (Days 16-20) - March 27-31
-**Goal:** Reporting, polish, deploy
-
-- [ ] Day 16: Dashboard metrics
-- [ ] Day 17: Charts & enriched reporting
-- [ ] Day 18: NZ tax reporting
-- [ ] Day 19: UI polish & testing
-- [ ] Day 20: Deploy & launch (April 1)
+#### Mobile App
+- [ ] React Native or PWA
+- [ ] Camera receipt capture
+- [ ] Push notifications (payment received, invoice overdue)
+- [ ] Quick invoice creation
 
 ---
 
-## 🎨 Data Model Summary
+## 🔒 Security & Compliance Backlog
 
-```typescript
-CompanyProfile {
-  companyName, companyEmail, companyPhone, companyAddress
-  gstNumber, bankAccount
-  defaultCurrency: 'NZD'
-  defaultGstRate: 15
-  logoUrl
-}
-
-Client {
-  name, email, phone
-  address, city, state, postalCode, country
-  notes
-}
-
-Invoice {
-  invoiceNumber, issueDate, dueDate
-  clientName, clientEmail, clientAddress
-  subtotal, gstRate, gstAmount, total
-  currency: 'NZD'
-  status: DRAFT | SENT | PAID | OVERDUE | CANCELLED
-  paymentTerms, notes
-  // Company snapshot
-  companyName, companyEmail, gstNumber, bankAccount
-  pdfUrl
-}
-
-InvoiceItem {
-  description
-  wbs  // ← Work Breakdown Structure
-  quantity, unitPrice, amount
-}
-
-Expense {
-  description, category
-  amount, amountExGst, gstAmount
-  gstClaimable
-  date, receiptUrl, notes
-  status: PENDING | APPROVED | REJECTED
-}
-```
+- [ ] Rate limiting on API (AppSync WAF)
+- [ ] Input sanitisation audit (XSS prevention)
+- [ ] GDPR/Privacy Act compliance (data export, account deletion)
+- [ ] S3 bucket lifecycle policy (archive old PDFs after 7 years per IRD)
+- [ ] CloudWatch alarms (Lambda errors, API latency)
+- [ ] Backup strategy for DynamoDB (point-in-time recovery)
 
 ---
 
-## 🔒 Security Checklist
+## 📊 Performance Backlog
 
-- [ ] Owner-based authorization (users see only their data)
-- [ ] No hardcoded credentials
-- [ ] Environment variables in `.env.local`
-- [ ] Input validation with Zod
-- [ ] S3 bucket private with signed URLs
-- [ ] HTTPS only in production
-
----
-
-## 📈 Success Metrics (First 30 Days)
-
-### User Metrics
-- 50 signups
-- 30 active users (created invoice)
-- 100 invoices created
-- $50K tracked in invoices
-
-### Technical Metrics
-- Page load < 2s
-- 99.9% uptime
-- Zero critical bugs
+- [ ] Lazy load charts on dashboard (reduce initial bundle)
+- [ ] Paginate invoice/expense lists (currently loads all)
+- [ ] Image optimisation — `next/image` for logo, receipts
+- [ ] Bundle analysis — `/invoices/[id]` page is 340kB first load (PDF lib)
+- [ ] Consider code-splitting generate-pdf.ts (dynamic import)
 
 ---
 
-## 🚀 Post-Launch (Phase 2 - April-May)
+## ✅ Completed (MVP)
 
-### Month 2 Priorities
-1. Email sending (invoice delivery)
-2. Payment reminders
-3. Invoice templates
-4. Receipt OCR
-5. Advanced analytics
+All MVP features shipped — see [CONTEXT.md](./CONTEXT.md) for full list:
+- Auth (Cognito signup/login/forgot password)
+- Company profile with logo upload
+- Client CRUD
+- Invoice CRUD with line items + WBS
+- Professional NZ tax invoice PDF generation
+- Email sending via SES (with review dialog)
+- Expense tracking with receipt upload + GST calculations
+- Dashboard with charts & metrics
+- NZ tax reports with CSV export
+- Dark/light theme
+- Mobile responsive
+- Owner-based data security
 
 ---
 
-**Next Review:** March 18, 2026  
-**Status:** In Development  
+**Next Review:** March 20, 2026  
 **Team:** Solo developer
