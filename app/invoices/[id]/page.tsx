@@ -106,22 +106,27 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       const profile = profiles?.[0];
       const companyEmail = profile?.companyEmail || '';
 
+      const fmtDate = new Date(invoice.dueDate).toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric' });
+      const fmtTotal = `${invoice.currency || 'NZD'} ${invoice.total?.toLocaleString('en-NZ', { minimumFractionDigits: 2 })}`;
+
       const tokens: Record<string, string> = {
         '{invoiceNumber}': invoice.invoiceNumber,
         '{companyName}': invoice.companyName || '',
         '{clientName}': invoice.clientName,
-        '{total}': `$${invoice.total?.toFixed(2)}`,
-        '{dueDate}': new Date(invoice.dueDate).toLocaleDateString(),
+        '{total}': fmtTotal,
+        '{dueDate}': fmtDate,
       };
       const replaceTokens = (tpl: string) =>
         Object.entries(tokens).reduce((s, [k, v]) => s.replaceAll(k, v), tpl);
+
+      const defaultBody = `Hi {clientName},\n\nHere's invoice {invoiceNumber} for {total}.\n\nThe amount outstanding of {total} is due on {dueDate}.\n\nIf you have any questions, please let us know.\n\nThanks,\n{companyName}`;
 
       setEmailForm({
         to: [invoice.clientEmail],
         cc: profile?.emailCcSelf && companyEmail ? [companyEmail] : [],
         replyTo: profile?.emailReplyTo || companyEmail || '',
         subject: replaceTokens(profile?.emailSubjectTemplate || 'Invoice {invoiceNumber} from {companyName}'),
-        body: replaceTokens(profile?.emailBodyTemplate || 'Please find attached invoice {invoiceNumber} for {total}.\n\nPayment is due by {dueDate}.\n\nThank you for your business.'),
+        body: replaceTokens(profile?.emailBodyTemplate || defaultBody),
       });
       setShowEmailDialog(true);
     } catch {

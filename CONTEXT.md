@@ -1,8 +1,8 @@
 # Development Context - CloudPro Invoice
 
-**Last Updated:** March 14, 2026, 16:55 NZDT
-**Status:** All MVP + nice-to-have features complete. Ready for testing & deployment.
-**Launch Date:** April 1, 2026 (17 days remaining)
+**Last Updated:** March 16, 2026, 14:55 NZDT
+**Status:** All features complete. Pre-launch polish done. Ready for final testing & deployment.
+**Launch Date:** April 1, 2026 (16 days remaining)
 
 ---
 
@@ -13,6 +13,9 @@
 - **Auth:** AWS Cognito
 - **Storage:** S3 (invoices, receipts) — owner-scoped via entity_id
 - **Email:** SES via Lambda function (send invoice with PDF attachment)
+- **SES Domain:** cloudpro-digital.co.nz (verified)
+- **SES Sandbox:** testing@cloudpro-digital.co.nz
+- **SES Production:** noreply@cloudpro-digital.co.nz
 - **Validation:** Zod schemas
 - **Development Mode:** Real AWS backend with local frontend
 
@@ -43,14 +46,49 @@
 - ✅ Client auto-populate, company snapshot
 - ✅ GST calculations (15% NZ rate)
 - ✅ List view with status badges, detail view, edit
+- ✅ Sort by date (clickable column header, newest first default)
 - ✅ Status workflow: DRAFT → SENT → PAID / OVERDUE / CANCELLED
 - ✅ Paid/Cancelled invoices locked from editing
-- ✅ PDF generation & download (jsPDF + autotable)
+- ✅ PDF generation required before emailing (must generate first)
 - ✅ PDF stored in S3 (owner-scoped), pdfUrl saved to invoice record
 - ✅ Re-download from S3 without regeneration
-- ✅ Email invoice to client with PDF attachment via SES
 - ✅ Zod validation (client required, due date ≥ issue date, line items)
 - ✅ Mobile responsive line items (stacked on small screens)
+
+### PDF Generation (Professional NZ Tax Invoice)
+- ✅ "TAX INVOICE" italic title with bold company name
+- ✅ Invoice details stacked (label above value): date, number, GST#
+- ✅ Company address right-aligned below logo (text wrapping for long addresses)
+- ✅ Company email shown under logo (no phone)
+- ✅ Clean table: no box border, header line + light row separators
+- ✅ WBS merged into description column
+- ✅ Right-aligned totals: Subtotal → TOTAL GST 15% → TOTAL NZD (bold)
+- ✅ Due date + bank account + payment terms section
+- ✅ Payment advice tear-off with scissors dashed line
+- ✅ Payment advice: company address wrapped, amount enclosed line
+- ✅ Larger fonts (9.5-10pt body, 28pt title) for sharp readability
+
+### Email Integration
+- ✅ SES Lambda function for sending emails with PDF attachments
+- ✅ Server-controlled sender address (SES_FROM_EMAIL env var, no client spoofing)
+- ✅ SES IAM policy scoped to verified identities
+- ✅ Email dialog with review before sending:
+  - From (read-only, server-controlled)
+  - Multiple To recipients (add/remove)
+  - Multiple CC recipients (add/remove)
+  - Reply-To (editable)
+  - Subject (pre-populated from template)
+  - Body (pre-populated, editable)
+  - PDF auto-attached note
+- ✅ Email only available for DRAFT and OVERDUE invoices with PDF generated
+- ✅ Professional email body template:
+  - Greeting with client name
+  - Formatted amounts with currency (NZD 41,814.00)
+  - Long date format (13 April 2026)
+  - Sign-off with company name
+- ✅ Configurable templates with tokens: {invoiceNumber}, {companyName}, {clientName}, {total}, {dueDate}
+- ✅ Email preferences settings page (/settings/email)
+- ✅ Reply-to email override, CC self toggle
 
 ### Expense Tracking
 - ✅ Full CRUD with categories (Travel, Office, Software, etc.)
@@ -63,22 +101,14 @@
 - ✅ Month filter + text search
 - ✅ Zod validation (amount > 0, description required)
 
-### Email Integration
-- ✅ SES Lambda function for sending emails with PDF attachments
-- ✅ Custom GraphQL mutation (sendInvoiceEmail)
-- ✅ Email preferences settings page (/settings/email)
-- ✅ Configurable subject/body templates with token replacement
-- ✅ Reply-to email override
-- ✅ CC self toggle
-- ✅ "Email Invoice" button on invoice detail (replaces Mark as Sent)
-
 ### Dashboard
 - ✅ Revenue metrics: total, outstanding, paid count, pending count
 - ✅ Expense metrics: total expenses, net GST position, profit (ex-GST)
+- ✅ Quick actions moved below metrics (New Invoice, New Client, New Expense)
 - ✅ Monthly revenue vs expenses bar chart (6 months)
 - ✅ Invoice status breakdown (stacked bar + legend)
 - ✅ Recent invoices (last 5) + recent expenses (last 5)
-- ✅ Quick actions, setup guide for new users
+- ✅ Setup guide for new users
 
 ### Reports & Tax (/reports)
 - ✅ NZ GST return summary (collected vs paid, net position)
@@ -100,6 +130,16 @@
 - ✅ S3 owner-scoped access (entity_id) — users can only access own files
 - ✅ DynamoDB owner-based authorization on all models
 - ✅ Pre-signed URLs for S3 downloads (time-limited)
+- ✅ SES sender address server-controlled (prevents spoofing)
+- ✅ fromEmail removed from GraphQL schema (server-only)
+- ✅ SES IAM scoped to verified identities
+
+### Pre-Launch Cleanup (Done March 14)
+- ✅ Deleted legacy files (lib/local-db.ts, lib/mock-auth.ts)
+- ✅ Ran npm audit fix (remaining vulns in Amplify CDK toolchain only)
+- ✅ Removed .amplify/ artifacts and amplify_outputs.json from git tracking
+- ✅ Added *.pdf to .gitignore
+- ✅ Fixed GraphQL schema error (newlines in default string)
 
 ### Data Migration
 - ✅ Prod data migrated to sandbox (scripts/migrate-data.py)
@@ -119,9 +159,9 @@ app/
 │   ├── page.tsx                Dashboard with charts & metrics
 │   └── error.tsx               Dashboard error boundary
 ├── invoices/
-│   ├── page.tsx                Invoice list
+│   ├── page.tsx                Invoice list (sortable by date)
 │   ├── new/page.tsx            Create invoice (Zod validated)
-│   ├── [id]/page.tsx           Invoice detail + PDF + Email
+│   ├── [id]/page.tsx           Invoice detail + PDF + Email dialog
 │   ├── [id]/edit/page.tsx      Invoice edit (responsive)
 │   └── error.tsx               Invoices error boundary
 ├── clients/
@@ -148,12 +188,11 @@ lib/
 ├── theme-context.tsx           Dark/light theme
 ├── theme-classes.ts            Shared theme CSS classes
 ├── gst-calculations.ts         GST math utilities
-├── generate-pdf.ts             Invoice PDF generation (with logo)
+├── generate-pdf.ts             Professional NZ tax invoice PDF (with logo, payment advice)
 ├── csv-export.ts               CSV download utility
 ├── validation.ts               Zod schemas (invoice, expense, client, company)
 ├── aws-clients.ts              AWS SDK clients
-├── local-db.ts                 ⚠️ Legacy (unused)
-└── mock-auth.ts                ⚠️ Legacy (unused)
+└── toast-context.tsx           Toast notification provider
 
 components/
 └── AppLayout.tsx               Nav bar + hamburger menu + theme wrapper
@@ -164,9 +203,9 @@ amplify/
 ├── storage/resource.ts         S3 (invoices/{entity_id}/*, receipts/{entity_id}/*)
 ├── functions/
 │   └── send-invoice-email/
-│       ├── resource.ts         Function definition
-│       └── handler.ts          SES raw email with PDF attachment
-└── backend.ts                  Backend entry point + SES IAM policy
+│       ├── resource.ts         Function definition (SES_FROM_EMAIL env var)
+│       └── handler.ts          SES raw email with PDF attachment (server-controlled sender)
+└── backend.ts                  Backend entry point + SES IAM policy (scoped to verified identities)
 
 scripts/
 ├── migrate-data.py             Prod→sandbox data migration
@@ -178,14 +217,20 @@ scripts/
 
 ## 📋 Pre-Launch Checklist
 
+### Done ✅
+- [x] SES domain verified (cloudpro-digital.co.nz)
+- [x] SES_FROM_EMAIL configured (testing@ for sandbox, noreply@ for prod)
+- [x] SES IAM policy scoped to verified identities
+- [x] Server-controlled sender (no client spoofing)
+- [x] Remove legacy files (lib/local-db.ts, lib/mock-auth.ts)
+- [x] Run npm audit fix
+- [x] Remove .amplify artifacts from git
+
 ### Before Deployment
-- [ ] Verify SES sending domain/email in production
-- [ ] Request SES production access (exit sandbox)
-- [ ] Update SES_FROM_EMAIL env var to verified domain
-- [ ] End-to-end test: create invoice → email → PDF download
+- [ ] Request SES production access (exit sandbox) — needed to send to any email
+- [ ] Set SES_FROM_EMAIL=noreply@cloudpro-digital.co.nz for production
+- [ ] End-to-end test: create invoice → generate PDF → email → verify delivery
 - [ ] Test on mobile devices (iOS Safari, Android Chrome)
-- [ ] Remove legacy files (lib/local-db.ts, lib/mock-auth.ts)
-- [ ] Run `npm audit fix`
 - [ ] Deploy to production (`npx ampx pipeline-deploy`)
 
 ### Long-Term Roadmap
@@ -220,6 +265,8 @@ python3 scripts/migrate-data.py
 
 - **Region:** ap-southeast-2 (Sydney)
 - **Services:** Cognito, AppSync, DynamoDB (6 tables), S3, SES, Lambda, IAM
+- **SES Status:** Sandbox mode (can only send to verified addresses)
+- **SES Verified:** cloudpro-digital.co.nz (domain), sagar.d2506@gmail.com (email)
 - **Sandbox API ID:** kdhpyo3bhnenbm2vgxgy2qo24u
 - **Prod API ID:** gpvtefxrxvgbbj2kqzt5ri7x5e
 - **Credentials:** `.env.creds` (session token, not in git)
@@ -234,5 +281,6 @@ python3 scripts/migrate-data.py
 | 2: Clients & Invoices (Days 6-10) | Client CRUD, invoice creation | ✅ Complete |
 | 3: PDF & Expenses (Days 11-15) | PDF gen, expense tracking | ✅ Complete |
 | 4: Dashboard & Launch (Days 16-20) | Reporting, polish, deploy | ✅ Complete |
+| 5: Pre-launch Polish (Mar 14-16) | SES security, PDF overhaul, email dialog, cleanup | ✅ Complete |
 
-**All planned features complete. 17 days remaining for testing, polish, and deployment.**
+**All features complete. 16 days remaining for final testing and deployment.**

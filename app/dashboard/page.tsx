@@ -213,6 +213,22 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className={`${card} mb-8`}>
+          <h3 className={heading}>Quick Actions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link href="/invoices/new" className={dark ? 'p-4 border-2 border-purple-500 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all text-center font-medium' : 'p-4 border-2 border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all text-center font-medium'}>
+              + New Invoice
+            </Link>
+            <Link href="/clients/new" className={dark ? 'p-4 border-2 border-purple-500/40 text-slate-300 rounded-lg hover:border-purple-500 transition-all text-center font-medium' : 'p-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-center font-medium'}>
+              + New Client
+            </Link>
+            <Link href="/expenses/new" className={dark ? 'p-4 border-2 border-purple-500/40 text-slate-300 rounded-lg hover:border-purple-500 transition-all text-center font-medium' : 'p-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-center font-medium'}>
+              + New Expense
+            </Link>
+          </div>
+        </div>
+
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Monthly Revenue vs Expenses Bar Chart */}
@@ -351,22 +367,6 @@ export default function DashboardPage() {
             ) : (
               <p className={`text-sm ${muted}`}>No expenses yet</p>
             )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className={`${card} mb-8`}>
-          <h3 className={heading}>Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/invoices/new" className={dark ? 'p-4 border-2 border-purple-500 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all text-center font-medium' : 'p-4 border-2 border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all text-center font-medium'}>
-              + New Invoice
-            </Link>
-            <Link href="/clients/new" className={dark ? 'p-4 border-2 border-purple-500/40 text-slate-300 rounded-lg hover:border-purple-500 transition-all text-center font-medium' : 'p-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-center font-medium'}>
-              + New Client
-            </Link>
-            <Link href="/expenses/new" className={dark ? 'p-4 border-2 border-purple-500/40 text-slate-300 rounded-lg hover:border-purple-500 transition-all text-center font-medium' : 'p-4 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all text-center font-medium'}>
-              + New Expense
-            </Link>
           </div>
         </div>
 
