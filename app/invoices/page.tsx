@@ -7,6 +7,7 @@ import { Plus, Search, FileText, Calendar, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
+import { TableRowSkeleton } from '@/components/Skeleton';
 
 export default function InvoicesPage() {
   const { theme } = useTheme();
@@ -55,8 +56,27 @@ export default function InvoicesPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className={theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}>Loading invoices...</div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className={theme === 'dark' ? 'text-3xl font-bold text-white' : 'text-3xl font-bold text-gray-900'}>Invoices</h1>
+              <p className={theme === 'dark' ? 'text-slate-400 mt-1' : 'text-gray-600 mt-1'}>Manage your invoices</p>
+            </div>
+          </div>
+          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 overflow-hidden' : 'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'}>
+            <table className="min-w-full">
+              <thead className={theme === 'dark' ? 'bg-black border-b border-purple-500/20' : 'bg-gray-50'}>
+                <tr>
+                  {['Invoice', 'Client', 'Date', 'Amount', 'Status'].map(h => (
+                    <th key={h} className={theme === 'dark' ? 'px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className={theme === 'dark' ? 'divide-y divide-purple-500/20' : 'divide-y divide-gray-200'}>
+                {[...Array(5)].map((_, i) => <TableRowSkeleton key={i} cols={5} />)}
+              </tbody>
+            </table>
+          </div>
         </div>
       </AppLayout>
     );

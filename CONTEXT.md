@@ -1,8 +1,8 @@
 # Development Context - CloudPro Invoice
 
-**Last Updated:** March 16, 2026, 14:55 NZDT
-**Status:** All features complete. Pre-launch polish done. Ready for final testing & deployment.
-**Launch Date:** April 1, 2026 (16 days remaining)
+**Last Updated:** March 27, 2026, 21:31 NZDT
+**Status:** All features complete. Pre-launch polish done. Quick wins shipped. Ready for final testing & deployment.
+**Launch Date:** April 1, 2026 (5 days remaining)
 
 ---
 
@@ -56,6 +56,10 @@
 - ✅ Mobile responsive line items (stacked on small screens)
 
 ### PDF Generation (Professional NZ Tax Invoice)
+- ✅ 3 templates: Modern (italic title, payment advice tear-off), Classic (serif, bordered table, navy accent), Minimal (whitespace, no borders)
+- ✅ Template selector dropdown on invoice detail page
+- ✅ Default template setting in Company Profile (/settings/company)
+- ✅ `defaultTemplate` field on CompanyProfile schema
 - ✅ "TAX INVOICE" italic title with bold company name
 - ✅ Invoice details stacked (label above value): date, number, GST#
 - ✅ Company address right-aligned below logo (text wrapping for long addresses)
@@ -125,6 +129,17 @@
 - ✅ Mobile responsive: hamburger menu, stacked layouts, scrollable tables
 - ✅ Error boundaries (root, dashboard, invoices, expenses)
 - ✅ Toast notification system
+- ✅ Loading skeletons on dashboard, invoice list, client list (components/Skeleton.tsx)
+- ✅ Empty state illustrations with CTAs (invoices, clients)
+- ✅ Meta tags, Open Graph, Twitter cards for SEO (app/layout.tsx)
+
+### Progressive Web App (PWA)
+- ✅ manifest.json (app name, icons, standalone display, theme color)
+- ✅ Service worker (network-first caching, offline fallback for key routes)
+- ✅ PWA icons (192x192, 512x512) generated from logo
+- ✅ Apple touch icon + apple-mobile-web-app-capable meta
+- ✅ Install prompt banner (auto-shows on mobile, dismissible)
+- ✅ Viewport meta (prevents zoom, proper mobile scaling)
 
 ### Security
 - ✅ S3 owner-scoped access (entity_id) — users can only access own files
@@ -133,6 +148,42 @@
 - ✅ SES sender address server-controlled (prevents spoofing)
 - ✅ fromEmail removed from GraphQL schema (server-only)
 - ✅ SES IAM scoped to verified identities
+
+### Client Portal
+- ✅ Public `/portal/[token]` page — no auth required, token-based access
+- ✅ API route `/api/portal/[token]` — queries via API key auth mode
+- ✅ `portalToken` field on Invoice model (random UUID)
+- ✅ "Copy Portal Link" button on invoice detail page
+- ✅ Status display (Paid/Due/Overdue/Cancelled)
+- ✅ Professional read-only invoice view with line items, totals, payment info
+
+### Payment Reminders
+- ✅ Reminder settings in /settings/email (toggle, days before/after, subject/body templates)
+- ✅ "Send Reminder" button on invoice detail (SENT/OVERDUE invoices)
+- ✅ Reminder count badge on button (tracks how many sent)
+- ✅ `lastReminderSent` and `reminderCount` fields on Invoice model
+- ✅ Reminder fields on CompanyProfile (reminderEnabled, daysBefore, daysAfter, templates)
+- ✅ Overdue count badge on dashboard metrics
+- ⏳ Automated daily Lambda (EventBridge) — backend not yet deployed
+
+### Recurring Invoices
+- ✅ RecurringInvoice model (clientId, lineItems JSON, frequency, nextDate, endDate, active)
+- ✅ List page (/invoices/recurring) with Active/Paused badges
+- ✅ Create form (/invoices/recurring/new) — client, frequency, start/end date, line items
+- ✅ "Generate Now" button — creates draft Invoice + InvoiceItems from template
+- ✅ Auto-advances nextDate based on frequency after generation
+- ✅ Auto-deactivates when endDate is passed
+- ✅ Pause/resume toggle, delete
+- ✅ "Recurring" link added to navigation
+
+### Receipt OCR (AWS Textract)
+- ✅ `process-receipt` Lambda with Textract AnalyzeExpense
+- ✅ `processReceipt` GraphQL mutation (authenticated)
+- ✅ Textract IAM policy on Lambda
+- ✅ Auto-scan on receipt upload — fills description (vendor), amount (total), date
+- ✅ Camera capture on mobile (`capture="environment"`)
+- ✅ Scanning indicator while processing
+- ✅ Supports JPEG, PNG, PDF
 
 ### Pre-Launch Cleanup (Done March 14)
 - ✅ Deleted legacy files (lib/local-db.ts, lib/mock-auth.ts)
@@ -174,6 +225,8 @@ app/
 │   ├── [id]/edit/page.tsx      Edit expense + receipt upload
 │   └── error.tsx               Expenses error boundary
 ├── reports/page.tsx            NZ Tax report + CSV exports
+├── portal/[token]/page.tsx     Public client portal (no auth)
+├── api/portal/[token]/route.ts Portal API (API key auth)
 ├── settings/
 │   ├── layout.tsx              Settings tabs (Profile, Company, Email, Security)
 │   ├── profile/page.tsx        User profile
@@ -196,6 +249,8 @@ lib/
 
 components/
 └── AppLayout.tsx               Nav bar + hamburger menu + theme wrapper
+└── Skeleton.tsx                Loading skeleton components (dashboard, table, cards)
+└── InstallPrompt.tsx           PWA install prompt banner
 
 amplify/
 ├── auth/resource.ts            Cognito config

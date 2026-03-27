@@ -9,6 +9,7 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import AppLayout from '@/components/AppLayout';
 import { FileText, Receipt } from 'lucide-react';
+import { DashboardSkeleton } from '@/components/Skeleton';
 
 type MonthData = { month: string; revenue: number; expenses: number };
 
@@ -19,7 +20,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [metrics, setMetrics] = useState({
     totalRevenue: 0, revenueExGst: 0, gstCollected: 0,
-    outstanding: 0, paidCount: 0, pendingCount: 0,
+    outstanding: 0, paidCount: 0, pendingCount: 0, overdueCount: 0,
     totalExpenses: 0, expensesExGst: 0, gstPaid: 0,
   });
   const [monthlyData, setMonthlyData] = useState<MonthData[]>([]);
@@ -71,11 +72,12 @@ export default function DashboardPage() {
         .reduce((sum, inv) => sum + (inv.total || 0), 0);
       const paidCount = invoices.filter(inv => inv.status === 'PAID').length;
       const pendingCount = invoices.filter(inv => inv.status === 'DRAFT' || inv.status === 'SENT').length;
+      const overdueCount = invoices.filter(inv => inv.status === 'OVERDUE').length;
       const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
       const expensesExGst = expenses.reduce((sum, e) => sum + (e.amountExGst || 0), 0);
       const gstPaid = expenses.filter(e => e.gstClaimable).reduce((sum, e) => sum + (e.gstAmount || 0), 0);
 
-      setMetrics({ totalRevenue, revenueExGst, gstCollected, outstanding, paidCount, pendingCount, totalExpenses, expensesExGst, gstPaid });
+      setMetrics({ totalRevenue, revenueExGst, gstCollected, outstanding, paidCount, pendingCount, overdueCount, totalExpenses, expensesExGst, gstPaid });
 
       // Status breakdown
       const breakdown: Record<string, number> = {};
@@ -155,7 +157,7 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return <AppLayout><div className="min-h-screen flex items-center justify-center"><div className={muted}>Loading...</div></div></AppLayout>;
+    return <AppLayout><main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><DashboardSkeleton /></main></AppLayout>;
   }
   if (!user) return null;
 
@@ -188,6 +190,12 @@ export default function DashboardPage() {
             <div className={label}>Pending</div>
             <div className="text-3xl font-bold text-blue-400">{loadingMetrics ? '...' : metrics.pendingCount}</div>
           </div>
+          {metrics.overdueCount > 0 && (
+          <div className={cardHover}>
+            <div className={label}>Overdue</div>
+            <div className="text-3xl font-bold text-red-400">{metrics.overdueCount}</div>
+          </div>
+          )}
         </div>
 
         {/* Expense & GST Summary */}

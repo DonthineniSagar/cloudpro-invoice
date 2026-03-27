@@ -7,6 +7,7 @@ import { Plus, Search, Mail, Phone, MapPin, Edit2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
+import { ClientCardSkeleton } from '@/components/Skeleton';
 
 export default function ClientsPage() {
   const { theme } = useTheme();
@@ -50,8 +51,16 @@ export default function ClientsPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-gray-600">Loading clients...</div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className={theme === 'dark' ? 'text-3xl font-bold text-white' : 'text-3xl font-bold text-gray-900'}>Clients</h1>
+              <p className={theme === 'dark' ? 'text-slate-400 mt-1' : 'text-gray-600 mt-1'}>Manage your client contacts</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => <ClientCardSkeleton key={i} />)}
+          </div>
         </div>
       </AppLayout>
     );

@@ -9,6 +9,8 @@ import type { Schema } from '@/amplify/data/resource';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
+import { TEMPLATES } from '@/lib/generate-pdf';
+import type { TemplateName } from '@/lib/generate-pdf';
 
 const client = generateClient<Schema>();
 
@@ -26,6 +28,7 @@ export default function CompanyProfilePage() {
     companyName: '', companyEmail: '', companyPhone: '', companyAddress: '',
     companyCity: '', companyState: '', companyPostalCode: '', companyCountry: 'New Zealand',
     gstNumber: '', bankAccount: '', defaultCurrency: 'NZD', defaultGstRate: 15,
+    defaultTemplate: 'modern' as TemplateName,
   });
 
   useEffect(() => {
@@ -47,6 +50,7 @@ export default function CompanyProfilePage() {
               companyPostalCode: e.companyPostalCode || '', companyCountry: e.companyCountry || 'New Zealand',
               gstNumber: e.gstNumber || '', bankAccount: e.bankAccount || '',
               defaultCurrency: e.defaultCurrency || 'NZD', defaultGstRate: e.defaultGstRate || 15,
+              defaultTemplate: (e.defaultTemplate as TemplateName) || 'modern',
             });
             if (e.logoUrl) {
               try {
@@ -197,6 +201,24 @@ export default function CompanyProfilePage() {
               <input type="number" value={profile.defaultGstRate} readOnly
                 className={`${t.input} opacity-50 cursor-not-allowed`} />
             </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 className={`${t.sectionTitle} mb-4`}>Invoice Template</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {TEMPLATES.map(tmpl => (
+              <button key={tmpl.id} type="button"
+                onClick={() => setProfile({ ...profile, defaultTemplate: tmpl.id })}
+                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  profile.defaultTemplate === tmpl.id
+                    ? theme === 'dark' ? 'border-purple-500 bg-purple-500/10' : 'border-indigo-600 bg-indigo-50'
+                    : theme === 'dark' ? 'border-purple-500/20 hover:border-purple-500/50' : 'border-gray-200 hover:border-gray-300'
+                }`}>
+                <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{tmpl.name}</div>
+                <div className={`text-xs mt-1 ${t.textMuted}`}>{tmpl.description}</div>
+              </button>
+            ))}
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { sendInvoiceEmail } from '../functions/send-invoice-email/resource';
+import { processReceipt } from '../functions/process-receipt/resource';
 
 const schema = a.schema({
   // Company Profile - stores user's business details
@@ -23,6 +24,13 @@ const schema = a.schema({
       emailBodyTemplate: a.string().default('Please find attached invoice {invoiceNumber} for {total}. Payment is due by {dueDate}. Thank you for your business.'),
       emailReplyTo: a.string(),
       emailCcSelf: a.boolean().default(true),
+      defaultTemplate: a.string().default('modern'),
+      // Reminder settings
+      reminderEnabled: a.boolean().default(false),
+      reminderDaysBefore: a.string().default('7,3,1'),
+      reminderDaysAfter: a.string().default('1,7,14'),
+      reminderSubjectTemplate: a.string().default('Reminder: Invoice {invoiceNumber} from {companyName}'),
+      reminderBodyTemplate: a.string().default('This is a friendly reminder that invoice {invoiceNumber} for {total} is due on {dueDate}. Please arrange payment at your earliest convenience.'),
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })
@@ -75,6 +83,9 @@ const schema = a.schema({
       currency: a.string().default('NZD'),
       status: a.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED']),
       pdfUrl: a.string(),
+      portalToken: a.string(),
+      lastReminderSent: a.datetime(),
+      reminderCount: a.integer().default(0),
       // Company details at time of invoice (snapshot)
       companyName: a.string(),
       companyEmail: a.string(),
@@ -87,7 +98,7 @@ const schema = a.schema({
       clientId: a.string(),
       client: a.belongsTo('Client', 'clientId'),
     })
-    .authorization((allow) => allow.owner()),
+    .authorization((allow) => [allow.owner(), allow.publicApiKey().to(['read'])]),
 
   InvoiceItem: a
     .model({
@@ -99,7 +110,7 @@ const schema = a.schema({
       invoiceId: a.string().required(),
       invoice: a.belongsTo('Invoice', 'invoiceId'),
     })
-    .authorization((allow) => allow.owner()),
+    .authorization((allow) => [allow.owner(), allow.publicApiKey().to(['read'])]),
 
   Expense: a
     .model({
@@ -118,6 +129,25 @@ const schema = a.schema({
     })
     .authorization((allow) => allow.owner()),
 
+  RecurringInvoice: a
+    .model({
+      clientId: a.string().required(),
+      clientName: a.string().required(),
+      clientEmail: a.string(),
+      frequency: a.enum(['WEEKLY', 'FORTNIGHTLY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY']),
+      nextDate: a.date().required(),
+      endDate: a.date(),
+      active: a.boolean().default(true),
+      lineItems: a.json(), // JSON array of {description, wbs, quantity, unitPrice, amount}
+      notes: a.string(),
+      paymentTerms: a.string().default('Due within 30 days'),
+      currency: a.string().default('NZD'),
+      generatedCount: a.integer().default(0),
+      lastGeneratedDate: a.date(),
+      userId: a.string().required(),
+    })
+    .authorization((allow) => allow.owner()),
+
   // Custom mutation for sending invoice emails
   sendInvoiceEmail: a
     .mutation()
@@ -133,6 +163,15 @@ const schema = a.schema({
     .returns(a.json())
     .authorization((allow) => allow.authenticated())
     .handler(a.handler.function(sendInvoiceEmail)),
+
+  processReceipt: a
+    .mutation()
+    .arguments({
+      imageBase64: a.string().required(),
+    })
+    .returns(a.json())
+    .authorization((allow) => allow.authenticated())
+    .handler(a.handler.function(processReceipt)),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -141,5 +180,8 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
+    apiKeyAuthorizationMode: {
+      expiresInDays: 365,
+    },
   },
 });

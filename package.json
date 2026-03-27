@@ -21,6 +21,7 @@
     "@aws-amplify/backend": "^1.21.0",
     "@aws-amplify/backend-cli": "^1.8.2",
     "@aws-sdk/client-sesv2": "^3.1009.0",
+    "@aws-sdk/client-textract": "^3.1018.0",
     "@radix-ui/react-slot": "^1.2.4",
     "aws-amplify": "^6.16.2",
     "class-variance-authority": "^0.7.1",

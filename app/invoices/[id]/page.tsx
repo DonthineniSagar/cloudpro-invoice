@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Download, Send, Check, X, Edit2, Loader2, FileCheck, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Send, Check, X, Edit2, Loader2, FileCheck, Plus, Trash2, Link2, Bell } from 'lucide-react';
 import { uploadData, getUrl } from 'aws-amplify/storage';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
-import { generateInvoicePDF } from '@/lib/generate-pdf';
+import { generateInvoicePDF, TEMPLATES } from '@/lib/generate-pdf';
+import type { TemplateName } from '@/lib/generate-pdf';
 import { useToast } from '@/lib/toast-context';
 
 type EmailForm = {
@@ -33,6 +34,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const [sending, setSending] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [emailForm, setEmailForm] = useState<EmailForm>({ to: [''], cc: [], subject: '', body: '', replyTo: '' });
+  const [template, setTemplate] = useState<TemplateName>('modern');
 
   useEffect(() => {
     loadInvoice();
@@ -49,6 +51,12 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           filter: { invoiceId: { eq: params.id } }
         });
         setLineItems(items);
+
+        // Load default template from company profile
+        try {
+          const { data: profiles } = await client.models.CompanyProfile.list();
+          if (profiles?.[0]?.defaultTemplate) setTemplate(profiles[0].defaultTemplate as TemplateName);
+        } catch {}
       }
     } catch (error) {
       console.error('Error loading invoice:', error);
@@ -86,6 +94,10 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           reader.readAsDataURL(blob);
         });
       }
+      // Load default template if not already changed
+      if (profiles?.[0]?.defaultTemplate) {
+        setTemplate(prev => prev || (profiles[0].defaultTemplate as TemplateName) || 'modern');
+      }
     } catch {}
     return generateInvoicePDF({
       ...invoice, logoDataUrl,
@@ -93,10 +105,71 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         description: i.description, wbs: i.wbs,
         quantity: i.quantity, unitPrice: i.unitPrice, amount: i.amount,
       })),
-    });
+    }, template);
   };
 
   const canEmail = invoice && ['DRAFT', 'OVERDUE'].includes(invoice?.status) && invoice.pdfUrl;
+  const canRemind = invoice && ['SENT', 'OVERDUE'].includes(invoice?.status) && invoice.pdfUrl && invoice.clientEmail;
+
+  const handleSendReminder = async () => {
+    if (!invoice?.clientEmail) { toast.error('Client has no email'); return; }
+    setSending(true);
+    try {
+      const client = generateClient<Schema>();
+      const { data: profiles } = await client.models.CompanyProfile.list();
+      const profile = profiles?.[0];
+
+      const fmtDate = new Date(invoice.dueDate).toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric' });
+      const fmtTotal = `${invoice.currency || 'NZD'} ${invoice.total?.toLocaleString('en-NZ', { minimumFractionDigits: 2 })}`;
+      const tokens: Record<string, string> = {
+        '{invoiceNumber}': invoice.invoiceNumber, '{companyName}': invoice.companyName || '',
+        '{clientName}': invoice.clientName, '{total}': fmtTotal, '{dueDate}': fmtDate,
+      };
+      const replace = (tpl: string) => Object.entries(tokens).reduce((s, [k, v]) => s.replaceAll(k, v), tpl);
+
+      const subject = replace(profile?.reminderSubjectTemplate || 'Reminder: Invoice {invoiceNumber} from {companyName}');
+      const body = replace(profile?.reminderBodyTemplate || 'This is a friendly reminder that invoice {invoiceNumber} for {total} is due on {dueDate}.');
+
+      const doc = await buildPdfDoc();
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+      await client.mutations.sendInvoiceEmail({
+        to: invoice.clientEmail, subject, body, pdfBase64,
+        fileName: `${invoice.invoiceNumber}.pdf`,
+        replyTo: profile?.emailReplyTo || profile?.companyEmail || undefined,
+      });
+
+      const now = new Date().toISOString();
+      await client.models.Invoice.update({
+        id: params.id, lastReminderSent: now,
+        reminderCount: (invoice.reminderCount || 0) + 1,
+      });
+      setInvoice({ ...invoice, lastReminderSent: now, reminderCount: (invoice.reminderCount || 0) + 1 });
+      toast.success(`Reminder sent to ${invoice.clientEmail}`);
+    } catch (error) {
+      console.error('Error sending reminder:', error);
+      toast.error('Failed to send reminder');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCopyPortalLink = async () => {
+    try {
+      const client = generateClient<Schema>();
+      let token = invoice.portalToken;
+      if (!token) {
+        token = crypto.randomUUID();
+        await client.models.Invoice.update({ id: params.id, portalToken: token });
+        setInvoice({ ...invoice, portalToken: token });
+      }
+      const url = `${window.location.origin}/portal/${token}`;
+      await navigator.clipboard.writeText(url);
+      toast.success('Portal link copied to clipboard');
+    } catch {
+      toast.error('Failed to generate portal link');
+    }
+  };
 
   const openEmailDialog = async () => {
     if (!invoice?.clientEmail) { toast.error('Client has no email address'); return; }
@@ -262,6 +335,16 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             Email Invoice
           </button>
           )}
+          {canRemind && (
+          <button
+            onClick={handleSendReminder}
+            disabled={sending}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50"
+          >
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+            Send Reminder{invoice.reminderCount ? ` (${invoice.reminderCount})` : ''}
+          </button>
+          )}
           <button
             onClick={() => updateStatus('PAID')}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -269,6 +352,20 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             <Check className="w-4 h-4" />
             Mark as Paid
           </button>
+          <button
+            onClick={handleCopyPortalLink}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            <Link2 className="w-4 h-4" />
+            {invoice.portalToken ? 'Copy Portal Link' : 'Create Portal Link'}
+          </button>
+          <select
+            value={template}
+            onChange={(e) => setTemplate(e.target.value as TemplateName)}
+            className={`px-3 py-2 rounded-lg text-sm ${theme === 'dark' ? 'bg-black border-2 border-purple-500/40 text-white' : 'border border-gray-300 text-gray-700'}`}
+          >
+            {TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.name} Template</option>)}
+          </select>
           <button
             onClick={handleDownloadPDF}
             disabled={generatingPdf}

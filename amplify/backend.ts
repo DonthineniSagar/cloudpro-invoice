@@ -3,6 +3,7 @@ import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { storage } from './storage/resource';
 import { sendInvoiceEmail } from './functions/send-invoice-email/resource';
+import { processReceipt } from './functions/process-receipt/resource';
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Tags } from 'aws-cdk-lib';
 
@@ -11,6 +12,7 @@ const backend = defineBackend({
   data,
   storage,
   sendInvoiceEmail,
+  processReceipt,
 });
 
 // Tag all resources
@@ -25,6 +27,15 @@ backend.sendInvoiceEmail.resources.lambda.addToRolePolicy(
     effect: Effect.ALLOW,
     actions: ['ses:SendEmail', 'ses:SendRawEmail'],
     resources: ['arn:aws:ses:ap-southeast-2:*:identity/*'],
+  })
+);
+
+// Grant Textract permissions to the receipt processor
+backend.processReceipt.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['textract:AnalyzeExpense'],
+    resources: ['*'],
   })
 );
 

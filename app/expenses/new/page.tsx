@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, Upload, X, Camera, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { uploadData } from 'aws-amplify/storage';
 import AppLayout from '@/components/AppLayout';
@@ -22,12 +22,59 @@ export default function NewExpensePage() {
   const toast = useToast();
   const dark = theme === 'dark';
   const [saving, setSaving] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     description: '', category: 'Other', amount: '',
     gstClaimable: true, date: new Date().toISOString().split('T')[0], notes: ''
   });
+
+  const handleScanReceipt = async (file: File) => {
+    setScanning(true);
+    try {
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      const client = generateClient<Schema>();
+      const { data } = await client.mutations.processReceipt({ imageBase64: base64 });
+      const result = typeof data === 'string' ? JSON.parse(data) : data;
+      if (result?.extracted) {
+        const { total, date, vendor } = result.extracted;
+        setFormData(prev => ({
+          ...prev,
+          ...(total && { amount: total }),
+          ...(vendor && { description: vendor }),
+          ...(date && { date: parseReceiptDate(date) }),
+        }));
+        toast.success('Receipt scanned — check the auto-filled fields');
+      }
+    } catch (e) {
+      console.error('OCR error:', e);
+      toast.error('Failed to scan receipt. You can still fill in manually.');
+    } finally { setScanning(false); }
+  };
+
+  // Parse receipt date — handles NZ formats like 27/03/2026, 27-03-2026, 27 Mar 2026
+  const parseReceiptDate = (d: string): string => {
+    if (!d) return formData.date;
+    // Try DD/MM/YYYY or DD-MM-YYYY
+    const dmy = d.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (dmy) return `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+    // Try natural language (e.g. "27 Mar 2026")
+    try {
+      const parsed = new Date(d);
+      if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0];
+    } catch {}
+    return formData.date;
+  };
+
+  const handleReceiptSelect = (file: File) => {
+    setReceiptFile(file);
+    handleScanReceipt(file);
+  };
 
   const amount = parseFloat(formData.amount) || 0;
   const gstAmount = formData.gstClaimable ? amount * 3 / 23 : 0;
@@ -138,7 +185,7 @@ export default function NewExpensePage() {
             )}
 
             <div>
-              <label className={t.label}>Receipt</label>
+              <label className={t.label}>Receipt {scanning && <span className="text-indigo-500 ml-2"><Loader2 className="w-3 h-3 inline animate-spin" /> Scanning...</span>}</label>
               {receiptFile ? (
                 <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${dark ? 'bg-purple-900/20 border border-purple-500/30' : 'bg-indigo-50 border border-indigo-200'}`}>
                   <span className={`text-sm truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{receiptFile.name}</span>
@@ -147,13 +194,16 @@ export default function NewExpensePage() {
                   </button>
                 </div>
               ) : (
-                <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer ${dark ? 'border-2 border-dashed border-purple-500/40 hover:border-purple-500 text-slate-400' : 'border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500'}`}>
-                  <Upload className="w-4 h-4" />
-                  <span className="text-sm">Upload receipt image</span>
-                  <input type="file" accept="image/*,.pdf" className="hidden"
-                    onChange={(e) => setReceiptFile(e.target.files?.[0] || null)} />
-                </label>
+                <div className="flex gap-2">
+                  <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer ${dark ? 'border-2 border-dashed border-purple-500/40 hover:border-purple-500 text-slate-400' : 'border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500'}`}>
+                    <Camera className="w-4 h-4" />
+                    <span className="text-sm">Snap or upload receipt</span>
+                    <input type="file" accept="image/*,.pdf" capture="environment" className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleReceiptSelect(e.target.files[0])} />
+                  </label>
+                </div>
               )}
+              <p className={`text-xs mt-1 ${t.textMuted}`}>Receipt will be auto-scanned to fill in amount, date, and vendor</p>
             </div>
 
             <div>

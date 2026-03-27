@@ -1,8 +1,8 @@
 # CloudPro Invoice - Feature Backlog
 
 **Launch Date:** April 1, 2026  
-**Last Updated:** March 16, 2026  
-**Status:** MVP complete. Deploying to AWS Amplify. Testing in progress.
+**Last Updated:** March 27, 2026  
+**Status:** MVP complete. Pre-launch quick wins shipped. Deploying to AWS Amplify. Testing in progress.
 
 ---
 
@@ -32,9 +32,9 @@
 - [ ] Create `prod` branch on GitHub, connect to Amplify as production environment
 
 ### Quick Wins
-- [ ] Add loading skeletons on dashboard, invoice list, client list
-- [ ] Add empty state illustrations (no invoices yet, no clients yet)
-- [ ] Meta tags / Open Graph for landing page SEO
+- [x] Add loading skeletons on dashboard, invoice list, client list
+- [x] Add empty state illustrations (no invoices yet, no clients yet)
+- [x] Meta tags / Open Graph for landing page SEO
 
 ---
 
@@ -49,12 +49,13 @@ Auto-chase overdue invoices without manual effort.
 - Configurable reminder schedule stored in CompanyProfile
 
 **Tasks:**
-- [ ] Add `reminderSchedule` field to CompanyProfile (JSON: `{daysBefore: [7,3,1], daysAfter: [1,7,14]}`)
+- [x] Add `reminderSchedule` fields to CompanyProfile (reminderDaysBefore, reminderDaysAfter, templates)
 - [ ] Create `process-overdue` Lambda (EventBridge → scan DynamoDB → update status)
 - [ ] Send reminder email via SES (reuse existing email Lambda pattern)
-- [ ] Add reminder history to Invoice model (`lastReminderSent`, `reminderCount`)
-- [ ] Settings UI: configure reminder days, enable/disable auto-reminders
-- [ ] Dashboard: overdue count badge, "Send Reminder" quick action on invoice detail
+- [x] Add reminder history to Invoice model (`lastReminderSent`, `reminderCount`)
+- [x] Settings UI: configure reminder days, enable/disable auto-reminders (/settings/email)
+- [x] Dashboard: overdue count badge
+- [x] "Send Reminder" quick action on invoice detail (manual, reuses email Lambda)
 
 ---
 
@@ -67,12 +68,13 @@ Set-and-forget billing for retainer clients.
 - Supports weekly, fortnightly, monthly, quarterly, annually
 
 **Tasks:**
-- [ ] Add `RecurringInvoice` model (clientId, lineItems, frequency, nextDate, endDate, active)
+- [x] Add `RecurringInvoice` model (clientId, lineItems, frequency, nextDate, endDate, active)
 - [ ] Create `generate-recurring` Lambda (EventBridge daily → check nextDate → create Invoice draft)
-- [ ] Recurring invoice form UI (select client, line items, frequency, start/end date)
-- [ ] Recurring invoice list view with status (Active, Paused, Ended)
-- [ ] Pause/resume toggle
-- [ ] Auto-advance `nextDate` after each generation
+- [x] Recurring invoice form UI (select client, line items, frequency, start/end date)
+- [x] Recurring invoice list view with status (Active, Paused)
+- [x] Pause/resume toggle
+- [x] "Generate Now" manual trigger (creates draft invoice + advances nextDate)
+- [x] Auto-advance `nextDate` after each generation
 - [ ] Email notification when recurring invoice is generated
 
 ---
@@ -86,10 +88,10 @@ Multiple professional PDF layouts.
 - Each template = different `generate-pdf` layout function
 
 **Tasks:**
-- [ ] Create 3 templates: Modern (current), Classic (serif fonts, traditional), Minimal (clean, no borders)
+- [x] Create 3 templates: Modern (current), Classic (serif fonts, traditional), Minimal (clean, no borders)
 - [ ] Template preview thumbnails in settings
-- [ ] Add `defaultTemplate` field to CompanyProfile
-- [ ] Template selector dropdown on invoice detail (override per invoice)
+- [x] Add `defaultTemplate` field to CompanyProfile
+- [x] Template selector dropdown on invoice detail (override per invoice)
 - [ ] Custom accent colour picker (stored in CompanyProfile)
 - [ ] Custom footer text field (payment terms, legal notices)
 
@@ -99,17 +101,19 @@ Multiple professional PDF layouts.
 Let clients view and download their invoices without logging in.
 
 **Implementation:**
-- Public route `/portal/[token]` — token = signed JWT with invoiceId + expiry
+- Public route `/portal/[token]` — token = random UUID stored on invoice
+- API route `/api/portal/[token]` — queries via API key auth
 - No auth required — token-based access
-- Read-only view of invoice + PDF download
+- Read-only view of invoice
 
 **Tasks:**
-- [ ] Generate unique portal token per invoice (JWT signed with app secret, 90-day expiry)
-- [ ] Add `portalToken` field to Invoice model
-- [ ] Public `/portal/[token]` page — verify token, display invoice details
+- [x] Generate unique portal token per invoice (random UUID)
+- [x] Add `portalToken` field to Invoice model
+- [x] Public `/portal/[token]` page — verify token, display invoice details
 - [ ] PDF download button on portal page (pre-signed S3 URL)
+- [x] "Copy Portal Link" button on invoice detail page
+- [x] Portal shows payment status (Paid/Unpaid/Overdue)
 - [ ] "View Online" link in email template
-- [ ] Portal shows payment status (Paid/Unpaid/Overdue)
 - [ ] Optional: client can mark as "Disputed" with a note
 
 ---
@@ -139,18 +143,19 @@ Get paid directly from invoices.
 Snap a receipt, auto-fill the expense.
 
 **Implementation:**
-- Upload receipt image → S3 → trigger Textract `AnalyzeExpense`
+- Upload receipt image → Lambda → Textract `AnalyzeExpense`
 - Parse response for total, date, vendor name
 - Pre-fill expense form, user confirms/edits
 
 **Tasks:**
-- [ ] Create `process-receipt` Lambda (S3 trigger → Textract AnalyzeExpense)
-- [ ] Parse Textract response: extract TOTAL, DATE, VENDOR_NAME
+- [x] Create `process-receipt` Lambda (Textract AnalyzeExpense)
+- [x] Parse Textract response: extract TOTAL, DATE, VENDOR_NAME, TAX
 - [ ] Store OCR results in new `ReceiptOCR` model (invoiceId, rawResponse, extracted fields)
-- [ ] Pre-fill expense form from OCR results
+- [x] Pre-fill expense form from OCR results (auto-scan on receipt upload)
 - [ ] Confidence score display (highlight low-confidence fields in yellow)
-- [ ] Manual correction UI (edit extracted values before saving)
-- [ ] Support JPEG, PNG, PDF receipt formats
+- [x] Manual correction UI (edit extracted values before saving)
+- [x] Support JPEG, PNG, PDF receipt formats
+- [x] Camera capture button on mobile (capture="environment")
 
 ---
 
@@ -189,13 +194,13 @@ Full mobile experience without app store.
 - Camera access for receipt capture
 
 **Tasks:**
-- [ ] Add `manifest.json` with app name, icons, theme colour, start URL
-- [ ] Add service worker for offline caching (next-pwa or workbox)
-- [ ] App install prompt banner on mobile
+- [x] Add `manifest.json` with app name, icons, theme colour, start URL
+- [x] Add service worker for offline caching (network-first with offline fallback)
+- [x] App install prompt banner on mobile
 - [ ] Camera capture button on expense form (receipt photo)
 - [ ] Push notifications via Web Push API (payment received, invoice overdue)
 - [ ] Touch-optimised: larger tap targets, swipe actions on lists
-- [ ] Splash screen with CloudPro branding
+- [x] Splash screen with CloudPro branding
 - [ ] Test on iOS Safari, Android Chrome, Samsung Internet
 
 ---

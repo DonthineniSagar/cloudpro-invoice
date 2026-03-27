@@ -20,6 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/invoices', label: 'Invoices' },
+    { href: '/invoices/recurring', label: 'Recurring' },
     { href: '/clients', label: 'Clients' },
     { href: '/expenses', label: 'Expenses' },
     { href: '/reports', label: 'Reports' },
