@@ -265,6 +265,15 @@ Monthly PAYE processing for employees.
 - [ ] Pre-Tax Margin = Revenue ex-GST minus Expenses ex-GST (current calc is correct, label is wrong)
 - [ ] Consider adding gross margin % indicator
 
+### Email History & SES
+- [ ] Email history model (invoiceId, to, cc, subject, sentAt, status)
+- [ ] Log every sent email (invoice email + reminders) to EmailHistory
+- [ ] Email history tab on invoice detail page (who, when, status)
+- [ ] Email history list in settings (all sent emails, searchable)
+- [ ] SES: Request production access (exit sandbox mode)
+- [ ] SES: Set SES_FROM_EMAIL=noreply@cloudpro-digital.co.nz for prod
+- [ ] SES: Verify recipient not required after production access
+
 ### Financial Year (FY) Support — PRIORITY
 NZ Financial Year runs April 1 – March 31. All views should be FY-aware.
 
