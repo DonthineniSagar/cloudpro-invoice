@@ -13,7 +13,25 @@ import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { expenseSchema, validate, FormErrors } from '@/lib/validation';
 
-const CATEGORIES = ['Travel', 'Office', 'Software', 'Equipment', 'Marketing', 'Meals', 'Utilities', 'Other'];
+// IRD NZ deductible expense categories (IR3/IR4 aligned)
+const CATEGORIES = [
+  'Advertising & Marketing',
+  'Communication (Phone & Internet)',
+  'Depreciation',
+  'Entertainment (50% deductible)',
+  'General & Administrative',
+  'Insurance',
+  'Interest & Bank Fees',
+  'Legal & Accounting',
+  'Motor Vehicle',
+  'Office Expenses',
+  'Rent & Rates',
+  'Repairs & Maintenance',
+  'Software & Subscriptions',
+  'Subcontractors',
+  'Travel & Accommodation',
+  'Other',
+];
 
 export default function NewExpensePage() {
   const router = useRouter();

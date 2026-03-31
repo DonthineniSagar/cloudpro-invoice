@@ -89,8 +89,17 @@ export default function ExpensesPage() {
 
   const categoryIcon = (category: string) => {
     const icons: Record<string, string> = {
+      'Advertising & Marketing': '📣', 'Communication (Phone & Internet)': '📱',
+      'Depreciation': '📉', 'Entertainment (50% deductible)': '🍽️',
+      'General & Administrative': '📋', 'Insurance': '🛡️',
+      'Interest & Bank Fees': '🏦', 'Legal & Accounting': '⚖️',
+      'Motor Vehicle': '🚗', 'Office Expenses': '🏢',
+      'Rent & Rates': '🏠', 'Repairs & Maintenance': '🔧',
+      'Software & Subscriptions': '💻', 'Subcontractors': '👷',
+      'Travel & Accommodation': '✈️', 'Other': '📦',
+      // Legacy fallbacks
       'Travel': '✈️', 'Office': '🏢', 'Software': '💻', 'Equipment': '🔧',
-      'Marketing': '📣', 'Meals': '🍽️', 'Utilities': '⚡', 'Other': '📦'
+      'Marketing': '📣', 'Meals': '🍽️', 'Utilities': '⚡',
     };
     return icons[category] || '📦';
   };
