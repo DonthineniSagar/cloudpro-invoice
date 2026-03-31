@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Edit, Eye, Trash2 } from 'lucide-react';
+import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Eye, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
@@ -18,7 +18,6 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [monthFilter, setMonthFilter] = useState('');
   const [fyFilter, setFyFilter] = useState(currentFY());
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
   const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
@@ -75,9 +74,8 @@ export default function ExpensesPage() {
   const filtered = expenses.filter(e => {
     const matchesSearch = e.description?.toLowerCase().includes(search.toLowerCase()) ||
       e.category?.toLowerCase().includes(search.toLowerCase());
-    const matchesMonth = !monthFilter || e.date?.startsWith(monthFilter);
     const matchesFY = !fyFilter || (e.date && getFY(e.date) === fyFilter);
-    return matchesSearch && matchesMonth && matchesFY;
+    return matchesSearch && matchesFY;
   });
 
   const totalExpenses = filtered.reduce((sum, e) => sum + (e.amount || 0), 0);
@@ -149,33 +147,24 @@ export default function ExpensesPage() {
           </div>
         )}
 
-        {/* Search & Filter */}
-        <div className="flex gap-3 mb-6">
+        {/* Filters — compact row */}
+        <div className={`flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg ${dark ? 'bg-black border border-purple-500/20' : 'bg-gray-50 border border-gray-200'}`}>
           <select value={fyFilter} onChange={(e) => setFyFilter(Number(e.target.value))}
-            className={`w-44 ${t.input}`}>
+            className={`text-sm px-3 py-1.5 rounded-md ${dark ? 'bg-gray-900 border border-purple-500/30 text-white' : 'bg-white border border-gray-300 text-gray-700'}`}>
             {[currentFY(), currentFY() - 1, currentFY() - 2].map(fy => (
               <option key={fy} value={fy}>{fyLabel(fy)}</option>
             ))}
           </select>
-          <div className="relative flex-1">
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${dark ? 'text-slate-400' : 'text-gray-400'}`} />
-            <input type="text" placeholder="Search expenses..." value={search}
+          <div className="relative flex-1 min-w-[150px]">
+            <Search className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 ${dark ? 'text-slate-500' : 'text-gray-400'}`} />
+            <input type="text" placeholder="Search..." value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`pl-10 ${t.input}`} />
+              className={`w-full pl-8 pr-3 py-1.5 text-sm rounded-md ${dark ? 'bg-gray-900 border border-purple-500/30 text-white placeholder-slate-500 focus:border-purple-500 focus:outline-none' : 'bg-white border border-gray-300 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500'}`} />
           </div>
-          <input type="month" value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
-            style={dark ? { colorScheme: 'dark' } : {}}
-            className={`w-44 ${t.input}`} />
-          {monthFilter && (
-            <button onClick={() => setMonthFilter('')}
-              className={`px-3 text-sm ${dark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}>
-              Clear
-            </button>
-          )}
+          <span className={`text-xs ${t.textMuted}`}>{filtered.length} expenses · ${totalExpenses.toFixed(2)}</span>
         </div>
 
-        {/* Expenses List */}
+        {/* Expenses List — grouped by month */}
         {loading ? (
           <div className="text-center py-12"><p className={t.textMuted}>Loading expenses...</p></div>
         ) : filtered.length === 0 ? (
@@ -194,65 +183,72 @@ export default function ExpensesPage() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            {filtered.map((expense) => {
-              const needsReceipt = (expense.amount || 0) > 50 && !expense.receiptUrl;
+          <div className="space-y-6">
+            {Object.entries(
+              filtered.reduce((groups: Record<string, typeof filtered>, e) => {
+                const d = new Date(e.date);
+                const key = d.toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' });
+                (groups[key] = groups[key] || []).push(e);
+                return groups;
+              }, {})
+            ).map(([month, items]) => {
+              const monthTotal = items.reduce((s: number, e: any) => s + (e.amount || 0), 0);
               return (
-                <div key={expense.id}
-                  className={`${dark ? 'bg-black rounded-xl border-2 border-purple-500/40 p-4' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-4'}`}>
-                  <div className="flex items-center justify-between">
-                    <Link href={`/expenses/${expense.id}/edit`} className="flex items-center gap-4 flex-1 min-w-0">
-                      {thumbnails[expense.id] ? (
-                        <img src={thumbnails[expense.id]} alt="Receipt"
-                          onClick={(e) => { e.preventDefault(); setViewingReceipt(thumbnails[expense.id]); }}
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-200 cursor-zoom-in hover:opacity-80" />
-                      ) : (
-                        <span className="text-2xl">{categoryIcon(expense.category || 'Other')}</span>
-                      )}
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className={`font-medium truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{expense.description}</p>
-                          {needsReceipt && (
-                            <span className="flex items-center gap-1 text-xs text-amber-500 flex-shrink-0" title="Receipt missing - required for expenses over $50">
-                              <AlertTriangle className="w-3.5 h-3.5" /> No receipt
-                            </span>
-                          )}
+                <div key={month}>
+                  <div className={`flex items-center justify-between mb-2 px-1`}>
+                    <h3 className={`text-sm font-semibold ${dark ? 'text-slate-300' : 'text-gray-700'}`}>{month}</h3>
+                    <span className={`text-sm font-medium ${dark ? 'text-slate-400' : 'text-gray-500'}`}>${monthTotal.toFixed(2)} · {items.length} items</span>
+                  </div>
+                  <div className="space-y-2">
+                    {items.map((expense: any) => {
+                      const needsReceipt = (expense.amount || 0) > 50 && !expense.receiptUrl;
+                      return (
+                        <div key={expense.id}
+                          className={`${dark ? 'bg-black rounded-lg border border-purple-500/30 px-4 py-3' : 'bg-white rounded-lg shadow-sm border border-gray-200 px-4 py-3'}`}>
+                          <div className="flex items-center justify-between">
+                            <Link href={`/expenses/${expense.id}/edit`} className="flex items-center gap-3 flex-1 min-w-0">
+                              {thumbnails[expense.id] ? (
+                                <img src={thumbnails[expense.id]} alt="Receipt"
+                                  onClick={(e) => { e.preventDefault(); setViewingReceipt(thumbnails[expense.id]); }}
+                                  className="w-8 h-8 rounded object-cover flex-shrink-0 border border-gray-200 cursor-zoom-in hover:opacity-80" />
+                              ) : (
+                                <span className="text-lg">{categoryIcon(expense.category || 'Other')}</span>
+                              )}
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className={`text-sm font-medium truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{expense.description}</p>
+                                  {needsReceipt && <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />}
+                                </div>
+                                <p className={`text-xs ${t.textMuted}`}>
+                                  {expense.category || 'Other'} · {new Date(expense.date).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' })}
+                                  {expense.gstClaimable && ' · GST'}
+                                </p>
+                              </div>
+                            </Link>
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                              <div className="text-right">
+                                <p className={`text-sm font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>${expense.amount?.toFixed(2)}</p>
+                                <span className={`text-xs px-1.5 py-0.5 rounded-full ${statusColor(expense.status || 'PENDING')}`}>
+                                  {expense.status || 'PENDING'}
+                                </span>
+                              </div>
+                              {expense.status === 'PENDING' && (
+                                <button onClick={() => updateStatus(expense.id, 'APPROVED')} title="Approve"
+                                  className={`p-1.5 rounded transition-colors ${dark ? 'text-green-400 hover:bg-green-900/30' : 'text-green-600 hover:bg-green-50'}`}>
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                              )}
+                              {expense.status !== 'APPROVED' && (
+                                <button onClick={() => deleteExpense(expense.id, expense.status)}
+                                  className={`p-1.5 rounded transition-colors ${dark ? 'text-slate-500 hover:text-red-400' : 'text-gray-400 hover:text-red-600'}`}>
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className={`text-sm ${t.textMuted}`}>{expense.category || 'Uncategorized'}</span>
-                          <span className={`text-sm ${t.textMuted}`}>{new Date(expense.date).toLocaleDateString()}</span>
-                          {expense.gstClaimable && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">GST</span>}
-                        </div>
-                      </div>
-                    </Link>
-
-                    <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                      <div className="text-right mr-2">
-                        <p className={`text-lg font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>${expense.amount?.toFixed(2)}</p>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(expense.status || 'PENDING')}`}>
-                          {expense.status || 'PENDING'}
-                        </span>
-                      </div>
-
-                      {/* Inline action buttons */}
-                      {expense.status === 'PENDING' && (
-                        <button onClick={() => updateStatus(expense.id, 'APPROVED')}
-                          title="Approve expense"
-                          className={`p-2 rounded-lg transition-colors ${dark ? 'text-green-400 hover:bg-green-900/30 border border-green-500/30 hover:border-green-500' : 'text-green-600 hover:bg-green-50 border border-green-200 hover:border-green-400'}`}>
-                          <CheckCircle className="w-5 h-5" />
-                        </button>
-                      )}
-                      <Link href={`/expenses/${expense.id}/edit`}
-                        className={`p-2 rounded-lg transition-colors ${dark ? 'text-slate-400 hover:text-white hover:bg-purple-900/30' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                      {expense.status !== 'APPROVED' && (
-                        <button onClick={() => deleteExpense(expense.id, expense.status)}
-                          className={`p-2 rounded-lg transition-colors ${dark ? 'text-slate-400 hover:text-red-400 hover:bg-red-900/30' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'}`}>
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
