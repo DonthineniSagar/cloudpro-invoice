@@ -5,7 +5,7 @@ export const sendInvoiceEmail = defineFunction({
   entry: './handler.ts',
   runtime: 20,
   environment: {
-    SES_FROM_EMAIL: process.env.SES_FROM_EMAIL || 'testing@cloudpro-digital.co.nz',
+    SES_FROM_EMAIL: process.env.SES_FROM_EMAIL || 'billing@cloudpro-digital.co.nz',
   },
   timeoutSeconds: 30,
 });

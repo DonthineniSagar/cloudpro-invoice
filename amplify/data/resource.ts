@@ -159,6 +159,7 @@ const schema = a.schema({
       body: a.string().required(),
       pdfBase64: a.string().required(),
       fileName: a.string().required(),
+      fromName: a.string(),
     })
     .returns(a.json())
     .authorization((allow) => allow.authenticated())

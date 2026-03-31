@@ -10,15 +10,17 @@ type EmailPayload = {
   body: string;
   pdfBase64: string;
   fileName: string;
+  fromName?: string;
 };
 
 export const handler = async (event: { arguments: EmailPayload }) => {
-  const { to, cc, replyTo, subject, body, pdfBase64, fileName } = event.arguments;
+  const { to, cc, replyTo, subject, body, pdfBase64, fileName, fromName } = event.arguments;
 
   const fromEmail = process.env.SES_FROM_EMAIL;
+  const from = fromName ? `${fromName} <${fromEmail}>` : fromEmail;
   const boundary = `boundary-${Date.now()}`;
   const rawParts = [
-    `From: ${fromEmail}`,
+    `From: ${from}`,
     `To: ${to}`,
     ...(cc ? [`Cc: ${cc}`] : []),
     ...(replyTo ? [`Reply-To: ${replyTo}`] : []),

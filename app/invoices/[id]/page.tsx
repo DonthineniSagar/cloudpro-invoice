@@ -137,6 +137,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         to: invoice.clientEmail, subject, body, pdfBase64,
         fileName: `${invoice.invoiceNumber}.pdf`,
         replyTo: profile?.emailReplyTo || profile?.companyEmail || undefined,
+        fromName: profile?.companyName || undefined,
       });
 
       const now = new Date().toISOString();
@@ -224,6 +225,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         body: emailForm.body,
         pdfBase64,
         fileName: `${invoice.invoiceNumber}.pdf`,
+        fromName: invoice.companyName || undefined,
       });
 
       await client.models.Invoice.update({ id: params.id, status: 'SENT' as any });
