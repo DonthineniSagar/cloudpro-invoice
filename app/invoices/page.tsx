@@ -8,6 +8,7 @@ import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { TableRowSkeleton } from '@/components/Skeleton';
+import { currentFY, fyLabel, getFY } from '@/lib/fy-utils';
 
 export default function InvoicesPage() {
   const { theme } = useTheme();
@@ -15,6 +16,7 @@ export default function InvoicesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [loading, setLoading] = useState(true);
+  const [fyFilter, setFyFilter] = useState(currentFY());
 
   useEffect(() => {
     loadInvoices();
@@ -34,8 +36,9 @@ export default function InvoicesPage() {
 
   const filteredInvoices = invoices
     .filter(inv =>
-      inv.invoiceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.clientName?.toLowerCase().includes(searchTerm.toLowerCase())
+      (inv.invoiceNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inv.clientName?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (!fyFilter || (inv.issueDate && getFY(inv.issueDate) === fyFilter))
     )
     .sort((a, b) => {
       const da = new Date(a.issueDate).getTime();
@@ -99,8 +102,14 @@ export default function InvoicesPage() {
           </Link>
         </div>
 
-        <div className="mb-6">
-          <div className="relative">
+        <div className="mb-6 flex gap-3">
+          <select value={fyFilter} onChange={(e) => setFyFilter(Number(e.target.value))}
+            className={`w-44 ${theme === 'dark' ? 'bg-black border-2 border-purple-500/40 rounded-lg text-white px-3 py-3 focus:border-purple-500 focus:outline-none' : 'border border-gray-300 rounded-lg px-3 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent'}`}>
+            {[currentFY(), currentFY() - 1, currentFY() - 2].map(fy => (
+              <option key={fy} value={fy}>{fyLabel(fy)}</option>
+            ))}
+          </select>
+          <div className="relative flex-1">
             <Search className={theme === 'dark' ? 'absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5' : 'absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5'} />
             <input
               type="text"

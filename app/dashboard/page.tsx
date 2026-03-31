@@ -10,6 +10,7 @@ import type { Schema } from '@/amplify/data/resource';
 import AppLayout from '@/components/AppLayout';
 import { FileText, Receipt } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/Skeleton';
+import { currentFY, fyLabel, fyShort, fyMonthKeys, FY_MONTHS, fyStart, fyEnd, getFY, availableFYs } from '@/lib/fy-utils';
 
 type MonthData = { month: string; revenue: number; expenses: number };
 
@@ -29,6 +30,7 @@ export default function DashboardPage() {
   const [statusBreakdown, setStatusBreakdown] = useState<Record<string, number>>({});
   const [hasCompanyProfile, setHasCompanyProfile] = useState(false);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
+  const [selectedFY, setSelectedFY] = useState(currentFY());
 
   useEffect(() => {
     if (!loading && !user) {
@@ -37,7 +39,7 @@ export default function DashboardPage() {
       loadMetrics();
       checkCompanyProfile();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, selectedFY]);
 
   const loadMetrics = async () => {
     try {
@@ -48,6 +50,10 @@ export default function DashboardPage() {
       ]);
       const invoices = invoicesRes.data;
       const expenses = expensesRes.data;
+
+      // Filter to selected FY based on date (not createdAt)
+      const fyInvoices = invoices.filter(inv => inv.issueDate && getFY(inv.issueDate) === selectedFY);
+      const fyExpenses = expenses.filter(exp => exp.date && getFY(exp.date) === selectedFY);
 
       // Auto-detect overdue invoices
       const today = new Date().toISOString().split('T')[0];
@@ -63,64 +69,61 @@ export default function DashboardPage() {
         }
       }
 
-      // Core metrics
-      const totalRevenue = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
-      const gstCollected = invoices.reduce((sum, inv) => sum + (inv.gstAmount || 0), 0);
+      // Core metrics (FY-scoped)
+      const totalRevenue = fyInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+      const gstCollected = fyInvoices.reduce((sum, inv) => sum + (inv.gstAmount || 0), 0);
       const revenueExGst = totalRevenue - gstCollected;
-      const outstanding = invoices
+      const outstanding = fyInvoices
         .filter(inv => inv.status !== 'PAID' && inv.status !== 'CANCELLED')
         .reduce((sum, inv) => sum + (inv.total || 0), 0);
-      const paidCount = invoices.filter(inv => inv.status === 'PAID').length;
-      const pendingCount = invoices.filter(inv => inv.status === 'DRAFT' || inv.status === 'SENT').length;
-      const overdueCount = invoices.filter(inv => inv.status === 'OVERDUE').length;
-      const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-      const expensesExGst = expenses.reduce((sum, e) => sum + (e.amountExGst || 0), 0);
-      const gstPaid = expenses.filter(e => e.gstClaimable).reduce((sum, e) => sum + (e.gstAmount || 0), 0);
+      const paidCount = fyInvoices.filter(inv => inv.status === 'PAID').length;
+      const pendingCount = fyInvoices.filter(inv => inv.status === 'DRAFT' || inv.status === 'SENT').length;
+      const overdueCount = fyInvoices.filter(inv => inv.status === 'OVERDUE').length;
+      const totalExpenses = fyExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const expensesExGst = fyExpenses.reduce((sum, e) => sum + (e.amountExGst || 0), 0);
+      const gstPaid = fyExpenses.filter(e => e.gstClaimable).reduce((sum, e) => sum + (e.gstAmount || 0), 0);
 
       setMetrics({ totalRevenue, revenueExGst, gstCollected, outstanding, paidCount, pendingCount, overdueCount, totalExpenses, expensesExGst, gstPaid });
 
-      // Status breakdown
+      // Status breakdown (FY-scoped)
       const breakdown: Record<string, number> = {};
-      invoices.forEach(inv => {
+      fyInvoices.forEach(inv => {
         const s = inv.status || 'DRAFT';
         breakdown[s] = (breakdown[s] || 0) + 1;
       });
       setStatusBreakdown(breakdown);
 
-      // Monthly data (last 6 months)
+      // Monthly data (FY months: Apr–Mar)
       const monthly: Record<string, { revenue: number; expenses: number }> = {};
-      const now = new Date();
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      const monthKeys = fyMonthKeys(selectedFY);
+      for (const key of monthKeys) {
         monthly[key] = { revenue: 0, expenses: 0 };
       }
-      invoices.forEach(inv => {
+      fyInvoices.forEach(inv => {
         if (!inv.issueDate) return;
         const d = new Date(inv.issueDate);
         const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
         if (monthly[key]) monthly[key].revenue += inv.total || 0;
       });
-      expenses.forEach(exp => {
+      fyExpenses.forEach(exp => {
         if (!exp.date) return;
         const d = new Date(exp.date);
         const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
         if (monthly[key]) monthly[key].expenses += exp.amount || 0;
       });
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      setMonthlyData(Object.entries(monthly).map(([key, val]) => ({
-        month: months[parseInt(key.split('-')[1]) - 1],
-        revenue: val.revenue,
-        expenses: val.expenses,
+      setMonthlyData(monthKeys.map((key, i) => ({
+        month: FY_MONTHS[i],
+        revenue: monthly[key].revenue,
+        expenses: monthly[key].expenses,
       })));
 
-      // Recent items
-      const sortedInv = [...invoices].sort((a, b) =>
+      // Recent items (FY-scoped)
+      const sortedInv = [...fyInvoices].sort((a, b) =>
         new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime()
       );
       setRecentInvoices(sortedInv.slice(0, 5));
 
-      const sortedExp = [...expenses].sort((a, b) =>
+      const sortedExp = [...fyExpenses].sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
       setRecentExpenses(sortedExp.slice(0, 5));
@@ -168,8 +171,18 @@ export default function DashboardPage() {
     <AppLayout>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className={dark ? 'text-3xl font-bold text-white' : 'text-3xl font-bold text-gray-900'}>Dashboard</h2>
-          <p className={`${muted} mt-1`}>Welcome back, {user.firstName || user.email}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className={dark ? 'text-3xl font-bold text-white' : 'text-3xl font-bold text-gray-900'}>Dashboard</h2>
+              <p className={`${muted} mt-1`}>Welcome back, {user.firstName || user.email}</p>
+            </div>
+            <select value={selectedFY} onChange={(e) => setSelectedFY(Number(e.target.value))}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${dark ? 'bg-black border-2 border-purple-500/40 text-white' : 'border border-gray-300 text-gray-700'}`}>
+              {[currentFY(), currentFY() - 1, currentFY() - 2].map(fy => (
+                <option key={fy} value={fy}>{fyLabel(fy)}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Metrics Grid */}
@@ -241,7 +254,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Monthly Revenue vs Expenses Bar Chart */}
           <div className={`${card} lg:col-span-2`}>
-            <h3 className={heading}>Revenue vs Expenses (6 Months)</h3>
+            <h3 className={heading}>Revenue vs Expenses ({fyShort(selectedFY)})</h3>
             {monthlyData.length > 0 ? (
               <div className="flex items-end gap-3 h-48">
                 {monthlyData.map((d) => (

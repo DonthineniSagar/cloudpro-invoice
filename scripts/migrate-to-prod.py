@@ -29,6 +29,9 @@ LEGACY_SUFFIX = 'gpvtefxrxvgbbj2kqzt5ri7x5e-NONE'
 LEGACY_S3_BUCKET = 'amplify-d3iwgp9cgcxnmn-ma-invoicepdfstoragebucket7-uswjp22ai0zd'
 LEGACY_USER_ID = 'c93e3468-4091-70f6-5b3c-2a78041a97f5'
 
+# New prod user ID (from Cognito signup)
+NEW_USER_ID = '89fea478-1011-70d2-ac64-d87dda85a7fa'
+
 # Company details to backfill on invoices (set after CompanyProfile is created)
 COMPANY_BACKFILL = {
     'companyName': 'CloudPro Digital Limited',
@@ -92,12 +95,22 @@ def remap_s3_path(old_path):
     path = path.replace(f'users/{LEGACY_USER_ID}/invoices/', f'invoices/{LEGACY_USER_ID}/')
     return path
 
+def remap_owner(item):
+    """Remap legacy userId and owner fields to new prod user."""
+    if item.get('userId') == LEGACY_USER_ID:
+        item['userId'] = NEW_USER_ID
+    owner = item.get('owner', '')
+    if LEGACY_USER_ID in str(owner):
+        item['owner'] = f'{NEW_USER_ID}::{NEW_USER_ID}'
+    return item
+
 
 # ── Table Migrations ──
 
 def migrate_clients(src, tgt, dry_run):
     items = scan_all(f'Client-{src}')
     for item in items:
+        remap_owner(item)
         for f in ['clientType', 'website']:
             item.pop(f, None)
     count = put_items(f'Client-{tgt}', items, dry_run)
@@ -108,6 +121,7 @@ def migrate_invoices(src, tgt, dry_run):
     inv_ids = set()
     for item in items:
         inv_ids.add(item['id'])
+        remap_owner(item)
         # Remap legacy field names
         if 'taxRate' in item:
             item['gstRate'] = item.pop('taxRate')
@@ -135,6 +149,8 @@ def migrate_invoice_items(src, tgt, valid_inv_ids, dry_run):
     items = scan_all(f'InvoiceItem-{src}')
     # Skip orphaned items
     valid = [i for i in items if i.get('invoiceId') in valid_inv_ids]
+    for item in valid:
+        remap_owner(item)
     skipped = len(items) - len(valid)
     count = put_items(f'InvoiceItem-{tgt}', valid, dry_run)
     print(f'  InvoiceItems: {count} (skipped {skipped} orphaned)')
@@ -142,6 +158,7 @@ def migrate_invoice_items(src, tgt, valid_inv_ids, dry_run):
 def migrate_expenses(src, tgt, dry_run):
     items = scan_all(f'Expense-{src}')
     for item in items:
+        remap_owner(item)
         # Map legacy category
         if 'irdCategory' in item:
             item['category'] = CATEGORY_MAP.get(item.pop('irdCategory', ''), 'Other')

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
+import { currentFY, fyLabel, getFY } from '@/lib/fy-utils';
 
 export default function ExpensesPage() {
   const { theme } = useTheme();
@@ -18,6 +19,7 @@ export default function ExpensesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [monthFilter, setMonthFilter] = useState('');
+  const [fyFilter, setFyFilter] = useState(currentFY());
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
   const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
 
@@ -74,12 +76,13 @@ export default function ExpensesPage() {
     const matchesSearch = e.description?.toLowerCase().includes(search.toLowerCase()) ||
       e.category?.toLowerCase().includes(search.toLowerCase());
     const matchesMonth = !monthFilter || e.date?.startsWith(monthFilter);
-    return matchesSearch && matchesMonth;
+    const matchesFY = !fyFilter || (e.date && getFY(e.date) === fyFilter);
+    return matchesSearch && matchesMonth && matchesFY;
   });
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  const totalGstClaimable = expenses.filter(e => e.gstClaimable).reduce((sum, e) => sum + (e.gstAmount || 0), 0);
-  const missingReceipts = expenses.filter(e => (e.amount || 0) > 50 && !e.receiptUrl).length;
+  const totalExpenses = filtered.reduce((sum, e) => sum + (e.amount || 0), 0);
+  const totalGstClaimable = filtered.filter(e => e.gstClaimable).reduce((sum, e) => sum + (e.gstAmount || 0), 0);
+  const missingReceipts = filtered.filter(e => (e.amount || 0) > 50 && !e.receiptUrl).length;
 
   const statusColor = (status: string) => {
     if (status === 'APPROVED') return 'bg-green-100 text-green-800';
@@ -148,6 +151,12 @@ export default function ExpensesPage() {
 
         {/* Search & Filter */}
         <div className="flex gap-3 mb-6">
+          <select value={fyFilter} onChange={(e) => setFyFilter(Number(e.target.value))}
+            className={`w-44 ${t.input}`}>
+            {[currentFY(), currentFY() - 1, currentFY() - 2].map(fy => (
+              <option key={fy} value={fy}>{fyLabel(fy)}</option>
+            ))}
+          </select>
           <div className="relative flex-1">
             <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${dark ? 'text-slate-400' : 'text-gray-400'}`} />
             <input type="text" placeholder="Search expenses..." value={search}

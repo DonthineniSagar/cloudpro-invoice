@@ -12,6 +12,7 @@ import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { expenseSchema, validate, FormErrors } from '@/lib/validation';
+import { getFY, currentFY, isPreviousFYOpen, fyShort } from '@/lib/fy-utils';
 
 // IRD NZ deductible expense categories (IR3/IR4 aligned)
 const CATEGORIES = [
@@ -104,6 +105,10 @@ export default function NewExpensePage() {
       description: formData.description, amount, date: formData.date, category: formData.category,
     });
     if (!result.success) { setErrors(result.errors); toast.error('Please fix the errors below'); return; }
+    // Block if expense date is in a closed FY
+    if (getFY(formData.date) < currentFY() && !isPreviousFYOpen()) {
+      toast.error(`${fyShort(getFY(formData.date))} is closed — cutoff was May 15`); return;
+    }
     setErrors({});
     setSaving(true);
     try {
@@ -163,6 +168,13 @@ export default function NewExpensePage() {
                 <input type="date" required value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   style={dark ? { colorScheme: 'dark' } : {}} className={t.input} />
+                {formData.date && getFY(formData.date) < currentFY() && (
+                  <p className={`text-xs mt-1 ${isPreviousFYOpen() ? 'text-amber-500' : 'text-red-500'}`}>
+                    {isPreviousFYOpen()
+                      ? `⚠ This falls in ${fyShort(getFY(formData.date))} (previous year) — open until May 15`
+                      : `✕ ${fyShort(getFY(formData.date))} is closed — cutoff was May 15`}
+                  </p>
+                )}
               </div>
             </div>
 

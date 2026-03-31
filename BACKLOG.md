@@ -207,6 +207,19 @@ Full mobile experience without app store.
 
 ## 📋 Phase 3 — Growth (June+ 2026)
 
+### PAYE Payroll
+Monthly PAYE processing for employees.
+
+**Tasks:**
+- [ ] Employee model (name, IRD number, tax code, salary/hourly rate, KiwiSaver rate)
+- [ ] Pay run: calculate gross, PAYE tax (NZ tax tables), KiwiSaver, student loan, net pay
+- [ ] Pay run history with payslip PDF generation
+- [ ] IR345 Employment Information filing summary (monthly to IRD)
+- [ ] Employee payslip email
+- [ ] KiwiSaver employer contribution tracking (3% minimum)
+- [ ] Holiday pay accrual tracking (8% or 4 weeks)
+- [ ] Dashboard widget: next pay run due, YTD PAYE paid
+
 ### Team & Multi-User
 - [ ] Invite team members (Cognito groups)
 - [ ] Role-based access: Admin, Accountant, Viewer
@@ -241,6 +254,37 @@ Full mobile experience without app store.
 - [ ] S3 bucket lifecycle policy (archive old PDFs after 7 years per IRD)
 - [ ] CloudWatch alarms (Lambda errors, API latency)
 - [ ] DynamoDB point-in-time recovery
+
+---
+
+## 📊 Dashboard Improvements
+
+- [ ] Rename "Profit (ex-GST)" to "Pre-Tax Margin" — current label is misleading
+- [ ] Show "Revenue (ex-GST)" metric alongside total revenue (÷ 1.15)
+- [ ] Show "Expenses (ex-GST)" metric alongside total expenses
+- [ ] Pre-Tax Margin = Revenue ex-GST minus Expenses ex-GST (current calc is correct, label is wrong)
+- [ ] Consider adding gross margin % indicator
+
+### Financial Year (FY) Support — PRIORITY
+NZ Financial Year runs April 1 – March 31. All views should be FY-aware.
+
+**Rules:**
+- FY is determined by the expense/invoice DATE, not the created date
+- FY26 = 1 Apr 2025 – 31 Mar 2026, FY27 = 1 Apr 2026 – 31 Mar 2027
+- Previous FY expenses can be added until May 15 cutoff (IRD filing deadline)
+- After May 15, previous FY is locked (read-only, no new expenses)
+
+**Tasks:**
+- [ ] Add FY selector/filter to dashboard (default: current FY)
+- [ ] Dashboard metrics scoped to selected FY
+- [ ] Monthly chart scoped to FY (Apr–Mar, not Jan–Dec)
+- [ ] Invoice list: FY filter (based on issueDate)
+- [ ] Expense list: FY filter (based on expense date, not createdAt)
+- [ ] Reports page: default to current FY (already uses Apr–Mar range)
+- [ ] FY cutoff logic: allow previous FY expense entry until May 15
+- [ ] After May 15 cutoff: previous FY expenses are read-only
+- [ ] FY badge/label on expense form when date falls in previous FY
+- [ ] FY summary card: show FY totals on dashboard
 
 ---
 
