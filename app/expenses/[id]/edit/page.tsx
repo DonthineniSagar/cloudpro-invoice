@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trash2, Upload, X } from 'lucide-react';
+import { ArrowLeft, Trash2, Upload, X, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { uploadData } from 'aws-amplify/storage';
 import AppLayout from '@/components/AppLayout';
@@ -24,6 +24,9 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
   const [saving, setSaving] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [existingReceipt, setExistingReceipt] = useState('');
+  const [receiptPreviewUrl, setReceiptPreviewUrl] = useState('');
+  const [viewingReceipt, setViewingReceipt] = useState(false);
+  const [originalStatus, setOriginalStatus] = useState('PENDING');
   const [formData, setFormData] = useState({
     description: '', category: 'Other', amount: '',
     gstClaimable: true, date: '', notes: '', status: 'PENDING'
@@ -41,7 +44,15 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
             date: data.date ? new Date(data.date).toISOString().split('T')[0] : '',
             notes: data.notes || '', status: data.status || 'PENDING'
           });
-          if (data.receiptUrl) setExistingReceipt(data.receiptUrl);
+          if (data.receiptUrl) {
+            setExistingReceipt(data.receiptUrl);
+            try {
+              const { getUrl } = await import('aws-amplify/storage');
+              const { url } = await getUrl({ path: data.receiptUrl });
+              setReceiptPreviewUrl(url.toString());
+            } catch {}
+          }
+          setOriginalStatus(data.status || 'PENDING');
         }
       } catch (error) {
         console.error('Error loading expense:', error);
@@ -67,11 +78,13 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
         receiptUrl = uploadResult.path;
       }
       const client = generateClient<Schema>();
+      // If approved expense is edited, reset to PENDING for re-approval
+      const newStatus = originalStatus === 'APPROVED' ? 'PENDING' : formData.status;
       await client.models.Expense.update({
         id: params.id, description: formData.description, category: formData.category,
         amount, amountExGst, gstAmount, gstClaimable: formData.gstClaimable,
         date: new Date(formData.date).toISOString(), notes: formData.notes,
-        status: formData.status as any,
+        status: newStatus as any,
         ...(receiptUrl && { receiptUrl }),
       });
       router.push('/expenses');
@@ -111,9 +124,11 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
         <div className={t.card}>
           <div className="flex justify-between items-center mb-6">
             <h1 className={dark ? 'text-2xl font-bold text-white' : 'text-2xl font-bold text-gray-900'}>Edit Expense</h1>
-            <button onClick={handleDelete} className="text-red-400 hover:text-red-300 flex items-center gap-2">
-              <Trash2 className="w-4 h-4" /> Delete
-            </button>
+            {originalStatus !== 'APPROVED' && (
+              <button onClick={handleDelete} className="text-red-400 hover:text-red-300 flex items-center gap-2">
+                <Trash2 className="w-4 h-4" /> Delete
+              </button>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -141,13 +156,14 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               </div>
               <div>
                 <label className={t.label}>Status</label>
-                <select value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className={t.input}>
-                  <option value="PENDING">Pending</option>
-                  <option value="APPROVED">Approved</option>
-                  <option value="REJECTED">Rejected</option>
-                </select>
+                <div className={`px-4 py-3 rounded-lg text-sm ${dark ? 'bg-gray-800 border border-purple-500/20' : 'bg-gray-100 border border-gray-200'}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    formData.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                    formData.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>{formData.status}</span>
+                  {originalStatus === 'APPROVED' && <span className={`text-xs ml-2 ${t.textMuted}`}>Will reset to PENDING on save</span>}
+                </div>
               </div>
             </div>
 
@@ -195,13 +211,29 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                   </button>
                 </div>
               ) : existingReceipt ? (
-                <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${dark ? 'bg-green-900/20 border border-green-500/30' : 'bg-green-50 border border-green-200'}`}>
-                  <span className={`text-sm ${dark ? 'text-green-400' : 'text-green-700'}`}>✓ Receipt uploaded</span>
-                  <label className={`text-sm cursor-pointer ${dark ? 'text-purple-400 hover:text-purple-300' : 'text-indigo-600 hover:text-indigo-700'}`}>
-                    Replace
-                    <input type="file" accept="image/*,.pdf" className="hidden"
-                      onChange={(e) => setReceiptFile(e.target.files?.[0] || null)} />
-                  </label>
+                <div>
+                  <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${dark ? 'bg-green-900/20 border border-green-500/30' : 'bg-green-50 border border-green-200'}`}>
+                    <div className="flex items-center gap-3">
+                      {receiptPreviewUrl && (
+                        <img src={receiptPreviewUrl} alt="Receipt" className="w-10 h-10 rounded object-cover cursor-zoom-in hover:opacity-80"
+                          onClick={() => setViewingReceipt(true)} />
+                      )}
+                      <span className={`text-sm ${dark ? 'text-green-400' : 'text-green-700'}`}>✓ Receipt attached</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {receiptPreviewUrl && (
+                        <button type="button" onClick={() => setViewingReceipt(true)}
+                          className={`text-sm flex items-center gap-1 ${dark ? 'text-purple-400 hover:text-purple-300' : 'text-indigo-600 hover:text-indigo-700'}`}>
+                          <Eye className="w-4 h-4" /> View
+                        </button>
+                      )}
+                      <label className={`text-sm cursor-pointer ${dark ? 'text-purple-400 hover:text-purple-300' : 'text-indigo-600 hover:text-indigo-700'}`}>
+                        Replace
+                        <input type="file" accept="image/*,.pdf" className="hidden"
+                          onChange={(e) => setReceiptFile(e.target.files?.[0] || null)} />
+                      </label>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <label className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer ${dark ? 'border-2 border-dashed border-purple-500/40 hover:border-purple-500 text-slate-400' : 'border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500'}`}>
@@ -229,6 +261,20 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
           </form>
         </div>
       </div>
+
+      {/* Receipt Viewer Modal */}
+      {viewingReceipt && receiptPreviewUrl && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setViewingReceipt(false)}>
+          <div className="relative max-w-3xl max-h-[90vh]">
+            <button onClick={() => setViewingReceipt(false)}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-sm">
+              ✕ Close
+            </button>
+            <img src={receiptPreviewUrl} alt="Receipt" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }

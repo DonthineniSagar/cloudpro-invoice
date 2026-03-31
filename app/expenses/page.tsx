@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Edit } from 'lucide-react';
+import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Edit, Eye, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
@@ -19,6 +19,19 @@ export default function ExpensesPage() {
   const [search, setSearch] = useState('');
   const [monthFilter, setMonthFilter] = useState('');
   const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
+  const [viewingReceipt, setViewingReceipt] = useState<string | null>(null);
+
+  const deleteExpense = async (id: string, status: string) => {
+    if (status === 'APPROVED') return;
+    if (!confirm('Delete this expense?')) return;
+    try {
+      const client = generateClient<Schema>();
+      await client.models.Expense.delete({ id });
+      setExpenses(expenses.filter(e => e.id !== id));
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+    }
+  };
 
   const fetchExpenses = async () => {
     try {
@@ -173,7 +186,8 @@ export default function ExpensesPage() {
                     <Link href={`/expenses/${expense.id}/edit`} className="flex items-center gap-4 flex-1 min-w-0">
                       {thumbnails[expense.id] ? (
                         <img src={thumbnails[expense.id]} alt="Receipt"
-                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-200" />
+                          onClick={(e) => { e.preventDefault(); setViewingReceipt(thumbnails[expense.id]); }}
+                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-200 cursor-zoom-in hover:opacity-80" />
                       ) : (
                         <span className="text-2xl">{categoryIcon(expense.category || 'Other')}</span>
                       )}
@@ -214,6 +228,12 @@ export default function ExpensesPage() {
                         className={`p-2 rounded-lg transition-colors ${dark ? 'text-slate-400 hover:text-white hover:bg-purple-900/30' : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'}`}>
                         <Edit className="w-4 h-4" />
                       </Link>
+                      {expense.status !== 'APPROVED' && (
+                        <button onClick={() => deleteExpense(expense.id, expense.status)}
+                          className={`p-2 rounded-lg transition-colors ${dark ? 'text-slate-400 hover:text-red-400 hover:bg-red-900/30' : 'text-gray-400 hover:text-red-600 hover:bg-red-50'}`}>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -222,6 +242,20 @@ export default function ExpensesPage() {
           </div>
         )}
       </div>
+
+      {/* Receipt Viewer Modal */}
+      {viewingReceipt && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => setViewingReceipt(null)}>
+          <div className="relative max-w-3xl max-h-[90vh]">
+            <button onClick={() => setViewingReceipt(null)}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-sm">
+              ✕ Close
+            </button>
+            <img src={viewingReceipt} alt="Receipt" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
