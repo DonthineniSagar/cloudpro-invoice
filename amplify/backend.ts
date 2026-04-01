@@ -47,10 +47,11 @@ backend.processReceipt.resources.lambda.addToRolePolicy(
 );
 
 // === Expense Email Ingest Infrastructure ===
-const emailIngestStack = backend.createStack('expense-email-ingest');
+// Using data stack to avoid circular dependency between nested stacks
+const dataStack = backend.data.resources.cfnResources.cfnGraphqlApi.stack;
 
 // S3 bucket for storing raw inbound emails
-const inboundEmailBucket = new s3.Bucket(emailIngestStack, 'InboundEmailBucket', {
+const inboundEmailBucket = new s3.Bucket(dataStack, 'InboundEmailBucket', {
   bucketName: undefined, // auto-generated
   removalPolicy: RemovalPolicy.RETAIN,
   lifecycleRules: [{ expiration: Duration.days(30) }],
@@ -103,7 +104,7 @@ processEmailFn.addEnvironment('COMPANY_PROFILE_TABLE_NAME', companyProfileTableN
 // SES Receipt Rule — receives emails and stores in S3, then triggers Lambda
 // NOTE: You must verify your domain in SES and set up MX records before this works.
 // Domain: expenses.cloudpro-digital.co.nz
-const ruleSet = new ses.ReceiptRuleSet(emailIngestStack, 'ExpenseEmailRuleSet', {
+const ruleSet = new ses.ReceiptRuleSet(dataStack, 'ExpenseEmailRuleSet', {
   receiptRuleSetName: 'cloudpro-expense-ingest',
 });
 

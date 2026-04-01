@@ -6,6 +6,7 @@ export const processExpenseEmail = defineFunction({
   runtime: 20,
   timeoutSeconds: 60,
   memoryMB: 512,
+  resourceGroupName: 'data',
   environment: {
     EXPENSE_TABLE_NAME: process.env.EXPENSE_TABLE_NAME || '',
     COMPANY_PROFILE_TABLE_NAME: process.env.COMPANY_PROFILE_TABLE_NAME || '',
