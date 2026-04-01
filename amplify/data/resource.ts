@@ -1,6 +1,7 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { sendInvoiceEmail } from '../functions/send-invoice-email/resource';
 import { processReceipt } from '../functions/process-receipt/resource';
+import { processExpenseEmail } from '../functions/process-expense-email/resource';
 
 const schema = a.schema({
   // Company Profile - stores user's business details
@@ -31,9 +32,14 @@ const schema = a.schema({
       reminderDaysAfter: a.string().default('1,7,14'),
       reminderSubjectTemplate: a.string().default('Reminder: Invoice {invoiceNumber} from {companyName}'),
       reminderBodyTemplate: a.string().default('This is a friendly reminder that invoice {invoiceNumber} for {total} is due on {dueDate}. Please arrange payment at your earliest convenience.'),
+      // Expense email ingest settings
+      expenseIngestKey: a.string(), // unique key for inbound email address
+      expenseIngestActive: a.boolean().default(false),
+      expenseWhitelistedEmails: a.string().array(), // only process from these senders
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })
+    .secondaryIndexes((index) => [index('expenseIngestKey')])
     .authorization((allow) => allow.owner()),
 
   User: a
@@ -120,10 +126,13 @@ const schema = a.schema({
       amountExGst: a.float(), // Amount excluding GST
       gstAmount: a.float(), // GST component
       gstClaimable: a.boolean().default(true), // Can claim GST back
-      date: a.datetime().required(),
+      date: a.datetime(),
       receiptUrl: a.string(),
       notes: a.string(),
       status: a.enum(['PENDING', 'APPROVED', 'REJECTED']),
+      // Email ingest fields
+      source: a.enum(['manual', 'email']),
+      sourceConfidence: a.enum(['high', 'low']),
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })

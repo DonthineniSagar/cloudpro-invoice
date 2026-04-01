@@ -1,0 +1,14 @@
+import { defineFunction } from '@aws-amplify/backend';
+
+export const processExpenseEmail = defineFunction({
+  name: 'process-expense-email',
+  entry: './handler.ts',
+  runtime: 20,
+  timeoutSeconds: 60,
+  memoryMB: 512,
+  environment: {
+    EXPENSE_TABLE_NAME: process.env.EXPENSE_TABLE_NAME || '',
+    COMPANY_PROFILE_TABLE_NAME: process.env.COMPANY_PROFILE_TABLE_NAME || '',
+    BEDROCK_MODEL_ID: 'anthropic.claude-3-haiku-20240307-v1:0',
+  },
+});
