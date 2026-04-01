@@ -102,7 +102,11 @@ export default function CompanyProfilePage() {
         logoUrl = result.path;
       }
       const { data: existing } = await client.models.CompanyProfile.list();
-      const saveData = { ...profile, ...(logoUrl && { logoUrl }), ...ingest };
+      // Get Cognito identity ID for S3 path scoping (used by email ingest Lambda)
+      const { fetchAuthSession } = await import('aws-amplify/auth');
+      const session = await fetchAuthSession();
+      const cognitoIdentityId = session.identityId || '';
+      const saveData = { ...profile, ...(logoUrl && { logoUrl }), ...ingest, identityId: cognitoIdentityId };
       if (existing && existing.length > 0) {
         await client.models.CompanyProfile.update({ id: existing[0].id, ...saveData });
       } else {

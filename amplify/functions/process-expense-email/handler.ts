@@ -35,6 +35,7 @@ interface ExtractedExpense {
 interface IngestConfig {
   owner: string;
   userId: string;
+  identityId?: string;
   expenseIngestActive: boolean;
   expenseWhitelistedEmails?: string[];
 }
@@ -113,7 +114,7 @@ export const handler = async (event: SESEvent) => {
 
   // Create draft expenses
   for (const { expense, attachmentBytes, filename, contentType } of results) {
-    await createDraftExpense(expense, config.owner, config.userId, sender, attachmentBytes, filename, contentType);
+    await createDraftExpense(expense, config.owner, config.userId, sender, config.identityId, attachmentBytes, filename, contentType);
   }
 
   console.log(`Processed ${results.length} expenses from ${sender} for key ${ingestKey}`);
@@ -262,7 +263,7 @@ function parseAIResponse(responseBody: string): ExtractedExpense | null {
 }
 
 async function createDraftExpense(
-  expense: ExtractedExpense, owner: string, userId: string, senderEmail: string,
+  expense: ExtractedExpense, owner: string, userId: string, identityId: string | undefined, senderEmail: string,
   attachmentBytes?: Buffer, filename?: string, contentType?: string
 ) {
   const total = parseFloat(expense.total) || 0;
@@ -270,14 +271,13 @@ async function createDraftExpense(
   const now = new Date().toISOString();
   const id = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
-  // Upload receipt to S3 if we have attachment bytes
+  // Upload receipt to S3 using Cognito identity ID path (matches app's S3 scoping)
   let receiptUrl: string | undefined;
-  if (attachmentBytes && filename) {
-    const identityId = owner.split('::')[0]; // owner format: "id::id"
+  if (attachmentBytes && filename && identityId) {
     const safeFilename = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const s3Key = `receipts/${identityId}/${safeFilename}`;
     await s3.send(new PutObjectCommand({
-      Bucket: process.env.STORAGE_BUCKET_NAME || process.env.SES_BUCKET_NAME!,
+      Bucket: process.env.STORAGE_BUCKET_NAME!,
       Key: s3Key,
       Body: attachmentBytes,
       ContentType: contentType || 'application/octet-stream',
