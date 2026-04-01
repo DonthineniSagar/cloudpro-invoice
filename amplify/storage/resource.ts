@@ -9,5 +9,8 @@ export const storage = defineStorage({
     'receipts/{entity_id}/*': [
       allow.entity('identity').to(['read', 'write', 'delete']),
     ],
+    'expense-receipts/{entity_id}/*': [
+      allow.entity('identity').to(['read', 'write', 'delete']),
+    ],
   }),
 });
