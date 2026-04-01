@@ -10,8 +10,9 @@ import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { TextractClient, AnalyzeExpenseCommand } from '@aws-sdk/client-textract';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { simpleParser, ParsedMail, Attachment } from 'mailparser';
+import { createHash } from 'crypto';
 
 const s3 = new S3Client({});
 const textract = new TextractClient({});
@@ -85,36 +86,57 @@ export const handler = async (event: SESEvent) => {
   // Fetch raw email from S3
   const bucket = process.env.SES_BUCKET_NAME!;
   const key = `inbound-emails/${messageId}`;
+
+  // === DEDUP: Check if this email was already processed ===
+  const existingByMessageId = await findExpenseByField(config.owner, 'emailMessageId', messageId);
+  if (existingByMessageId) {
+    console.log(`Email ${messageId} already processed. Skipping.`);
+    return { status: 'skipped', reason: 'duplicate_email' };
+  }
+
   const raw = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
   const emailBuffer = Buffer.from(await raw.Body!.transformToByteArray());
 
   const parsed: ParsedMail = await simpleParser(emailBuffer);
-  const results: ExtractedExpense[] = [];
+  const results: Array<{ expense: ExtractedExpense; contentHash: string }> = [];
 
   // Process attachments
   for (const att of parsed.attachments || []) {
+    const hash = createHash('sha256').update(att.content).digest('hex');
+
+    // Check if this exact file was already processed
+    const existingByHash = await findExpenseByField(config.owner, 'contentHash', hash);
+    if (existingByHash) {
+      console.log(`Attachment hash ${hash.substring(0, 12)} already processed. Skipping.`);
+      continue;
+    }
+
     if (isPdf(att)) {
       const extracted = await processPdfWithTextractAndAI(att.content);
-      if (extracted) results.push(extracted);
+      if (extracted) results.push({ expense: extracted, contentHash: hash });
     } else if (isImage(att)) {
       const extracted = await processImageWithVision(att.content);
-      if (extracted) results.push(extracted);
+      if (extracted) results.push({ expense: extracted, contentHash: hash });
     }
   }
 
   // If no attachments, try email body
   if (results.length === 0 && parsed.text) {
+    const bodyHash = createHash('sha256').update(parsed.text).digest('hex');
     const extracted = await extractFromEmailBody(parsed.text, sender);
-    if (extracted) results.push(extracted);
+    if (extracted) results.push({ expense: extracted, contentHash: bodyHash });
   }
 
-  // Create draft expenses
-  for (const expense of results) {
-    await createDraftExpense(expense, config.owner, config.userId, sender);
+  // Create draft expenses with fuzzy duplicate detection
+  let created = 0;
+  for (const { expense, contentHash } of results) {
+    const duplicate = await findFuzzyDuplicate(config.owner, expense);
+    await createDraftExpense(expense, config.owner, config.userId, sender, messageId, contentHash, duplicate);
+    created++;
   }
 
-  console.log(`Processed ${results.length} expenses from ${sender} for key ${ingestKey}`);
-  return { status: 'processed', expenses: results.length };
+  console.log(`Processed ${created} expenses from ${sender} for key ${ingestKey}`);
+  return { status: 'processed', expenses: created };
 };
 
 /**
@@ -258,11 +280,15 @@ function parseAIResponse(responseBody: string): ExtractedExpense | null {
   }
 }
 
-async function createDraftExpense(expense: ExtractedExpense, owner: string, userId: string, senderEmail: string) {
+async function createDraftExpense(
+  expense: ExtractedExpense, owner: string, userId: string, senderEmail: string,
+  emailMessageId: string, contentHash: string, duplicateOf: string | null
+) {
   const total = parseFloat(expense.total) || 0;
   const tax = parseFloat(expense.tax) || 0;
   const now = new Date().toISOString();
   const id = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  const isDuplicate = !!duplicateOf;
 
   await ddb.send(new PutCommand({
     TableName: EXPENSE_TABLE,
@@ -276,14 +302,67 @@ async function createDraftExpense(expense: ExtractedExpense, owner: string, user
       gstAmount: tax,
       gstClaimable: true,
       ...(expense.date ? { date: new Date(expense.date).toISOString() } : {}),
-      notes: `Auto-created from email (${senderEmail}). Confidence: ${expense.confidence}${!expense.date ? '. Date not found on receipt — please review.' : ''}`,
+      notes: `Auto-created from email (${senderEmail}). Confidence: ${expense.confidence}${!expense.date ? '. Date not found on receipt — please review.' : ''}${isDuplicate ? '. ⚠️ Possible duplicate detected.' : ''}`,
       status: 'PENDING',
       source: 'email',
       sourceConfidence: expense.confidence,
+      emailMessageId,
+      contentHash,
+      suspectedDuplicate: isDuplicate,
+      ...(duplicateOf ? { duplicateOf } : {}),
       userId,
       owner,
       createdAt: now,
       updatedAt: now,
     },
   }));
+}
+
+/** Find an existing expense by a specific field value for this owner */
+async function findExpenseByField(owner: string, field: string, value: string): Promise<string | null> {
+  const result = await ddb.send(new ScanCommand({
+    TableName: EXPENSE_TABLE,
+    FilterExpression: '#owner = :owner AND #field = :value',
+    ExpressionAttributeNames: { '#owner': 'owner', '#field': field },
+    ExpressionAttributeValues: { ':owner': owner, ':value': value },
+    Limit: 1,
+    ProjectionExpression: 'id',
+  }));
+  return result.Items?.[0]?.id || null;
+}
+
+/** Fuzzy match: same amount + similar vendor within ±5 days */
+async function findFuzzyDuplicate(owner: string, expense: ExtractedExpense): Promise<string | null> {
+  const total = parseFloat(expense.total) || 0;
+  if (!total) return null;
+
+  const result = await ddb.send(new ScanCommand({
+    TableName: EXPENSE_TABLE,
+    FilterExpression: '#owner = :owner AND #amount = :amount',
+    ExpressionAttributeNames: { '#owner': 'owner', '#amount': 'amount' },
+    ExpressionAttributeValues: { ':owner': owner, ':amount': total },
+    ProjectionExpression: 'id, description, #amount, #date',
+    Limit: 10,
+  }));
+
+  if (!result.Items?.length) return null;
+
+  // Check for vendor name similarity + date proximity
+  const expenseDate = expense.date ? new Date(expense.date).getTime() : 0;
+  const vendor = (expense.vendor || '').toLowerCase();
+
+  for (const item of result.Items) {
+    const desc = (item.description || '').toLowerCase();
+    const vendorMatch = vendor && desc.includes(vendor.substring(0, Math.min(vendor.length, 8)));
+
+    if (expenseDate && item.date) {
+      const daysDiff = Math.abs(new Date(item.date).getTime() - expenseDate) / (1000 * 60 * 60 * 24);
+      if (daysDiff <= 5 && vendorMatch) return item.id;
+      if (daysDiff === 0) return item.id; // Same amount + same date = likely duplicate
+    } else if (vendorMatch) {
+      return item.id; // Same amount + same vendor, no dates to compare
+    }
+  }
+
+  return null;
 }

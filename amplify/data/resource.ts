@@ -133,6 +133,10 @@ const schema = a.schema({
       // Email ingest fields
       source: a.enum(['manual', 'email']),
       sourceConfidence: a.enum(['high', 'low']),
+      emailMessageId: a.string(), // SES message ID for dedup
+      contentHash: a.string(), // SHA-256 of attachment for dedup
+      suspectedDuplicate: a.boolean().default(false),
+      duplicateOf: a.string(), // ID of the suspected original expense
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })
