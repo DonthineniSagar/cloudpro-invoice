@@ -11,8 +11,10 @@ import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { TEMPLATES } from '@/lib/generate-pdf';
 import type { TemplateName } from '@/lib/generate-pdf';
+import { Mail, Plus, X, Copy, Check, Shield } from 'lucide-react';
 
 const client = generateClient<Schema>();
+const INGEST_DOMAIN = 'expenses.cloudproinvoice.com'; // Update with your domain
 
 export default function CompanyProfilePage() {
   const { user, loading: authLoading } = useAuth();
@@ -24,6 +26,13 @@ export default function CompanyProfilePage() {
   const [saving, setSaving] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
+  const [copied, setCopied] = useState(false);
+  const [newWhitelistEmail, setNewWhitelistEmail] = useState('');
+  const [ingest, setIngest] = useState({
+    expenseIngestKey: '',
+    expenseIngestActive: false,
+    expenseWhitelistedEmails: [] as string[],
+  });
   const [profile, setProfile] = useState({
     companyName: '', companyEmail: '', companyPhone: '', companyAddress: '',
     companyCity: '', companyState: '', companyPostalCode: '', companyCountry: 'New Zealand',
@@ -51,6 +60,11 @@ export default function CompanyProfilePage() {
               gstNumber: e.gstNumber || '', bankAccount: e.bankAccount || '',
               defaultCurrency: e.defaultCurrency || 'NZD', defaultGstRate: e.defaultGstRate || 15,
               defaultTemplate: (e.defaultTemplate as TemplateName) || 'modern',
+            });
+            setIngest({
+              expenseIngestKey: e.expenseIngestKey || '',
+              expenseIngestActive: e.expenseIngestActive ?? false,
+              expenseWhitelistedEmails: (e.expenseWhitelistedEmails as string[]) || [],
             });
             if (e.logoUrl) {
               try {
@@ -82,7 +96,7 @@ export default function CompanyProfilePage() {
         logoUrl = result.path;
       }
       const { data: existing } = await client.models.CompanyProfile.list();
-      const saveData = { ...profile, ...(logoUrl && { logoUrl }) };
+      const saveData = { ...profile, ...(logoUrl && { logoUrl }), ...ingest };
       if (existing && existing.length > 0) {
         await client.models.CompanyProfile.update({ id: existing[0].id, ...saveData });
       } else {
@@ -219,6 +233,106 @@ export default function CompanyProfilePage() {
                 <div className={`text-xs mt-1 ${t.textMuted}`}>{tmpl.description}</div>
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Expense Email Ingest */}
+        <div>
+          <h2 className={`${t.sectionTitle} mb-1`}>Expense Email Ingest</h2>
+          <p className={`text-xs mb-4 ${t.textMuted}`}>Forward bills and receipts to your unique email to auto-create expenses</p>
+
+          <div className="space-y-4">
+            {/* Enable toggle */}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={ingest.expenseIngestActive}
+                onChange={(e) => {
+                  const active = e.target.checked;
+                  setIngest(prev => ({
+                    ...prev,
+                    expenseIngestActive: active,
+                    expenseIngestKey: active && !prev.expenseIngestKey
+                      ? Math.random().toString(36).substring(2, 10)
+                      : prev.expenseIngestKey,
+                  }));
+                }}
+                className="w-4 h-4 rounded" />
+              <span className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                Enable email-to-expense
+              </span>
+            </label>
+
+            {ingest.expenseIngestActive && ingest.expenseIngestKey && (
+              <>
+                {/* Ingest email address */}
+                <div className={`flex items-center gap-2 p-3 rounded-lg ${theme === 'dark' ? 'bg-purple-900/20 border border-purple-500/30' : 'bg-indigo-50 border border-indigo-200'}`}>
+                  <Mail className={`w-4 h-4 flex-shrink-0 ${theme === 'dark' ? 'text-purple-400' : 'text-indigo-500'}`} />
+                  <code className={`text-sm flex-1 ${theme === 'dark' ? 'text-purple-300' : 'text-indigo-700'}`}>
+                    {ingest.expenseIngestKey}@{INGEST_DOMAIN}
+                  </code>
+                  <button type="button" onClick={() => {
+                    navigator.clipboard.writeText(`${ingest.expenseIngestKey}@${INGEST_DOMAIN}`);
+                    setCopied(true); setTimeout(() => setCopied(false), 2000);
+                  }} className={`p-1 rounded ${theme === 'dark' ? 'hover:bg-purple-500/20' : 'hover:bg-indigo-100'}`}>
+                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className={`w-4 h-4 ${t.textMuted}`} />}
+                  </button>
+                </div>
+                <p className={`text-xs ${t.textMuted}`}>Set up email forwarding rules from your vendors to this address</p>
+
+                {/* Whitelisted senders */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className={`w-4 h-4 ${theme === 'dark' ? 'text-purple-400' : 'text-indigo-500'}`} />
+                    <label className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                      Whitelisted Senders
+                    </label>
+                  </div>
+                  <p className={`text-xs mb-3 ${t.textMuted}`}>
+                    Only emails from these addresses will be processed. Use *@domain.com for all addresses from a domain.
+                  </p>
+
+                  {/* Existing whitelist */}
+                  <div className="space-y-2 mb-3">
+                    {ingest.expenseWhitelistedEmails.map((email, i) => (
+                      <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${theme === 'dark' ? 'bg-black border border-purple-500/20' : 'bg-white border border-gray-200'}`}>
+                        <span className={`flex-1 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{email}</span>
+                        <button type="button" onClick={() => setIngest(prev => ({
+                          ...prev,
+                          expenseWhitelistedEmails: prev.expenseWhitelistedEmails.filter((_, j) => j !== i),
+                        }))} className="text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
+                      </div>
+                    ))}
+                    {ingest.expenseWhitelistedEmails.length === 0 && (
+                      <p className={`text-xs italic ${t.textMuted}`}>No senders whitelisted — all emails will be rejected</p>
+                    )}
+                  </div>
+
+                  {/* Add new */}
+                  <div className="flex gap-2">
+                    <input type="text" value={newWhitelistEmail}
+                      onChange={(e) => setNewWhitelistEmail(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const v = newWhitelistEmail.trim().toLowerCase();
+                          if (v && !ingest.expenseWhitelistedEmails.includes(v)) {
+                            setIngest(prev => ({ ...prev, expenseWhitelistedEmails: [...prev.expenseWhitelistedEmails, v] }));
+                            setNewWhitelistEmail('');
+                          }
+                        }
+                      }}
+                      placeholder="noreply@spark.co.nz or *@xero.com"
+                      className={`${t.input} flex-1`} />
+                    <button type="button" onClick={() => {
+                      const v = newWhitelistEmail.trim().toLowerCase();
+                      if (v && !ingest.expenseWhitelistedEmails.includes(v)) {
+                        setIngest(prev => ({ ...prev, expenseWhitelistedEmails: [...prev.expenseWhitelistedEmails, v] }));
+                        setNewWhitelistEmail('');
+                      }
+                    }} className={t.btnSecondary}><Plus className="w-4 h-4" /></button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

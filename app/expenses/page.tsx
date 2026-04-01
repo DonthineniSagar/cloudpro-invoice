@@ -38,7 +38,7 @@ export default function ExpensesPage() {
     try {
       const client = generateClient<Schema>();
       const { data } = await client.models.Expense.list();
-      const sorted = data.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const sorted = data.sort((a: any, b: any) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
       setExpenses(sorted);
 
       // Resolve thumbnail URLs for expenses with receipts
@@ -186,8 +186,8 @@ export default function ExpensesPage() {
           <div className="space-y-6">
             {Object.entries(
               filtered.reduce((groups: Record<string, typeof filtered>, e) => {
-                const d = new Date(e.date);
-                const key = d.toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' });
+                const d = e.date ? new Date(e.date) : null;
+                const key = d ? d.toLocaleDateString('en-NZ', { month: 'long', year: 'numeric' }) : 'No Date';
                 (groups[key] = groups[key] || []).push(e);
                 return groups;
               }, {})
@@ -220,7 +220,7 @@ export default function ExpensesPage() {
                                   {needsReceipt && <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />}
                                 </div>
                                 <p className={`text-xs ${t.textMuted}`}>
-                                  {expense.category || 'Other'} · {new Date(expense.date).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' })}
+                                  {expense.category || 'Other'} · {expense.date ? new Date(expense.date).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' }) : 'No date'}
                                   {expense.gstClaimable && ' · GST'}
                                 </p>
                               </div>
