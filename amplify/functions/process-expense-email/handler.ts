@@ -104,7 +104,7 @@ export const handler = async (event: SESEvent) => {
 
   // If no attachments, try email body (text or HTML)
   if (results.length === 0) {
-    const bodyText = parsed.text || parsed.html?.replace(/<[^>]*>/g, ' ') || '';
+    const bodyText = parsed.text || (parsed.html ? String(parsed.html).replace(/<[^>]*>/g, ' ') : '');
     if (bodyText.trim()) {
       const extracted = await extractFromEmailBody(bodyText, sender);
       if (extracted) results.push({ expense: extracted });
