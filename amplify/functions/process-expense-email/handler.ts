@@ -147,7 +147,7 @@ function extractIngestKey(email: string): string | null {
 async function lookupIngestConfig(ingestKey: string): Promise<IngestConfig | undefined> {
   const result = await ddb.send(new QueryCommand({
     TableName: COMPANY_PROFILE_TABLE,
-    IndexName: 'byExpenseIngestKey',
+    IndexName: 'companyProfilesByExpenseIngestKey',
     KeyConditionExpression: 'expenseIngestKey = :key',
     ExpressionAttributeValues: { ':key': ingestKey },
     Limit: 1,
