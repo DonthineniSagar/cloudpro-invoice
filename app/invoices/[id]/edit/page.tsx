@@ -40,7 +40,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
     issueDate: '',
     dueDate: '',
     notes: '',
-    paymentTerms: 'Due within 30 days',
+    paymentTerms: 'Due by 20th of the month',
     status: 'DRAFT'
   });
 
@@ -66,7 +66,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
           issueDate: invoice.issueDate ? new Date(invoice.issueDate).toISOString().split('T')[0] : '',
           dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : '',
           notes: invoice.notes || '',
-          paymentTerms: invoice.paymentTerms || 'Due within 30 days',
+          paymentTerms: invoice.paymentTerms || 'Due by 20th of the month',
           status: invoice.status || 'DRAFT'
         });
 

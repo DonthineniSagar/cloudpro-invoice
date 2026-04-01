@@ -354,6 +354,15 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             <Check className="w-4 h-4" />
             Mark as Paid
           </button>
+          {invoice.status === 'DRAFT' && (
+          <button
+            onClick={() => updateStatus('SENT')}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+          >
+            <Send className="w-4 h-4" />
+            Mark as Sent
+          </button>
+          )}
           <button
             onClick={handleCopyPortalLink}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -364,7 +373,8 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <select
             value={template}
             onChange={(e) => setTemplate(e.target.value as TemplateName)}
-            className={`px-3 py-2 rounded-lg text-sm ${theme === 'dark' ? 'bg-black border-2 border-purple-500/40 text-white' : 'border border-gray-300 text-gray-700'}`}
+            disabled={!!invoice.pdfUrl}
+            className={`px-3 py-2 rounded-lg text-sm ${invoice.pdfUrl ? 'opacity-50 cursor-not-allowed' : ''} ${theme === 'dark' ? 'bg-black border-2 border-purple-500/40 text-white' : 'border border-gray-300 text-gray-700'}`}
           >
             {TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.name} Template</option>)}
           </select>

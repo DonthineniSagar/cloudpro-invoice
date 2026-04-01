@@ -75,7 +75,7 @@ const schema = a.schema({
       dueDate: a.datetime(),
       items: a.hasMany('InvoiceItem', 'invoiceId'),
       notes: a.string(),
-      paymentTerms: a.string().default('Due within 30 days'),
+      paymentTerms: a.string().default('Due by 20th of the month'),
       subtotal: a.float().required(),
       gstRate: a.float().default(15), // NZ GST rate
       gstAmount: a.float(),
@@ -140,7 +140,7 @@ const schema = a.schema({
       active: a.boolean().default(true),
       lineItems: a.json(), // JSON array of {description, wbs, quantity, unitPrice, amount}
       notes: a.string(),
-      paymentTerms: a.string().default('Due within 30 days'),
+      paymentTerms: a.string().default('Due by 20th of the month'),
       currency: a.string().default('NZD'),
       generatedCount: a.integer().default(0),
       lastGeneratedDate: a.date(),

@@ -30,6 +30,15 @@ export type TemplateName = 'modern' | 'classic' | 'minimal';
 
 const fmt = (d: string) => new Date(d).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' });
 
+// ─── Helper: ensure y fits, else add page and return new y ───
+function ensureSpace(doc: jsPDF, y: number, needed: number, margin: number): number {
+  if (y + needed > doc.internal.pageSize.getHeight() - margin) {
+    doc.addPage();
+    return margin;
+  }
+  return y;
+}
+
 // ─── MODERN (original) ───
 function generateModern(invoice: InvoiceData): jsPDF {
   const doc = new jsPDF();
@@ -85,6 +94,9 @@ function generateModern(invoice: InvoiceData): jsPDF {
   }
   y += 12;
 
+  // Reserve space for payment advice on last page (65pt)
+  const paymentAdviceHeight = 65;
+
   autoTable(doc, {
     startY: y,
     head: [['Description', 'Quantity', 'Unit Price', `Amount ${invoice.currency}`]],
@@ -94,7 +106,7 @@ function generateModern(invoice: InvoiceData): jsPDF {
     headStyles: { fillColor: false as unknown as number[], textColor: black, fontStyle: 'bold', fontSize: 9.5, cellPadding: { top: 5, bottom: 5, left: 3, right: 3 } },
     bodyStyles: { fontSize: 9.5, textColor: grey, cellPadding: { top: 5, bottom: 5, left: 3, right: 3 } },
     columnStyles: { 0: { cellWidth: 80 }, 1: { halign: 'right', cellWidth: 25 }, 2: { halign: 'right', cellWidth: 30 }, 3: { halign: 'right', cellWidth: 35 } },
-    margin: { left: m, right: m },
+    margin: { left: m, right: m, bottom: m },
     theme: 'plain',
     didParseCell: (data: { section: string; cell: { styles: Record<string, unknown> } }) => {
       if (data.section === 'head') { data.cell.styles.lineWidth = { bottom: 0.3, top: 0, left: 0, right: 0 }; data.cell.styles.lineColor = [0, 0, 0]; }
@@ -103,9 +115,12 @@ function generateModern(invoice: InvoiceData): jsPDF {
   });
 
   y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+
+  // Totals
   const tLabelX = pw - 80;
   const tValX = pw - m;
   const totalRow = (label: string, value: string, bold = false, size = 10) => {
+    y = ensureSpace(doc, y, 10, m);
     doc.setFontSize(size); doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setTextColor(...(bold ? black : grey));
     doc.text(label, tLabelX, y); doc.text(value, tValX, y, { align: 'right' }); y += 7;
   };
@@ -115,16 +130,22 @@ function generateModern(invoice: InvoiceData): jsPDF {
   totalRow(`TOTAL ${invoice.currency}`, invoice.total.toFixed(2), true, 12);
   y += 16;
 
+  // Due date & payment info
+  y = ensureSpace(doc, y, 30, m);
   doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(...black);
   doc.text(`Due Date: ${fmt(invoice.dueDate)}`, m, y); y += 6;
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...grey);
   if (invoice.companyName) { doc.text(invoice.companyName, m, y); y += 5; }
   if (invoice.bankAccount) { doc.text(invoice.bankAccount, m, y); y += 5; }
   if (invoice.paymentTerms) { doc.text(invoice.paymentTerms, m, y); y += 5; }
-  if (invoice.notes) { y += 4; const noteLines = doc.splitTextToSize(invoice.notes, pw - m * 2); doc.text(noteLines, m, y); }
+  if (invoice.notes) { y += 4; const noteLines = doc.splitTextToSize(invoice.notes, pw - m * 2); doc.text(noteLines, m, y); y += noteLines.length * 5; }
 
-  // Payment advice tear-off
-  const tearY = ph - 55;
+  // Payment advice tear-off — always at bottom of last page
+  // If not enough room, add a new page
+  if (y > ph - paymentAdviceHeight - 10) {
+    doc.addPage();
+  }
+  const tearY = ph - paymentAdviceHeight;
   doc.setFontSize(9); doc.setTextColor(...black); doc.text('\u2702', m - 4, tearY + 1);
   doc.setDrawColor(0); doc.setLineWidth(0.3); doc.setLineDashPattern([4, 3], 0);
   doc.line(m, tearY, pw - m, tearY); doc.setLineDashPattern([], 0);
@@ -217,7 +238,7 @@ function generateClassic(invoice: InvoiceData): jsPDF {
     bodyStyles: { fontSize: 9, textColor: grey, font: 'times' },
     alternateRowStyles: { fillColor: [245, 245, 245] },
     columnStyles: { 0: { cellWidth: 90 }, 1: { halign: 'right', cellWidth: 20 }, 2: { halign: 'right', cellWidth: 30 }, 3: { halign: 'right', cellWidth: 30 } },
-    margin: { left: m, right: m },
+    margin: { left: m, right: m, bottom: m },
     theme: 'grid',
     styles: { lineColor: [200, 200, 200], lineWidth: 0.3 },
   });
@@ -227,6 +248,7 @@ function generateClassic(invoice: InvoiceData): jsPDF {
   const tL = pw - 80;
 
   const row = (label: string, val: string, bold = false) => {
+    y = ensureSpace(doc, y, 10, m);
     doc.setFontSize(10); doc.setFont('times', bold ? 'bold' : 'normal'); doc.setTextColor(...(bold ? accent : grey));
     doc.text(label, tL, y); doc.text(val, tR, y, { align: 'right' }); y += 6;
   };
@@ -236,12 +258,13 @@ function generateClassic(invoice: InvoiceData): jsPDF {
   row(`Total ${invoice.currency}:`, `$${invoice.total.toFixed(2)}`, true);
 
   y += 12;
+  y = ensureSpace(doc, y, 20, m);
   doc.setFontSize(9); doc.setFont('times', 'normal'); doc.setTextColor(...grey);
   if (invoice.bankAccount) { doc.text(`Bank Account: ${invoice.bankAccount}`, m, y); y += 5; }
   if (invoice.paymentTerms) { doc.text(invoice.paymentTerms, m, y); y += 5; }
   if (invoice.notes) { y += 3; const nl = doc.splitTextToSize(invoice.notes, pw - m * 2); doc.text(nl, m, y); }
 
-  // Bottom border
+  // Bottom border on last page
   doc.setDrawColor(...accent); doc.setLineWidth(1.5);
   doc.line(m, doc.internal.pageSize.getHeight() - 12, pw - m, doc.internal.pageSize.getHeight() - 12);
 
@@ -296,7 +319,7 @@ function generateMinimal(invoice: InvoiceData): jsPDF {
     headStyles: { fillColor: false as unknown as number[], textColor: light, fontStyle: 'normal', fontSize: 8, cellPadding: { top: 4, bottom: 4, left: 0, right: 0 } },
     bodyStyles: { fontSize: 9.5, textColor: black, cellPadding: { top: 6, bottom: 6, left: 0, right: 0 } },
     columnStyles: { 0: { cellWidth: 90 }, 1: { halign: 'right', cellWidth: 20 }, 2: { halign: 'right', cellWidth: 30 }, 3: { halign: 'right', cellWidth: 30 } },
-    margin: { left: m, right: m },
+    margin: { left: m, right: m, bottom: m },
     theme: 'plain',
     didParseCell: (data: { section: string; cell: { styles: Record<string, unknown> } }) => {
       if (data.section === 'head') { data.cell.styles.lineWidth = { bottom: 0.2, top: 0, left: 0, right: 0 }; data.cell.styles.lineColor = [200, 200, 200]; }
@@ -307,6 +330,7 @@ function generateMinimal(invoice: InvoiceData): jsPDF {
   const tR = pw - m;
 
   // Totals — right-aligned, minimal
+  y = ensureSpace(doc, y, 30, m);
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...grey);
   doc.text('Subtotal', tR - 50, y); doc.text(`$${invoice.subtotal.toFixed(2)}`, tR, y, { align: 'right' }); y += 6;
   doc.text(`GST ${invoice.gstRate}%`, tR - 50, y); doc.text(`$${invoice.gstAmount.toFixed(2)}`, tR, y, { align: 'right' }); y += 8;
@@ -316,11 +340,13 @@ function generateMinimal(invoice: InvoiceData): jsPDF {
 
   // Due date
   y += 8;
+  y = ensureSpace(doc, y, 20, m);
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...grey);
   doc.text(`Due ${fmt(invoice.dueDate)}`, tR, y, { align: 'right' });
 
   // Payment info at bottom
   y += 16;
+  y = ensureSpace(doc, y, 20, m);
   doc.setDrawColor(...light); doc.setLineWidth(0.2); doc.line(m, y, pw - m, y); y += 8;
   doc.setFontSize(8); doc.setTextColor(...light);
   const payParts = [invoice.bankAccount, invoice.paymentTerms].filter(Boolean);

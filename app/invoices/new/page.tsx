@@ -36,8 +36,8 @@ export default function NewInvoicePage() {
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     issueDate: new Date().toISOString().split('T')[0],
-    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    notes: '', paymentTerms: 'Due within 30 days'
+    dueDate: (() => { const d = new Date(); d.setDate(20); return d.toISOString().split('T')[0]; })(),
+    notes: '', paymentTerms: `Due by 20th of the month`
   });
 
   useEffect(() => {
