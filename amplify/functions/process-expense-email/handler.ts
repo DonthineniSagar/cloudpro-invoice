@@ -114,7 +114,7 @@ export const handler = async (event: SESEvent) => {
 
   // Create draft expenses
   for (const { expense, attachmentBytes, filename, contentType } of results) {
-    await createDraftExpense(expense, config.owner, config.userId, sender, config.identityId, attachmentBytes, filename, contentType);
+    await createDraftExpense(expense, config.owner, config.userId, config.identityId || '', sender, attachmentBytes, filename, contentType);
   }
 
   console.log(`Processed ${results.length} expenses from ${sender} for key ${ingestKey}`);
