@@ -64,7 +64,7 @@ export default function CompanyProfilePage() {
             setIngest({
               expenseIngestKey: e.expenseIngestKey || '',
               expenseIngestActive: e.expenseIngestActive ?? false,
-              expenseWhitelistedEmails: (e.expenseWhitelistedEmails as string[]) || [],
+              expenseWhitelistedEmails: (e.expenseWhitelistedEmails?.filter(Boolean) as string[]) ?? [],
             });
             if (e.logoUrl) {
               try {
