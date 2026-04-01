@@ -227,6 +227,7 @@ export default function ExpensesPage() {
                                 <div className="flex items-center gap-2">
                                   <p className={`text-sm font-medium truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{expense.description}</p>
                                   {needsReceipt && <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />}
+                                  {expense.suspectedDuplicate && <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 flex-shrink-0">Duplicate?</span>}
                                 </div>
                                 <p className={`text-xs ${t.textMuted}`}>
                                   {expense.category || 'Other'} · {expense.date ? new Date(expense.date).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' }) : 'No date'}
