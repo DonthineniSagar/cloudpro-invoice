@@ -85,6 +85,12 @@ export default function CompanyProfilePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+    // Auto-add any pending whitelist email before saving
+    const pending = newWhitelistEmail.trim().toLowerCase();
+    if (pending && !ingest.expenseWhitelistedEmails.includes(pending)) {
+      ingest.expenseWhitelistedEmails.push(pending);
+      setNewWhitelistEmail('');
+    }
     try {
       let logoUrl: string | undefined;
       if (logoFile) {
