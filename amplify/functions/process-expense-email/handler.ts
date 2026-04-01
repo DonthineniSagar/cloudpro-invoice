@@ -275,7 +275,7 @@ async function createDraftExpense(expense: ExtractedExpense, owner: string, user
       amountExGst: total - tax,
       gstAmount: tax,
       gstClaimable: true,
-      date: expense.date || '',
+      ...(expense.date ? { date: new Date(expense.date).toISOString() } : {}),
       notes: `Auto-created from email (${senderEmail}). Confidence: ${expense.confidence}${!expense.date ? '. Date not found on receipt — please review.' : ''}`,
       status: 'PENDING',
       source: 'email',
