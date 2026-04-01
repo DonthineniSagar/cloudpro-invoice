@@ -102,13 +102,13 @@ processEmailFn.addEnvironment('COMPANY_PROFILE_TABLE_NAME', companyProfileTableN
 
 // SES Receipt Rule — receives emails and stores in S3, then triggers Lambda
 // NOTE: You must verify your domain in SES and set up MX records before this works.
-// Domain: expenses.cloudproinvoice.com (or your chosen domain)
+// Domain: expenses.cloudpro-digital.co.nz
 const ruleSet = new ses.ReceiptRuleSet(emailIngestStack, 'ExpenseEmailRuleSet', {
   receiptRuleSetName: 'cloudpro-expense-ingest',
 });
 
 ruleSet.addRule('ProcessExpenseEmail', {
-  recipients: ['expenses.cloudproinvoice.com'], // Update with your domain
+  recipients: ['expenses.cloudpro-digital.co.nz'],
   actions: [
     new sesActions.S3({
       bucket: inboundEmailBucket,

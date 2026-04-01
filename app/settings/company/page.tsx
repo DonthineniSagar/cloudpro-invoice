@@ -14,7 +14,7 @@ import type { TemplateName } from '@/lib/generate-pdf';
 import { Mail, Plus, X, Copy, Check, Shield } from 'lucide-react';
 
 const client = generateClient<Schema>();
-const INGEST_DOMAIN = 'expenses.cloudproinvoice.com'; // Update with your domain
+const INGEST_DOMAIN = 'expenses.cloudpro-digital.co.nz';
 
 export default function CompanyProfilePage() {
   const { user, loading: authLoading } = useAuth();
