@@ -6,7 +6,7 @@
  *       → Textract (PDF) or Bedrock Vision (images)
  *       → Bedrock Haiku (interpret & structure) → create draft Expense in DynamoDB.
  */
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { TextractClient, AnalyzeExpenseCommand } from '@aws-sdk/client-textract';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
@@ -89,28 +89,31 @@ export const handler = async (event: SESEvent) => {
   const emailBuffer = Buffer.from(await raw.Body!.transformToByteArray());
 
   const parsed: ParsedMail = await simpleParser(emailBuffer);
-  const results: ExtractedExpense[] = [];
+  const results: Array<{ expense: ExtractedExpense; attachmentBytes?: Buffer; filename?: string; contentType?: string }> = [];
 
   // Process attachments
   for (const att of parsed.attachments || []) {
     if (isPdf(att)) {
       const extracted = await processPdfWithTextractAndAI(att.content);
-      if (extracted) results.push(extracted);
+      if (extracted) results.push({ expense: extracted, attachmentBytes: att.content, filename: att.filename || 'receipt.pdf', contentType: 'application/pdf' });
     } else if (isImage(att)) {
       const extracted = await processImageWithVision(att.content);
-      if (extracted) results.push(extracted);
+      if (extracted) results.push({ expense: extracted, attachmentBytes: att.content, filename: att.filename || 'receipt.jpg', contentType: att.contentType || 'image/jpeg' });
     }
   }
 
-  // If no attachments, try email body
-  if (results.length === 0 && parsed.text) {
-    const extracted = await extractFromEmailBody(parsed.text, sender);
-    if (extracted) results.push(extracted);
+  // If no attachments, try email body (text or HTML)
+  if (results.length === 0) {
+    const bodyText = parsed.text || parsed.html?.replace(/<[^>]*>/g, ' ') || '';
+    if (bodyText.trim()) {
+      const extracted = await extractFromEmailBody(bodyText, sender);
+      if (extracted) results.push({ expense: extracted });
+    }
   }
 
   // Create draft expenses
-  for (const expense of results) {
-    await createDraftExpense(expense, config.owner, config.userId, sender);
+  for (const { expense, attachmentBytes, filename, contentType } of results) {
+    await createDraftExpense(expense, config.owner, config.userId, sender, attachmentBytes, filename, contentType);
   }
 
   console.log(`Processed ${results.length} expenses from ${sender} for key ${ingestKey}`);
@@ -258,11 +261,29 @@ function parseAIResponse(responseBody: string): ExtractedExpense | null {
   }
 }
 
-async function createDraftExpense(expense: ExtractedExpense, owner: string, userId: string, senderEmail: string) {
+async function createDraftExpense(
+  expense: ExtractedExpense, owner: string, userId: string, senderEmail: string,
+  attachmentBytes?: Buffer, filename?: string, contentType?: string
+) {
   const total = parseFloat(expense.total) || 0;
   const tax = parseFloat(expense.tax) || 0;
   const now = new Date().toISOString();
   const id = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+
+  // Upload receipt to S3 if we have attachment bytes
+  let receiptUrl: string | undefined;
+  if (attachmentBytes && filename) {
+    const identityId = owner.split('::')[0]; // owner format: "id::id"
+    const safeFilename = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const s3Key = `receipts/${identityId}/${safeFilename}`;
+    await s3.send(new PutObjectCommand({
+      Bucket: process.env.STORAGE_BUCKET_NAME || process.env.SES_BUCKET_NAME!,
+      Key: s3Key,
+      Body: attachmentBytes,
+      ContentType: contentType || 'application/octet-stream',
+    }));
+    receiptUrl = s3Key;
+  }
 
   await ddb.send(new PutCommand({
     TableName: EXPENSE_TABLE,
@@ -276,6 +297,7 @@ async function createDraftExpense(expense: ExtractedExpense, owner: string, user
       gstAmount: tax,
       gstClaimable: true,
       ...(expense.date ? { date: new Date(expense.date).toISOString() } : {}),
+      ...(receiptUrl ? { receiptUrl } : {}),
       notes: `Auto-created from email (${senderEmail}). Confidence: ${expense.confidence}${!expense.date ? '. Date not found on receipt — please review.' : ''}`,
       status: 'PENDING',
       source: 'email',
