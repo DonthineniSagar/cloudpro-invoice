@@ -80,10 +80,7 @@ processEmailLambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
     actions: ['bedrock:InvokeModel'],
-    resources: [
-      'arn:aws:bedrock:ap-southeast-2::foundation-model/*',
-      'arn:aws:bedrock:*:*:inference-profile/*',
-    ],
+    resources: ['*'],
   })
 );
 
