@@ -104,9 +104,9 @@ processEmailFn.addEnvironment('COMPANY_PROFILE_TABLE_NAME', companyProfileTableN
 // SES Receipt Rule — receives emails and stores in S3, then triggers Lambda
 // NOTE: You must verify your domain in SES and set up MX records before this works.
 // Domain: expenses.cloudpro-digital.co.nz
-const ruleSet = new ses.ReceiptRuleSet(dataStack, 'ExpenseEmailRuleSet', {
-  dropSpam: true,
-});
+// SES receipt rule set is created once and shared across branches (only one can be active per account).
+// We import the existing rule set and add a rule pointing to this branch's Lambda + S3 bucket.
+const ruleSet = ses.ReceiptRuleSet.fromReceiptRuleSetName(dataStack, 'ExpenseEmailRuleSet', 'cloudpro-expense-ingest');
 
 ruleSet.addRule('ProcessExpenseEmail', {
   recipients: ['expenses.cloudpro-digital.co.nz'],
@@ -120,30 +120,6 @@ ruleSet.addRule('ProcessExpenseEmail', {
       invocationType: sesActions.LambdaInvocationType.EVENT,
     }),
   ],
-});
-
-// Auto-activate the SES receipt rule set on deploy
-import * as cr from 'aws-cdk-lib/custom-resources';
-
-new cr.AwsCustomResource(dataStack, 'ActivateSesRuleSet', {
-  onCreate: {
-    service: 'SES',
-    action: 'setActiveReceiptRuleSet',
-    parameters: { RuleSetName: ruleSet.receiptRuleSetName },
-    physicalResourceId: cr.PhysicalResourceId.of('activate-ses-ruleset'),
-  },
-  onUpdate: {
-    service: 'SES',
-    action: 'setActiveReceiptRuleSet',
-    parameters: { RuleSetName: ruleSet.receiptRuleSetName },
-    physicalResourceId: cr.PhysicalResourceId.of('activate-ses-ruleset'),
-  },
-  policy: cr.AwsCustomResourcePolicy.fromStatements([
-    new PolicyStatement({
-      actions: ['ses:SetActiveReceiptRuleSet'],
-      resources: ['*'],
-    }),
-  ]),
 });
 
 export { backend };
