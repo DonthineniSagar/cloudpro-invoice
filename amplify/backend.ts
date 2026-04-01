@@ -80,7 +80,7 @@ processEmailLambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
     actions: ['bedrock:InvokeModel'],
-    resources: ['arn:aws:bedrock:ap-southeast-2::foundation-model/*'],
+    resources: ['*'],
   })
 );
 
@@ -104,9 +104,9 @@ processEmailFn.addEnvironment('COMPANY_PROFILE_TABLE_NAME', companyProfileTableN
 // SES Receipt Rule — receives emails and stores in S3, then triggers Lambda
 // NOTE: You must verify your domain in SES and set up MX records before this works.
 // Domain: expenses.cloudpro-digital.co.nz
-const ruleSet = new ses.ReceiptRuleSet(dataStack, 'ExpenseEmailRuleSet', {
-  receiptRuleSetName: 'cloudpro-expense-ingest',
-});
+// SES receipt rule set is created once and shared across branches (only one can be active per account).
+// We import the existing rule set and add a rule pointing to this branch's Lambda + S3 bucket.
+const ruleSet = ses.ReceiptRuleSet.fromReceiptRuleSetName(dataStack, 'ExpenseEmailRuleSet', 'cloudpro-expense-ingest');
 
 ruleSet.addRule('ProcessExpenseEmail', {
   recipients: ['expenses.cloudpro-digital.co.nz'],
