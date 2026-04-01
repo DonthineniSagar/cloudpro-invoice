@@ -10,6 +10,6 @@ export const processExpenseEmail = defineFunction({
   environment: {
     EXPENSE_TABLE_NAME: process.env.EXPENSE_TABLE_NAME || '',
     COMPANY_PROFILE_TABLE_NAME: process.env.COMPANY_PROFILE_TABLE_NAME || '',
-    BEDROCK_MODEL_ID: 'anthropic.claude-haiku-4-5-20251001-v1:0',
+    BEDROCK_MODEL_ID: 'au.anthropic.claude-haiku-4-5-20251001-v1:0',
   },
 });
