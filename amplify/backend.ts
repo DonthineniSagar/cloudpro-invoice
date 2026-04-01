@@ -68,6 +68,11 @@ const processEmailFn = processEmailLambda as lambda.Function;
 
 inboundEmailBucket.grantRead(processEmailLambda);
 
+// Grant write to main storage bucket for receipt uploads
+const storageBucket = backend.storage.resources.bucket;
+storageBucket.grantWrite(processEmailLambda);
+processEmailFn.addEnvironment('STORAGE_BUCKET_NAME', storageBucket.bucketName);
+
 processEmailLambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
