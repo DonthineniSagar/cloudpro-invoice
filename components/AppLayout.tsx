@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Moon, Sun, Menu, X } from 'lucide-react';
+import NotificationBell from '@/components/NotificationBell';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth();
@@ -48,7 +49,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 ))}
               </nav>
             </div>
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-3">
+              <NotificationBell dark={dark} />
               <button onClick={toggleTheme}
                 className={dark ? 'p-2 rounded-lg bg-slate-800 text-purple-400 hover:bg-slate-700' : 'p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200'}>
                 {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

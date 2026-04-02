@@ -105,6 +105,17 @@ processEmailLambda.addToRolePolicy(
 processEmailFn.addEnvironment('SES_BUCKET_NAME', inboundEmailBucket.bucketName);
 processEmailFn.addEnvironment('EXPENSE_TABLE_NAME', expenseTableName);
 processEmailFn.addEnvironment('COMPANY_PROFILE_TABLE_NAME', companyProfileTableName);
+const notificationTableName = backend.data.resources.tables['Notification'].tableName;
+processEmailFn.addEnvironment('NOTIFICATION_TABLE_NAME', notificationTableName);
+
+// Grant Lambda write to Notification table
+processEmailLambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['dynamodb:PutItem'],
+    resources: [backend.data.resources.tables['Notification'].tableArn],
+  })
+);
 
 // SES Receipt Rule — receives emails and stores in S3, then triggers Lambda
 // NOTE: You must verify your domain in SES and set up MX records before this works.

@@ -143,6 +143,17 @@ const schema = a.schema({
     })
     .authorization((allow) => allow.owner()),
 
+  Notification: a
+    .model({
+      type: a.enum(['EXPENSE_CREATED', 'INVOICE_PAID', 'INVOICE_OVERDUE', 'REMINDER_SENT', 'RECURRING_GENERATED', 'OCR_COMPLETE', 'SYSTEM']),
+      title: a.string().required(),
+      message: a.string().required(),
+      read: a.boolean().default(false),
+      link: a.string(), // e.g. /invoices/abc123 or /expenses/xyz
+      userId: a.string().required(),
+    })
+    .authorization((allow) => allow.owner()),
+
   RecurringInvoice: a
     .model({
       clientId: a.string().required(),
