@@ -47,6 +47,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState('');
   const [viewingReceipt, setViewingReceipt] = useState(false);
   const [originalStatus, setOriginalStatus] = useState('PENDING');
+  const [createdAt, setCreatedAt] = useState('');
   const [formData, setFormData] = useState({
     description: '', category: 'Other', amount: '',
     gstClaimable: true, date: '', notes: '', status: 'PENDING'
@@ -73,6 +74,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
             } catch {}
           }
           setOriginalStatus(data.status || 'PENDING');
+          if (data.createdAt) setCreatedAt(data.createdAt);
         }
       } catch (error) {
         console.error('Error loading expense:', error);
@@ -185,6 +187,14 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                   {originalStatus === 'APPROVED' && <span className={`text-xs ml-2 ${t.textMuted}`}>Will reset to PENDING on save</span>}
                 </div>
               </div>
+              {createdAt && (
+              <div>
+                <label className={t.label}>Created</label>
+                <div className={`px-4 py-3 rounded-lg text-sm ${dark ? 'bg-gray-800 border border-purple-500/20 text-gray-300' : 'bg-gray-100 border border-gray-200 text-gray-600'}`}>
+                  {new Date(createdAt).toLocaleString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
