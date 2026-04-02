@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trash2, Upload, X, Eye } from 'lucide-react';
+import { ArrowLeft, Trash2, Upload, X, Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { uploadData } from 'aws-amplify/storage';
 import AppLayout from '@/components/AppLayout';
+
+const isPdfUrl = (url: string) => /\.pdf(\?|$)/i.test(url);
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
@@ -45,6 +47,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState('');
   const [viewingReceipt, setViewingReceipt] = useState(false);
   const [originalStatus, setOriginalStatus] = useState('PENDING');
+  const [createdAt, setCreatedAt] = useState('');
   const [formData, setFormData] = useState({
     description: '', category: 'Other', amount: '',
     gstClaimable: true, date: '', notes: '', status: 'PENDING'
@@ -71,6 +74,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
             } catch {}
           }
           setOriginalStatus(data.status || 'PENDING');
+          if (data.createdAt) setCreatedAt(data.createdAt);
         }
       } catch (error) {
         console.error('Error loading expense:', error);
@@ -183,6 +187,14 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                   {originalStatus === 'APPROVED' && <span className={`text-xs ml-2 ${t.textMuted}`}>Will reset to PENDING on save</span>}
                 </div>
               </div>
+              {createdAt && (
+              <div>
+                <label className={t.label}>Created</label>
+                <div className={`px-4 py-3 rounded-lg text-sm ${dark ? 'bg-gray-800 border border-purple-500/20 text-gray-300' : 'bg-gray-100 border border-gray-200 text-gray-600'}`}>
+                  {new Date(createdAt).toLocaleString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -233,8 +245,15 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                   <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${dark ? 'bg-green-900/20 border border-green-500/30' : 'bg-green-50 border border-green-200'}`}>
                     <div className="flex items-center gap-3">
                       {receiptPreviewUrl && (
+                        isPdfUrl(receiptPreviewUrl) ? (
+                          <div onClick={() => setViewingReceipt(true)}
+                            className="w-10 h-10 rounded flex items-center justify-center bg-red-50 border border-gray-200 cursor-zoom-in hover:opacity-80">
+                            <FileText className="w-5 h-5 text-red-500" />
+                          </div>
+                        ) : (
                         <img src={receiptPreviewUrl} alt="Receipt" className="w-10 h-10 rounded object-cover cursor-zoom-in hover:opacity-80"
                           onClick={() => setViewingReceipt(true)} />
+                        )
                       )}
                       <span className={`text-sm ${dark ? 'text-green-400' : 'text-green-700'}`}>✓ Receipt attached</span>
                     </div>
@@ -289,7 +308,11 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               className="absolute -top-10 right-0 text-white hover:text-gray-300 text-sm">
               ✕ Close
             </button>
-            <img src={receiptPreviewUrl} alt="Receipt" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+            {isPdfUrl(receiptPreviewUrl) ? (
+              <iframe src={receiptPreviewUrl} className="w-[90vw] max-w-3xl h-[85vh] rounded-lg bg-white" />
+            ) : (
+              <img src={receiptPreviewUrl} alt="Receipt" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+            )}
           </div>
         </div>
       )}

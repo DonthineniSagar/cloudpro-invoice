@@ -34,6 +34,7 @@ const schema = a.schema({
       reminderBodyTemplate: a.string().default('This is a friendly reminder that invoice {invoiceNumber} for {total} is due on {dueDate}. Please arrange payment at your earliest convenience.'),
       // Expense email ingest settings
       expenseIngestKey: a.string(), // unique key for inbound email address
+      identityId: a.string(), // Cognito identity ID for S3 path scoping
       expenseIngestActive: a.boolean().default(false),
       expenseWhitelistedEmails: a.string().array(), // only process from these senders
       userId: a.string().required(),
@@ -133,6 +134,10 @@ const schema = a.schema({
       // Email ingest fields
       source: a.enum(['manual', 'email']),
       sourceConfidence: a.enum(['high', 'low']),
+      emailMessageId: a.string(), // SES message ID for dedup
+      contentHash: a.string(), // SHA-256 of attachment for dedup
+      suspectedDuplicate: a.boolean().default(false),
+      duplicateOf: a.string(), // ID of the suspected original expense
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })

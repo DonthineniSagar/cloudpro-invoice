@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Eye, Trash2 } from 'lucide-react';
+import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Eye, Trash2, FileText } from 'lucide-react';
+
+const isPdfUrl = (url: string) => /\.pdf(\?|$)/i.test(url);
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
@@ -208,9 +210,16 @@ export default function ExpensesPage() {
                           <div className="flex items-center justify-between">
                             <Link href={`/expenses/${expense.id}/edit`} className="flex items-center gap-3 flex-1 min-w-0">
                               {thumbnails[expense.id] ? (
+                                isPdfUrl(thumbnails[expense.id]) ? (
+                                  <div onClick={(e) => { e.preventDefault(); setViewingReceipt(thumbnails[expense.id]); }}
+                                    className="w-8 h-8 rounded flex-shrink-0 border border-gray-200 cursor-zoom-in hover:opacity-80 flex items-center justify-center bg-red-50">
+                                    <FileText className="w-4 h-4 text-red-500" />
+                                  </div>
+                                ) : (
                                 <img src={thumbnails[expense.id]} alt="Receipt"
                                   onClick={(e) => { e.preventDefault(); setViewingReceipt(thumbnails[expense.id]); }}
                                   className="w-8 h-8 rounded object-cover flex-shrink-0 border border-gray-200 cursor-zoom-in hover:opacity-80" />
+                                )
                               ) : (
                                 <span className="text-lg">{categoryIcon(expense.category || 'Other')}</span>
                               )}
@@ -218,6 +227,7 @@ export default function ExpensesPage() {
                                 <div className="flex items-center gap-2">
                                   <p className={`text-sm font-medium truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{expense.description}</p>
                                   {needsReceipt && <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />}
+                                  {expense.suspectedDuplicate && <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 flex-shrink-0">Duplicate?</span>}
                                 </div>
                                 <p className={`text-xs ${t.textMuted}`}>
                                   {expense.category || 'Other'} · {expense.date ? new Date(expense.date).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' }) : 'No date'}
@@ -266,7 +276,11 @@ export default function ExpensesPage() {
               className="absolute -top-10 right-0 text-white hover:text-gray-300 text-sm">
               ✕ Close
             </button>
-            <img src={viewingReceipt} alt="Receipt" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+            {isPdfUrl(viewingReceipt) ? (
+              <iframe src={viewingReceipt} className="w-[90vw] max-w-3xl h-[85vh] rounded-lg bg-white" />
+            ) : (
+              <img src={viewingReceipt} alt="Receipt" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+            )}
           </div>
         </div>
       )}

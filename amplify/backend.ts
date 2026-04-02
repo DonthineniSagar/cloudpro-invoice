@@ -92,7 +92,7 @@ processEmailLambda.addToRolePolicy(
 processEmailLambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
-    actions: ['dynamodb:PutItem', 'dynamodb:Query', 'dynamodb:GetItem'],
+    actions: ['dynamodb:PutItem', 'dynamodb:Query', 'dynamodb:GetItem', 'dynamodb:Scan'],
     resources: [
       backend.data.resources.tables['Expense'].tableArn,
       backend.data.resources.tables['CompanyProfile'].tableArn,
