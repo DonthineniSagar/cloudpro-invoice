@@ -278,6 +278,20 @@ Monthly PAYE processing for employees.
 - [ ] Pre-Tax Margin = Revenue ex-GST minus Expenses ex-GST (current calc is correct, label is wrong)
 - [ ] Consider adding gross margin % indicator
 
+### Multi-Currency Expenses
+Support expenses in foreign currencies with NZD conversion.
+
+**Tasks:**
+- [ ] Add `currency` field to Expense model (default NZD)
+- [ ] Currency selector on expense form (NZD, AUD, USD, GBP, EUR, INR, SGD, FJD)
+- [ ] Add `exchangeRate` field (manual entry, rate at time of expense)
+- [ ] Add `nzdAmount` field (original amount × exchange rate)
+- [ ] All dashboard/report totals use `nzdAmount` for consistency
+- [ ] Expense list shows original currency + NZD equivalent
+- [ ] GST calculation based on NZD amount
+- [ ] Auto-populate exchange rate from API (optional, exchangerate.host or RBNZ)
+- [ ] Reports: breakdown by currency, total foreign spend
+
 ### Email History & SES
 - [ ] Email history model (invoiceId, to, cc, subject, sentAt, status)
 - [ ] Log every sent email (invoice email + reminders) to EmailHistory
