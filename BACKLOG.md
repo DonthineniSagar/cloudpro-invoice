@@ -218,6 +218,103 @@ Full mobile experience without app store.
 
 ---
 
+## 📋 Phase 4 — SaaS & Monetisation
+
+### Landing Page & Marketing
+- [ ] Professional landing page at root URL (hero, features, pricing, FAQ, footer)
+- [ ] Support email: info@cloudpro-digital.co.nz
+- [ ] SEO optimised with OG tags
+- [ ] "Start Free Trial" CTA → signup flow
+- [ ] "Made in New Zealand 🇳🇿" branding
+
+### Plans & Billing (Stripe)
+
+**Plans:**
+| | Invoice Only ($9/mo) | Business ($29/mo) | Business Pro ($59/mo) |
+|---|---|---|---|
+| Invoices | 10/mo | Unlimited | Unlimited |
+| Clients | 5 | Unlimited | Unlimited |
+| Templates | 1 | All 3 | All 3 + custom |
+| Client Portal | ✅ | ✅ | ✅ |
+| Recurring | ✕ | ✅ | ✅ |
+| Reminders | Manual | Auto | Auto |
+| Expenses | ✕ | ✅ | ✅ |
+| Receipt OCR | ✕ | 30/mo | Unlimited |
+| Email Ingest | ✕ | ✕ | ✅ |
+| Reports | Invoice only | Full | Full + export |
+| Users | 1 | 1 | Up to 5 |
+| AI Insights | ✕ | Basic | Full |
+| Support | Email | Email | Priority |
+
+**Annual pricing:** 2 months free (save 17%)
+
+**Tasks:**
+- [ ] Stripe Checkout integration for subscription signup
+- [ ] Stripe Customer Portal for plan changes/cancellation
+- [ ] Webhook Lambda for subscription events (created, updated, cancelled, payment_failed)
+- [ ] Plan-based feature gating middleware
+- [ ] Nav visibility per plan (hide locked modules)
+- [ ] Upgrade prompts on locked features
+- [ ] Usage tracking (invoice count, OCR count per billing period)
+- [ ] Usage limit enforcement before create operations
+
+### Trial Model
+- [ ] 14-day free trial with full Business Pro access, no card required
+- [ ] Trial countdown banner in app
+- [ ] Email reminders at day 7, 12, 14
+- [ ] After expiry: read-only mode (view/download but no create/edit)
+- [ ] "Trial expired" banner with plan selection CTA
+- [ ] Admin ability to extend trial per user
+- [ ] Admin ability to toggle features per company (e.g. give trial user expenses access)
+
+### Auth & Multi-User Model
+
+**Company-scoped data model:**
+- [ ] `Company` model (companyId, name, plan, subscription, settings)
+- [ ] All data models scoped by companyId (invoices, expenses, clients)
+- [ ] `CompanyUser` join model (companyId, userId, role, status)
+- [ ] Migrate from owner-based auth to company-based auth
+
+**Roles:**
+| Role | Access |
+|---|---|
+| OWNER | Full access + billing + user management |
+| ADMIN | Full access + user management (no billing) |
+| MEMBER | Create/edit invoices, expenses, clients |
+| VIEWER | Read-only access to all data |
+| ACCOUNTANT | Read-only + reports + CSV export |
+
+**Tasks:**
+- [ ] Invite team members by email (sends invite link)
+- [ ] Self-serve role assignment (owner can set roles)
+- [ ] Self-serve read-only users (VIEWER role)
+- [ ] Role-based nav and action visibility
+- [ ] Activity log / audit trail (who did what, when)
+- [ ] Company switcher (future: user belongs to multiple companies)
+
+### AI-Powered Dashboard Insights
+Use Bedrock (Claude) to analyse financial data and surface actionable insights.
+
+**Features:**
+- [ ] Spending trend analysis (month-over-month, category trends)
+- [ ] Anomaly detection (unusual expenses, spikes vs historical average)
+- [ ] Highest spend alerts ("Office expenses up 40% this month")
+- [ ] Cash flow prediction (based on outstanding invoices + recurring)
+- [ ] Tax optimisation tips ("You have $X unclaimed GST")
+- [ ] Client revenue insights ("Top client revenue declining")
+- [ ] Seasonal patterns ("You typically spend more in Q3")
+- [ ] Weekly/monthly AI summary widget on dashboard
+- [ ] "Ask AI" chat about your finances (natural language queries)
+
+**Implementation:**
+- [ ] Lambda function: aggregates data → sends to Bedrock → returns insights
+- [ ] Cache insights (regenerate daily or on-demand)
+- [ ] Dashboard widget: "AI Insights" card with top 3 observations
+- [ ] Expandable detail view with full analysis
+- [ ] Plan-gated: Basic insights on Business, full on Business Pro
+
+---
+
 ## 📋 Phase 3 — Growth (June+ 2026)
 
 ### PAYE Payroll
