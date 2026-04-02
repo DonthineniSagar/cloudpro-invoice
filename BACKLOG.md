@@ -159,6 +159,19 @@ Snap a receipt, auto-fill the expense.
 
 ---
 
+### 2.6b Expense Email Ingest Improvements
+
+**Tasks:**
+- [ ] Rejected sender notification: when an email is rejected due to whitelist, show a notification/banner in the frontend for the user (e.g. "Email from forwarding-noreply@google.com was rejected — add to whitelist?")
+- [ ] Gmail forwarding support: auto-detect Gmail forwarded emails (From: forwarding-noreply@google.com) and extract original sender from headers/body
+- [ ] Whitelist suggestion: when a rejected sender is detected, offer one-click "Add to whitelist" action in the UI
+- [x] Duplicate detection: dedup by messageId, content hash, fuzzy match
+- [x] Receipt attachment: upload PDF/image attachments to S3 from email ingest
+- [x] PDF receipt viewer: iframe for PDFs, img for images
+- [x] Created date audit field on expense edit page
+
+---
+
 ### 2.7 Advanced Reporting
 Deeper financial insights for tax time and business planning.
 
