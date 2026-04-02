@@ -359,7 +359,7 @@ async function findFuzzyDuplicate(owner: string, expense: ExtractedExpense): Pro
   const result = await ddb.send(new ScanCommand({
     TableName: EXPENSE_TABLE,
     FilterExpression: '#owner = :owner AND #amount = :amount',
-    ExpressionAttributeNames: { '#owner': 'owner', '#amount': 'amount' },
+    ExpressionAttributeNames: { '#owner': 'owner', '#amount': 'amount', '#date': 'date' },
     ExpressionAttributeValues: { ':owner': owner, ':amount': total },
     ProjectionExpression: 'id, description, #amount, #date',
     Limit: 10,
