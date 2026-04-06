@@ -67,6 +67,7 @@ export default function NewExpensePage() {
           ...(total && { amount: total }),
           ...(vendor && { description: vendor }),
           ...(date && { date: parseReceiptDate(date) }),
+          ...(vendor && { category: inferCategory(vendor) }),
         }));
         toast.success('Receipt scanned — check the auto-filled fields');
       }
@@ -90,14 +91,39 @@ export default function NewExpensePage() {
     return formData.date;
   };
 
+  const inferCategory = (vendor: string): string => {
+    const v = vendor.toLowerCase();
+    const rules: [RegExp, string][] = [
+      [/spark|vodafone|one nz|2degrees|skinny|orcon|slingshot|chorus/i, 'Communication (Phone & Internet)'],
+      [/aws|amazon web|google cloud|azure|github|atlassian|slack|zoom|adobe|microsoft|dropbox|canva|xero|myob/i, 'Software & Subscriptions'],
+      [/uber eats|doordash|menulog|restaurant|cafe|coffee|bistro|pizza|sushi|burger|mcdonald|kfc|subway|biryani/i, 'Entertainment (50% deductible)'],
+      [/uber|taxi|grab|air new zealand|jetstar|qantas|booking\.com|airbnb|hotel|motel|flight/i, 'Travel & Accommodation'],
+      [/bp|z energy|mobil|caltex|noel leeming|pb tech|warehouse|bunnings|mitre 10/i, 'Office Expenses'],
+      [/state|aia|partners life|southern cross|tower|ami|aa insurance/i, 'Insurance'],
+      [/anz|asb|bnz|westpac|kiwibank|wise|transferwise|paypal|stripe/i, 'Interest & Bank Fees'],
+      [/deloitte|kpmg|ey|pwc|accountant|lawyer|solicitor|barrister|legal/i, 'Legal & Accounting'],
+      [/facebook|google ads|meta|linkedin|mailchimp|hubspot/i, 'Advertising & Marketing'],
+      [/mechanic|oil|tyre|tire|wof|rego|vtnz|aa |petrol|diesel/i, 'Motor Vehicle'],
+      [/plumber|electrician|builder|painter|repair|maintenance/i, 'Repairs & Maintenance'],
+    ];
+    for (const [pattern, category] of rules) {
+      if (pattern.test(v)) return category;
+    }
+    return 'Other';
+  };
+
   const handleReceiptSelect = (file: File) => {
     setReceiptFile(file);
-    handleScanReceipt(file);
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      toast.success('PDF attached — please fill in details manually');
+    } else {
+      handleScanReceipt(file);
+    }
   };
 
   const amount = parseFloat(formData.amount) || 0;
   const gstOverride = formData.gstOverride !== '' ? parseFloat(formData.gstOverride) : null;
-  const gstAmount = !formData.gstClaimable ? 0 : gstOverride != null ? gstOverride : amount * 3 / 23;
+  const gstAmount = !formData.gstClaimable ? 0 : gstOverride != null ? gstOverride : Math.round(amount * 3 / 23 * 100) / 100;
   const amountExGst = amount - gstAmount;
 
   const handleSubmit = async (e: React.FormEvent) => {

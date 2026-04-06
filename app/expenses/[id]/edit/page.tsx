@@ -50,7 +50,8 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
   const [createdAt, setCreatedAt] = useState('');
   const [formData, setFormData] = useState({
     description: '', category: 'Other', amount: '',
-    gstClaimable: true, gstOverride: '', date: '', notes: '', status: 'PENDING'
+    gstClaimable: true, gstOverride: '', date: '', notes: '', status: 'PENDING',
+    classification: '' as string, businessPercent: '100', source: ''
   });
 
   useEffect(() => {
@@ -64,7 +65,10 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
             amount: data.amount?.toString() || '', gstClaimable: data.gstClaimable ?? true,
             gstOverride: data.gstAmount != null ? data.gstAmount.toString() : '',
             date: data.date ? new Date(data.date).toISOString().split('T')[0] : '',
-            notes: data.notes || '', status: data.status || 'PENDING'
+            notes: data.notes || '', status: data.status || 'PENDING',
+            classification: (data as any).classification || '',
+            businessPercent: (data as any).businessPercent?.toString() || '100',
+            source: (data as any).source || '',
           });
           if (data.receiptUrl) {
             setExistingReceipt(data.receiptUrl);
@@ -88,7 +92,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
 
   const amount = parseFloat(formData.amount) || 0;
   const gstOverride = formData.gstOverride !== '' ? parseFloat(formData.gstOverride) : null;
-  const gstAmount = !formData.gstClaimable ? 0 : gstOverride != null ? gstOverride : amount * 3 / 23;
+  const gstAmount = !formData.gstClaimable ? 0 : gstOverride != null ? gstOverride : Math.round(amount * 3 / 23 * 100) / 100;
   const amountExGst = amount - gstAmount;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,6 +113,8 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
         amount, amountExGst, gstAmount, gstClaimable: formData.gstClaimable,
         date: new Date(formData.date).toISOString(), notes: formData.notes,
         status: newStatus as any,
+        ...(formData.classification && { classification: formData.classification as any }),
+        ...(formData.classification === 'partial' && { businessPercent: parseInt(formData.businessPercent) || 100 }),
         ...(receiptUrl && { receiptUrl }),
       });
       router.push('/expenses');
@@ -198,6 +204,30 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               </div>
               )}
             </div>
+
+            {formData.source === 'bank_import' && (
+              <div>
+                <label className={t.label}>Classification</label>
+                <div className="flex gap-2">
+                  {(['business', 'personal', 'partial'] as const).map(c => (
+                    <button key={c} type="button" onClick={() => setFormData({ ...formData, classification: c, ...(c === 'partial' ? { businessPercent: formData.businessPercent || '50' } : {}) })}
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium capitalize ${formData.classification === c
+                        ? c === 'business' ? 'bg-green-600 text-white' : c === 'personal' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+                        : dark ? 'bg-gray-800 text-slate-400 border border-gray-700' : 'bg-gray-100 text-gray-600 border border-gray-200'}`}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                {formData.classification === 'partial' && (
+                  <div className="mt-3">
+                    <label className={t.label}>Business %</label>
+                    <input type="number" min="1" max="99" value={formData.businessPercent}
+                      onChange={(e) => setFormData({ ...formData, businessPercent: e.target.value })}
+                      className={t.input + ' w-24'} />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
