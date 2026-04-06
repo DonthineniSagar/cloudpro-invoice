@@ -46,7 +46,7 @@ export default function NewExpensePage() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     description: '', category: 'Other', amount: '',
-    gstClaimable: true, date: new Date().toISOString().split('T')[0], notes: ''
+    gstClaimable: true, gstOverride: '', date: new Date().toISOString().split('T')[0], notes: ''
   });
 
   const handleScanReceipt = async (file: File) => {
@@ -96,7 +96,8 @@ export default function NewExpensePage() {
   };
 
   const amount = parseFloat(formData.amount) || 0;
-  const gstAmount = formData.gstClaimable ? amount * 3 / 23 : 0;
+  const gstOverride = formData.gstOverride !== '' ? parseFloat(formData.gstOverride) : null;
+  const gstAmount = !formData.gstClaimable ? 0 : gstOverride != null ? gstOverride : amount * 3 / 23;
   const amountExGst = amount - gstAmount;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,7 +205,14 @@ export default function NewExpensePage() {
                   </div>
                   <div>
                     <p className={t.textMuted}>GST ({formData.gstClaimable ? '15%' : 'N/A'})</p>
-                    <p className={`font-medium ${dark ? 'text-white' : 'text-gray-900'}`}>${gstAmount.toFixed(2)}</p>
+                    {formData.gstClaimable ? (
+                      <input type="number" min="0" step="0.01" value={formData.gstOverride}
+                        onChange={(e) => setFormData({ ...formData, gstOverride: e.target.value })}
+                        placeholder={(amount * 3 / 23).toFixed(2)}
+                        className={`w-full font-medium mt-0.5 px-2 py-1 rounded text-sm ${dark ? 'bg-gray-800 border border-purple-500/30 text-white' : 'bg-white border border-indigo-200 text-gray-900'}`} />
+                    ) : (
+                      <p className={`font-medium ${dark ? 'text-white' : 'text-gray-900'}`}>$0.00</p>
+                    )}
                   </div>
                   <div>
                     <p className={t.textMuted}>Total</p>
