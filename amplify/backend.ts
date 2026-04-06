@@ -46,6 +46,11 @@ backend.processReceipt.resources.lambda.addToRolePolicy(
   })
 );
 
+// Grant S3 access for PDF receipt processing (Textract needs S3 for PDFs)
+const receiptFn = backend.processReceipt.resources.lambda as lambda.Function;
+backend.storage.resources.bucket.grantReadWrite(receiptFn);
+receiptFn.addEnvironment('STORAGE_BUCKET_NAME', backend.storage.resources.bucket.bucketName);
+
 // === Expense Email Ingest Infrastructure ===
 // Using data stack to avoid circular dependency between nested stacks
 const dataStack = backend.data.resources.cfnResources.cfnGraphqlApi.stack;

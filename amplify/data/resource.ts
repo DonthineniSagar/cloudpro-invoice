@@ -132,10 +132,13 @@ const schema = a.schema({
       notes: a.string(),
       status: a.enum(['PENDING', 'APPROVED', 'REJECTED']),
       // Email ingest fields
-      source: a.enum(['manual', 'email']),
+      source: a.enum(['manual', 'email', 'bank_import']),
       sourceConfidence: a.enum(['high', 'low']),
       emailMessageId: a.string(), // SES message ID for dedup
       contentHash: a.string(), // SHA-256 of attachment for dedup
+      // Bank import classification
+      classification: a.enum(['unclassified', 'business', 'personal', 'partial']),
+      businessPercent: a.integer().default(100), // for partial: % that is business
       suspectedDuplicate: a.boolean().default(false),
       duplicateOf: a.string(), // ID of the suspected original expense
       userId: a.string().required(),
