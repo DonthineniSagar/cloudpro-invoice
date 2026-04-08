@@ -182,7 +182,7 @@ export default function PortalPage({ params }: { params: { token: string } }) {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-gray-400">
-          Powered by CloudPro Invoice
+          Powered by Ledgr
         </div>
       </div>
     </div>

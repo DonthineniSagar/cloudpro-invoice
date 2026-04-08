@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Update Docs on Commit",
+  "description": "Reviews the latest git commit changes and updates Kiro steering files (.kiro/steering/) and project documentation (README.md, ARCHITECTURE.md, etc.) to stay in sync with the codebase.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the latest git commit by running `git diff HEAD~1 HEAD` to see what changed. Based on those changes, update any relevant Kiro steering files in `.kiro/steering/` (such as tech-stack.md, coding-standards.md, workflow.md, product.md, design.md, aws-security.md) and project documentation files (README.md, ARCHITECTURE.md, DEV_GUIDE.md, etc.) to reflect the new code. Only update files where the changes are meaningful — don't make trivial edits. Summarize what you updated and why."
+  }
+}

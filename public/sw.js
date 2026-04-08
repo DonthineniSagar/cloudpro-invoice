@@ -1,7 +1,7 @@
 /**
  * Service Worker — network-first caching strategy with offline fallback.
  * Pre-caches key app routes on install. Falls back to cache when offline.
- */const CACHE_NAME = 'cloudpro-v1';
+ */const CACHE_NAME = 'ledgr-v1';
 const PRECACHE_URLS = ['/', '/dashboard', '/invoices', '/clients', '/expenses'];
 
 self.addEventListener('install', (event) => {
