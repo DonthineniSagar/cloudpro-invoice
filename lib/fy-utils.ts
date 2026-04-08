@@ -59,6 +59,20 @@ export function availableFYs(): number[] {
   return fys;
 }
 
+/** FYs available for UI dropdowns: current + 2 previous */
+export function selectableFYs(): number[] {
+  const current = currentFY();
+  return [current, current - 1, current - 2];
+}
+
+/** Check if a given FY is closed (read-only) */
+export function isFYClosed(fy: number): boolean {
+  const current = currentFY();
+  if (fy >= current) return false;          // current or future FY — open
+  if (fy === current - 1) return !isPreviousFYOpen(); // previous FY — depends on cutoff
+  return true;                              // 2+ FYs ago — always closed
+}
+
 /** FY months in order: Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec, Jan, Feb, Mar */
 export const FY_MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 

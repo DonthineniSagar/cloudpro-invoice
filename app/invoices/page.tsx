@@ -8,7 +8,7 @@ import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { TableRowSkeleton } from '@/components/Skeleton';
-import { currentFY, fyLabel, getFY } from '@/lib/fy-utils';
+import { currentFY, fyLabel, getFY, selectableFYs } from '@/lib/fy-utils';
 
 export default function InvoicesPage() {
   const { theme } = useTheme();
@@ -104,8 +104,9 @@ export default function InvoicesPage() {
 
         <div className="mb-6 flex gap-3">
           <select value={fyFilter} onChange={(e) => setFyFilter(Number(e.target.value))}
+            aria-label="Financial Year"
             className={`w-44 ${theme === 'dark' ? 'bg-black border-2 border-purple-500/40 rounded-lg text-white px-3 py-3 focus:border-purple-500 focus:outline-none' : 'border border-gray-300 rounded-lg px-3 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent'}`}>
-            {[currentFY(), currentFY() - 1, currentFY() - 2].map(fy => (
+            {selectableFYs().map(fy => (
               <option key={fy} value={fy}>{fyLabel(fy)}</option>
             ))}
           </select>

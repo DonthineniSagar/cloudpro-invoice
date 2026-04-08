@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trash2, Upload, X, Eye, FileText } from 'lucide-react';
+import { ArrowLeft, Trash2, Upload, X, Eye, FileText, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { uploadData } from 'aws-amplify/storage';
 import AppLayout from '@/components/AppLayout';
@@ -13,6 +13,7 @@ const isPdfUrl = (url: string) => /\.pdf(\?|$)/i.test(url);
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
+import { getFY, currentFY, isPreviousFYOpen, isFYClosed, fyShort } from '@/lib/fy-utils';
 
 // IRD NZ deductible expense categories (IR3/IR4 aligned)
 const CATEGORIES = [
@@ -95,8 +96,18 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
   const gstAmount = !formData.gstClaimable ? 0 : gstOverride != null ? gstOverride : Math.round(amount * 3 / 23 * 100) / 100;
   const amountExGst = amount - gstAmount;
 
+  // FY cutoff logic
+  const expenseFY = formData.date ? getFY(formData.date) : currentFY();
+  const isLocked = isFYClosed(expenseFY);
+  const isPrevFYAndOpen = formData.date ? (expenseFY < currentFY() && isPreviousFYOpen()) : false;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Block save if FY is closed
+    if (isLocked) {
+      toast.error(`${fyShort(expenseFY)} is closed — cutoff was May 15`);
+      return;
+    }
     setSaving(true);
     try {
       let receiptUrl = existingReceipt;
@@ -152,9 +163,17 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
         </Link>
 
         <div className={t.card}>
+          {/* FY Lock Banner */}
+          {isLocked && (
+            <div className={`flex items-center gap-2 px-4 py-3 rounded-lg mb-6 ${dark ? 'bg-red-900/20 border border-red-500/30 text-red-400' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+              <Lock className="w-4 h-4 flex-shrink-0" />
+              <span className="text-sm font-medium">🔒 {fyShort(expenseFY)} is closed. This expense is read-only.</span>
+            </div>
+          )}
+
           <div className="flex justify-between items-center mb-6">
             <h1 className={dark ? 'text-2xl font-bold text-white' : 'text-2xl font-bold text-gray-900'}>Edit Expense</h1>
-            {originalStatus !== 'APPROVED' && (
+            {!isLocked && originalStatus !== 'APPROVED' && (
               <button onClick={handleDelete} className="text-red-400 hover:text-red-300 flex items-center gap-2">
                 <Trash2 className="w-4 h-4" /> Delete
               </button>
@@ -165,6 +184,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
             <div>
               <label className={t.label}>Description *</label>
               <input type="text" required value={formData.description}
+                disabled={isLocked}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className={t.input} />
             </div>
@@ -173,6 +193,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               <div>
                 <label className={t.label}>Category</label>
                 <select value={formData.category}
+                  disabled={isLocked}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className={t.input}>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -181,8 +202,18 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               <div>
                 <label className={t.label}>Date *</label>
                 <input type="date" required value={formData.date}
+                  disabled={isLocked}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   style={dark ? { colorScheme: 'dark' } : {}} className={t.input} />
+                {formData.date && expenseFY < currentFY() && (
+                  <p className={`text-xs mt-1 ${isLocked ? 'text-red-500' : isPrevFYAndOpen ? 'text-amber-500' : 'text-red-500'}`}>
+                    {isLocked
+                      ? `✕ ${fyShort(expenseFY)} is closed — cutoff was May 15`
+                      : isPrevFYAndOpen
+                        ? `⚠ This falls in ${fyShort(expenseFY)} (previous year) — open until May 15`
+                        : `✕ ${fyShort(expenseFY)} is closed — cutoff was May 15`}
+                  </p>
+                )}
               </div>
               <div>
                 <label className={t.label}>Status</label>
@@ -210,7 +241,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                 <label className={t.label}>Classification</label>
                 <div className="flex gap-2">
                   {(['business', 'personal', 'partial'] as const).map(c => (
-                    <button key={c} type="button" onClick={() => setFormData({ ...formData, classification: c, ...(c === 'partial' ? { businessPercent: formData.businessPercent || '50' } : {}) })}
+                    <button key={c} type="button" disabled={isLocked} onClick={() => setFormData({ ...formData, classification: c, ...(c === 'partial' ? { businessPercent: formData.businessPercent || '50' } : {}) })}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium capitalize ${formData.classification === c
                         ? c === 'business' ? 'bg-green-600 text-white' : c === 'personal' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
                         : dark ? 'bg-gray-800 text-slate-400 border border-gray-700' : 'bg-gray-100 text-gray-600 border border-gray-200'}`}>
@@ -222,6 +253,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                   <div className="mt-3">
                     <label className={t.label}>Business %</label>
                     <input type="number" min="1" max="99" value={formData.businessPercent}
+                      disabled={isLocked}
                       onChange={(e) => setFormData({ ...formData, businessPercent: e.target.value })}
                       className={t.input + ' w-24'} />
                   </div>
@@ -233,11 +265,13 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               <div>
                 <label className={t.label}>Amount (incl. GST) *</label>
                 <input type="number" required min="0" step="0.01" value={formData.amount}
+                  disabled={isLocked}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   className={t.input} />
               </div>
               <div className="flex items-center gap-3 pt-7">
                 <input type="checkbox" id="gstClaimable" checked={formData.gstClaimable}
+                  disabled={isLocked}
                   onChange={(e) => setFormData({ ...formData, gstClaimable: e.target.checked })}
                   className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
                 <label htmlFor="gstClaimable" className={dark ? 'text-slate-300' : 'text-gray-700'}>GST Claimable</label>
@@ -255,6 +289,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                     <p className={t.textMuted}>GST ({formData.gstClaimable ? '15%' : 'N/A'})</p>
                     {formData.gstClaimable ? (
                       <input type="number" min="0" step="0.01" value={formData.gstOverride}
+                        disabled={isLocked}
                         onChange={(e) => setFormData({ ...formData, gstOverride: e.target.value })}
                         placeholder={(amount * 3 / 23).toFixed(2)}
                         className={`w-full font-medium mt-0.5 px-2 py-1 rounded text-sm ${dark ? 'bg-gray-800 border border-purple-500/30 text-white' : 'bg-white border border-indigo-200 text-gray-900'}`} />
@@ -272,7 +307,30 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
 
             <div>
               <label className={t.label}>Receipt</label>
-              {receiptFile ? (
+              {isLocked ? (
+                existingReceipt && receiptPreviewUrl ? (
+                  <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${dark ? 'bg-green-900/20 border border-green-500/30' : 'bg-green-50 border border-green-200'}`}>
+                    <div className="flex items-center gap-3">
+                      {isPdfUrl(receiptPreviewUrl) ? (
+                        <div onClick={() => setViewingReceipt(true)}
+                          className="w-10 h-10 rounded flex items-center justify-center bg-red-50 border border-gray-200 cursor-zoom-in hover:opacity-80">
+                          <FileText className="w-5 h-5 text-red-500" />
+                        </div>
+                      ) : (
+                        <img src={receiptPreviewUrl} alt="Receipt" className="w-10 h-10 rounded object-cover cursor-zoom-in hover:opacity-80"
+                          onClick={() => setViewingReceipt(true)} />
+                      )}
+                      <span className={`text-sm ${dark ? 'text-green-400' : 'text-green-700'}`}>✓ Receipt attached</span>
+                    </div>
+                    <button type="button" onClick={() => setViewingReceipt(true)}
+                      className={`text-sm flex items-center gap-1 ${dark ? 'text-purple-400 hover:text-purple-300' : 'text-indigo-600 hover:text-indigo-700'}`}>
+                      <Eye className="w-4 h-4" /> View
+                    </button>
+                  </div>
+                ) : (
+                  <p className={`text-sm ${t.textMuted}`}>No receipt attached</p>
+                )
+              ) : receiptFile ? (
                 <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${dark ? 'bg-purple-900/20 border border-purple-500/30' : 'bg-indigo-50 border border-indigo-200'}`}>
                   <span className={`text-sm truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{receiptFile.name}</span>
                   <button type="button" onClick={() => setReceiptFile(null)} className="text-red-400 hover:text-red-300 ml-2">
@@ -324,16 +382,24 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
             <div>
               <label className={t.label}>Notes</label>
               <textarea rows={3} value={formData.notes}
+                disabled={isLocked}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className={t.input} />
             </div>
 
-            <div className="flex gap-4">
-              <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
-                {saving ? 'Saving...' : 'Update Expense'}
-              </button>
-              <Link href="/expenses" className={t.btnSecondary}>Cancel</Link>
-            </div>
+            {!isLocked && (
+              <div className="flex gap-4">
+                <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
+                  {saving ? 'Saving...' : 'Update Expense'}
+                </button>
+                <Link href="/expenses" className={t.btnSecondary}>Cancel</Link>
+              </div>
+            )}
+            {isLocked && (
+              <div className="flex gap-4">
+                <Link href="/expenses" className={`flex-1 text-center ${t.btnSecondary}`}>Back to Expenses</Link>
+              </div>
+            )}
           </form>
         </div>
       </div>

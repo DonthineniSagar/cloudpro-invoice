@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { getUrl } from 'aws-amplify/storage';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Trash2, FileText, FileSpreadsheet, ChevronDown, ChevronRight, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Trash2, FileText, FileSpreadsheet, ChevronDown, ChevronRight, TrendingUp, TrendingDown, Lock } from 'lucide-react';
 
 const isPdfUrl = (url: string) => /\.pdf(\?|$)/i.test(url);
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
-import { currentFY, fyLabel, getFY, fyMonthKeys, FY_MONTHS } from '@/lib/fy-utils';
+import { currentFY, fyLabel, getFY, fyMonthKeys, FY_MONTHS, isFYClosed, selectableFYs } from '@/lib/fy-utils';
 
 type Expense = any;
 
@@ -244,8 +244,9 @@ export default function ExpensesPage() {
         {/* Filters */}
         <div className={`flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg ${dark ? 'bg-black border border-purple-500/20' : 'bg-gray-50 border border-gray-200'}`}>
           <select value={fyFilter} onChange={(e) => { setFyFilter(Number(e.target.value)); setExpandedMonths(new Set()); setMonthExpenses({}); }}
+            aria-label="Financial Year"
             className={`text-sm px-3 py-1.5 rounded-md ${dark ? 'bg-gray-900 border border-purple-500/30 text-white' : 'bg-white border border-gray-300 text-gray-700'}`}>
-            {[currentFY(), currentFY() - 1, currentFY() - 2].map(fy => (
+            {selectableFYs().map(fy => (
               <option key={fy} value={fy}>{fyLabel(fy)}</option>
             ))}
           </select>
@@ -302,6 +303,7 @@ export default function ExpensesPage() {
                         <div className={`text-center py-4 text-sm ${t.textMuted}`}>Loading...</div>
                       ) : expenses.map((expense: Expense) => {
                         const needsReceipt = (expense.amount || 0) > 50 && !expense.receiptUrl;
+                        const expLocked = expense.date ? isFYClosed(getFY(expense.date)) : false;
                         return (
                           <div key={expense.id}
                             className={`${dark ? 'bg-black rounded-lg border border-purple-500/20 px-4 py-2.5' : 'bg-white rounded-lg border border-gray-100 px-4 py-2.5'}`}>
@@ -337,17 +339,24 @@ export default function ExpensesPage() {
                               <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                                 <div className="text-right">
                                   <p className={`text-sm font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>${expense.amount?.toFixed(2)}</p>
-                                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${statusColor(expense.status || 'PENDING')}`}>
-                                    {expense.status || 'PENDING'}
-                                  </span>
+                                  <div className="flex items-center gap-1 justify-end">
+                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${statusColor(expense.status || 'PENDING')}`}>
+                                      {expense.status || 'PENDING'}
+                                    </span>
+                                    {expLocked && (
+                                      <span className={`text-xs px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${dark ? 'bg-gray-800 text-slate-400' : 'bg-gray-100 text-gray-500'}`}>
+                                        <Lock className="w-3 h-3" /> Locked
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                                {expense.status === 'PENDING' && (
+                                {!expLocked && expense.status === 'PENDING' && (
                                   <button onClick={() => updateStatus(expense.id, 'APPROVED', monthKey)} title="Approve"
                                     className={`p-1 rounded ${dark ? 'text-green-400 hover:bg-green-900/30' : 'text-green-600 hover:bg-green-50'}`}>
                                     <CheckCircle className="w-4 h-4" />
                                   </button>
                                 )}
-                                {expense.status !== 'APPROVED' && (
+                                {!expLocked && expense.status !== 'APPROVED' && (
                                   <button onClick={() => deleteExpense(expense.id, monthKey)}
                                     className={`p-1 rounded ${dark ? 'text-slate-500 hover:text-red-400' : 'text-gray-400 hover:text-red-600'}`}>
                                     <Trash2 className="w-4 h-4" />
