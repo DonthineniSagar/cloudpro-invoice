@@ -37,6 +37,9 @@ const schema = a.schema({
       identityId: a.string(), // Cognito identity ID for S3 path scoping
       expenseIngestActive: a.boolean().default(false),
       expenseWhitelistedEmails: a.string().array(), // only process from these senders
+      // OCR usage tracking
+      ocrUsageCount: a.integer().default(0),
+      ocrUsageResetDate: a.datetime(),
       // Subscription & billing
       subscriptionPlan: a.enum(['STARTER', 'BUSINESS', 'BUSINESS_PRO']),
       subscriptionStatus: a.enum(['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELLED', 'EXPIRED']),

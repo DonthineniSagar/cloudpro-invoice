@@ -9,8 +9,10 @@ import { usePathname } from 'next/navigation';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
 import TrialBanner from '@/components/TrialBanner';
+import UsageMeter from '@/components/UsageMeter';
 import { canAccess, isSubscriptionActive } from '@/lib/subscription';
 import type { PlanTier, SubscriptionStatus, Feature } from '@/lib/subscription';
+import { getInvoiceCount, getClientCount, getEffectiveOcrCount, getBillingPeriodStart } from '@/lib/usage';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 
@@ -53,6 +55,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     loading: true,
   });
 
+  const [usage, setUsage] = useState({ invoices: 0, clients: 0, ocr: 0 });
+
   useEffect(() => {
     if (!user?.id) {
       setSub((prev) => ({ ...prev, loading: false }));
@@ -72,6 +76,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             trialEndDate: profile.trialEndDate || null,
             loading: false,
           });
+
+          // Load usage counts
+          try {
+            const periodStart = getBillingPeriodStart(
+              profile.subscriptionCurrentPeriodEnd || null,
+              (profile.subscriptionInterval as 'MONTHLY' | 'ANNUAL') || null
+            );
+            const [invoiceCount, clientCount] = await Promise.all([
+              getInvoiceCount(client, periodStart),
+              getClientCount(client),
+            ]);
+            const ocrCount = getEffectiveOcrCount(
+              profile.ocrUsageCount ?? 0,
+              profile.ocrUsageResetDate ?? null
+            );
+            if (!cancelled) {
+              setUsage({ invoices: invoiceCount, clients: clientCount, ocr: ocrCount });
+            }
+          } catch (err) {
+            console.error('Failed to load usage counts:', err);
+          }
         } else if (!cancelled) {
           setSub((prev) => ({ ...prev, loading: false }));
         }
@@ -163,10 +188,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   Sign out
                 </button>
               </div>
+              {!sub.loading && effectivePlan && (
+                <UsageMeter
+                  invoiceCount={usage.invoices}
+                  clientCount={usage.clients}
+                  ocrCount={usage.ocr}
+                  plan={effectivePlan}
+                  dark={dark}
+                />
+              )}
             </nav>
           </div>
         )}
       </header>
+      {/* Desktop usage meter */}
+      {!sub.loading && effectivePlan && (
+        <div className={`hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${dark ? 'border-b border-purple-500/10' : ''}`}>
+          <div className="max-w-xs">
+            <UsageMeter
+              invoiceCount={usage.invoices}
+              clientCount={usage.clients}
+              ocrCount={usage.ocr}
+              plan={effectivePlan}
+              dark={dark}
+            />
+          </div>
+        </div>
+      )}
       {/* Subscription banners */}
       {!sub.loading && (
         <TrialBanner status={sub.status} trialEndDate={sub.trialEndDate} dark={dark} />

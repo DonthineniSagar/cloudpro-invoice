@@ -12,6 +12,11 @@ import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { invoiceSchema, validate, FormErrors } from '@/lib/validation';
+import { getInvoiceCount, getBillingPeriodStart, checkLimit } from '@/lib/usage';
+import type { LimitStatus } from '@/lib/usage';
+import type { PlanTier } from '@/lib/subscription';
+import { isSubscriptionActive } from '@/lib/subscription';
+import LimitReachedPrompt from '@/components/LimitReachedPrompt';
 
 type LineItem = {
   id: string; description: string; wbs: string;
@@ -26,9 +31,12 @@ export default function NewInvoicePage() {
   const dark = theme === 'dark';
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [clients, setClients] = useState<any[]>([]);
-  const [companyProfile, setCompanyProfile] = useState<any>(null);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const [clients, setClients] = useState<unknown[]>([]);
+  const [companyProfile, setCompanyProfile] = useState<Record<string, unknown> | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Record<string, unknown> | null>(null);
+  const [usageLoading, setUsageLoading] = useState(true);
+  const [invoiceLimit, setInvoiceLimit] = useState<LimitStatus | null>(null);
+  const [planName, setPlanName] = useState<string>('');
   const [clientDetails, setClientDetails] = useState({ name: '', email: '', address: '' });
   const [lineItems, setLineItems] = useState<LineItem[]>([
     { id: '1', description: '', wbs: '', quantity: 1, unitPrice: 0, amount: 0 }
@@ -49,9 +57,31 @@ export default function NewInvoicePage() {
           client.models.CompanyProfile.list()
         ]);
         setClients(clientsRes.data);
-        if (profileRes.data?.length > 0) setCompanyProfile(profileRes.data[0]);
+        const profile = profileRes.data?.[0];
+        if (profile) setCompanyProfile(profile as unknown as Record<string, unknown>);
+
+        // Invoice limit check
+        const plan = (profile?.subscriptionPlan as PlanTier) || null;
+        const status = profile?.subscriptionStatus as string | null;
+        const effectivePlan = status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : plan;
+        setPlanName(effectivePlan ? effectivePlan.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()).replace('Business Pro', 'Business Pro') : '');
+
+        if (effectivePlan && isSubscriptionActive(status as import('@/lib/subscription').SubscriptionStatus | null)) {
+          const periodStart = getBillingPeriodStart(
+            (profile?.subscriptionCurrentPeriodEnd as string) || null,
+            (profile?.subscriptionInterval as 'MONTHLY' | 'ANNUAL') || null
+          );
+          const count = await getInvoiceCount(client, periodStart);
+          const limit = checkLimit('invoices', count, effectivePlan);
+          setInvoiceLimit(limit);
+        } else {
+          // No active subscription — block with 0/0
+          setInvoiceLimit({ allowed: false, current: 0, max: 0, label: '0 / 0' });
+        }
       } catch (error) {
         console.error('Error loading data:', error);
+      } finally {
+        setUsageLoading(false);
       }
     };
     load();
@@ -61,11 +91,11 @@ export default function NewInvoicePage() {
   }, []);
 
   const handleClientSelect = (clientId: string) => {
-    const c = clients.find(c => c.id === clientId);
-    setSelectedClient(c);
+    const c = clients.find((c: unknown) => (c as Record<string, unknown>).id === clientId) as Record<string, unknown> | undefined;
+    setSelectedClient(c || null);
     if (c) {
       setClientDetails({
-        name: c.name || '', email: c.email || '',
+        name: (c.name as string) || '', email: (c.email as string) || '',
         address: [c.address, c.city, c.state, c.postalCode, c.country].filter(Boolean).join(', ')
       });
     }
@@ -79,7 +109,7 @@ export default function NewInvoicePage() {
     if (lineItems.length > 1) setLineItems(lineItems.filter(item => item.id !== id));
   };
 
-  const updateLineItem = (id: string, field: keyof LineItem, value: any) => {
+  const updateLineItem = (id: string, field: keyof LineItem, value: string | number) => {
     setLineItems(lineItems.map(item => {
       if (item.id === id) {
         const updated = { ...item, [field]: value };
@@ -147,6 +177,21 @@ export default function NewInvoicePage() {
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
 
+        {usageLoading ? (
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <div className={dark ? 'text-slate-400' : 'text-gray-500'}>Loading...</div>
+          </div>
+        ) : invoiceLimit && !invoiceLimit.allowed ? (
+          <LimitReachedPrompt
+            resource="Invoice"
+            current={invoiceLimit.current}
+            max={invoiceLimit.max}
+            planName={planName || 'current'}
+            backHref="/invoices"
+            backLabel="Back to Invoices"
+            upgradeMessage="Upgrade to create unlimited invoices."
+          />
+        ) : (
         <div className={t.card}>
           <h1 className={t.heading}>Create Invoice</h1>
 
@@ -307,6 +352,7 @@ export default function NewInvoicePage() {
             </div>
           </form>
         </div>
+        )}
       </div>
     </AppLayout>
   );
