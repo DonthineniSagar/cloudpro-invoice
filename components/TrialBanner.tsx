@@ -34,7 +34,7 @@ export default function TrialBanner({ status, trialEndDate, dark }: TrialBannerP
             You have {daysLeft} day{daysLeft !== 1 ? 's' : ''} left in your free trial.
           </span>
           <Link
-            href="/#pricing"
+            href="/pricing"
             className={`font-medium underline underline-offset-2 whitespace-nowrap ${
               dark ? 'text-amber-300 hover:text-amber-100' : 'text-amber-900 hover:text-amber-700'
             }`}
@@ -93,7 +93,7 @@ export default function TrialBanner({ status, trialEndDate, dark }: TrialBannerP
         <span>
           Your subscription has ended.{' '}
           <Link
-            href="/#pricing"
+            href="/pricing"
             className={`font-medium underline underline-offset-2 ${
               dark ? 'text-purple-400 hover:text-purple-300' : 'text-primary-600 hover:text-primary-700'
             }`}

@@ -71,7 +71,7 @@ export default function LimitReachedPrompt({
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/#pricing"
+            href="/pricing"
             className="inline-block px-6 py-3 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors"
           >
             Upgrade Plan

@@ -33,7 +33,7 @@ export default function UpgradePrompt({ feature, requiredPlan }: UpgradePromptPr
           Upgrade to unlock it.
         </p>
         <Link
-          href="/#pricing"
+          href="/pricing"
           className="inline-block px-6 py-3 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
         >
           View Plans & Upgrade

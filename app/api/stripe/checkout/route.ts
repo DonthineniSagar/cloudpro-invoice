@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       mode: 'subscription',
       customer_email: userEmail,
       payment_method_collection: 'if_required',
+      allow_promotion_codes: true,
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: subscriptionData,
       metadata: {
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
         interval,
       },
       success_url: `${origin}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/#pricing`,
+      cancel_url: `${origin}/pricing`,
     });
 
     return NextResponse.json({ url: session.url });

@@ -31,7 +31,7 @@ function MeterBar({ label, current, max, dark }: MeterBarProps) {
           : 'bg-indigo-500';
 
   return (
-    <Link href="/#pricing" className="block group">
+    <Link href="/pricing" className="block group">
       <div className="flex justify-between text-xs mb-1">
         <span className={dark ? 'text-slate-400' : 'text-gray-500'}>
           {label}
