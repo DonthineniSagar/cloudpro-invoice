@@ -46,8 +46,9 @@ export default function PricingPage() {
   }, [user?.id]);
 
   async function handleSelectPlan(plan: typeof PLANS[0]) {
-    if (!user?.id || !companyProfileId) {
-      toast.error('Please set up your company profile first.');
+    if (!user?.id) return;
+    if (!companyProfileId) {
+      toast.error('Please set up your company profile before choosing a plan.');
       return;
     }
     const priceId = annual ? plan.annualPriceId : plan.monthlyPriceId;
@@ -62,7 +63,7 @@ export default function PricingPage() {
           interval: annual ? 'annual' : 'monthly',
           userId: user.id,
           userEmail: user.email,
-          companyProfileId,
+          companyProfileId: companyProfileId || user.id,
           hasExistingTrial,
         }),
       });
@@ -86,6 +87,21 @@ export default function PricingPage() {
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Profile setup prompt */}
+        {!loading && !companyProfileId && (
+          <div className={`mb-8 p-4 rounded-lg flex items-center justify-between gap-4 ${
+            dark ? 'bg-amber-900/20 border border-amber-500/30' : 'bg-amber-50 border border-amber-200'
+          }`}>
+            <p className={`text-sm ${dark ? 'text-amber-300' : 'text-amber-800'}`}>
+              Set up your company profile before choosing a plan — we need your business details to get started.
+            </p>
+            <a href="/settings/company"
+              className="flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition-colors">
+              Set Up Profile
+            </a>
+          </div>
+        )}
+
         <div className="text-center mb-10">
           <h1 className={`text-3xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>
             Choose your plan
