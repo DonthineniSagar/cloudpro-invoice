@@ -5,11 +5,9 @@ import { DynamoDBDocumentClient, UpdateCommand, GetCommand } from '@aws-sdk/lib-
 import { PRODUCT_TO_PLAN } from '@/lib/subscription';
 import type { PlanTier, SubscriptionStatus } from '@/lib/subscription';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-24.acacia',
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 // DynamoDB direct access — bypasses AppSync auth for server-side webhook writes
 const ddbClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
