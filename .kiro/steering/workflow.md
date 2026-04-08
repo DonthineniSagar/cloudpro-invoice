@@ -36,3 +36,5 @@
 - Keep changes focused — one feature/fix per commit
 - Test locally before committing
 - Don't commit `.env.local`, `amplify_outputs.json`, or `node_modules`
+- **ALWAYS run `npm run build` before pushing** — never push code that doesn't compile
+- Run `getDiagnostics` on changed files, but also verify with a full build since diagnostics can miss JSX/runtime errors

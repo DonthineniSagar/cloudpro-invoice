@@ -392,6 +392,8 @@ export default function CompanyProfilePage() {
             <div className="flex items-center gap-4">
               <a
                 href="/pricing"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  theme === 'dark'
                     ? 'bg-purple-900/30 border border-purple-500/40 text-purple-400 hover:bg-purple-900/50'
                     : 'bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100'
                 }`}
