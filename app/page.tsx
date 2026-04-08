@@ -17,6 +17,8 @@ import {
   Globe,
   Zap,
   CheckCircle,
+  Check,
+  Minus,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -79,6 +81,90 @@ const FAQ_ITEMS: FaqItem[] = [
 const CONTACT_EMAIL = 'info@cloudpro-dgital.co.nz';
 
 /* ------------------------------------------------------------------ */
+/*  Pricing Plans                                                      */
+/* ------------------------------------------------------------------ */
+
+interface PlanFeatureItem {
+  name: string;
+  included: boolean | string;
+}
+
+interface Plan {
+  name: string;
+  tier: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  monthlyPriceId: string;
+  annualPriceId: string;
+  highlighted: boolean;
+  features: PlanFeatureItem[];
+}
+
+const PLANS: Plan[] = [
+  {
+    name: 'Starter',
+    tier: 'STARTER',
+    monthlyPrice: 10.35,
+    annualPrice: 113.85,
+    monthlyPriceId: 'price_1TJndVRRCRfUSdl9rivSIDKQ',
+    annualPriceId: 'price_1TJndWRRCRfUSdl9baePpusb',
+    highlighted: false,
+    features: [
+      { name: '10 invoices/month', included: true },
+      { name: '5 clients', included: true },
+      { name: '1 template (Modern)', included: true },
+      { name: 'Client portal', included: true },
+      { name: 'Recurring invoices', included: false },
+      { name: 'Auto reminders', included: false },
+      { name: 'Expenses', included: false },
+      { name: 'Receipt OCR', included: false },
+      { name: 'Reports', included: 'Invoice only' },
+    ],
+  },
+  {
+    name: 'Business',
+    tier: 'BUSINESS',
+    monthlyPrice: 33.35,
+    annualPrice: 333.50,
+    monthlyPriceId: 'price_1TJndYRRCRfUSdl9IlFTYGBn',
+    annualPriceId: 'price_1TJndZRRCRfUSdl9eWRqEycI',
+    highlighted: true,
+    features: [
+      { name: 'Unlimited invoices', included: true },
+      { name: 'Unlimited clients', included: true },
+      { name: 'All 3 templates', included: true },
+      { name: 'Client portal', included: true },
+      { name: 'Recurring invoices', included: true },
+      { name: 'Auto reminders', included: true },
+      { name: 'Expenses', included: true },
+      { name: '30 receipt OCR/month', included: true },
+      { name: 'Full reports', included: true },
+    ],
+  },
+  {
+    name: 'Business Pro',
+    tier: 'BUSINESS_PRO',
+    monthlyPrice: 90.85,
+    annualPrice: 908.50,
+    monthlyPriceId: 'price_1TJndaRRCRfUSdl9TaFc2RrI',
+    annualPriceId: 'price_1TJndbRRCRfUSdl9B6Kl1YAu',
+    highlighted: false,
+    features: [
+      { name: 'Unlimited invoices', included: true },
+      { name: 'Unlimited clients', included: true },
+      { name: 'All templates + custom', included: true },
+      { name: 'Client portal', included: true },
+      { name: 'Recurring invoices', included: true },
+      { name: 'Auto reminders', included: true },
+      { name: 'Expenses + email ingest', included: true },
+      { name: 'Unlimited receipt OCR', included: true },
+      { name: 'Full reports + CSV export', included: true },
+      { name: '2 users included', included: true },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -86,6 +172,7 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [dark, setDark] = useState(false);
+  const [annual, setAnnual] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -129,6 +216,7 @@ export default function LandingPage() {
               <a href="#features" className={`text-sm font-medium transition-colors ${dark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Features</a>
               <a href="#pricing" className={`text-sm font-medium transition-colors ${dark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Pricing</a>
               <a href="#contact" className={`text-sm font-medium transition-colors ${dark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Contact</a>
+              <Link href="/privacy" className={`text-sm font-medium transition-colors ${dark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Privacy</Link>
               <Link href="/auth/login" className={`text-sm font-medium transition-colors ${dark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Sign In</Link>
               <Link
                 href="/auth/signup"
@@ -158,6 +246,7 @@ export default function LandingPage() {
               <a href="#features" onClick={() => setMobileMenuOpen(false)} className={`block text-sm font-medium py-2 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>Features</a>
               <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className={`block text-sm font-medium py-2 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>Pricing</a>
               <a href="#contact" onClick={() => setMobileMenuOpen(false)} className={`block text-sm font-medium py-2 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>Contact</a>
+              <Link href="/privacy" onClick={() => setMobileMenuOpen(false)} className={`block text-sm font-medium py-2 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>Privacy</Link>
               <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)} className={`block text-sm font-medium py-2 ${dark ? 'text-gray-300' : 'text-gray-600'}`}>Sign In</Link>
               <Link
                 href="/auth/signup"
@@ -305,45 +394,129 @@ export default function LandingPage() {
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
                 Simple, transparent pricing
               </h2>
-            </div>
-
-            <div className={`max-w-lg mx-auto rounded-2xl shadow-lg p-8 sm:p-10 text-center border ${
-              dark
-                ? 'bg-gray-800 border-gray-700'
-                : 'bg-white border-gray-200'
-            }`}>
-              <p className={`text-lg mb-2 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
-                We&apos;re currently in early access.
+              <p className={`mt-4 text-lg ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
+                Start with a 14-day free trial. No credit card required.
               </p>
-              <p className={`text-sm mb-6 ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
-                Contact us for pricing details and to discuss your needs.
-              </p>
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="text-primary-500 hover:text-primary-400 font-medium text-sm underline underline-offset-2"
-              >
-                {CONTACT_EMAIL}
-              </a>
 
-              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a
-                  href={`mailto:${CONTACT_EMAIL}`}
-                  className="w-full sm:w-auto px-6 py-3 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm"
-                >
-                  Get in Touch
-                </a>
-                <Link
-                  href="/auth/signup"
-                  className={`w-full sm:w-auto px-6 py-3 text-sm font-medium rounded-lg border transition-colors text-center ${
-                    dark
-                      ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
-                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              {/* Monthly / Annual toggle */}
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <span className={`text-sm font-medium ${!annual ? (dark ? 'text-white' : 'text-gray-900') : (dark ? 'text-gray-400' : 'text-gray-500')}`}>
+                  Monthly
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAnnual(!annual)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    annual ? 'bg-primary-600' : (dark ? 'bg-gray-700' : 'bg-gray-300')
                   }`}
+                  role="switch"
+                  aria-checked={annual}
+                  aria-label="Toggle annual billing"
                 >
-                  Start Free Trial
-                </Link>
+                  <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                    annual ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+                <span className={`text-sm font-medium ${annual ? (dark ? 'text-white' : 'text-gray-900') : (dark ? 'text-gray-400' : 'text-gray-500')}`}>
+                  Annual
+                </span>
+                {annual && (
+                  <span className="ml-1 px-2 py-0.5 text-xs font-medium rounded-full bg-success-500 text-white">
+                    Save 17%
+                  </span>
+                )}
               </div>
             </div>
+
+            {/* Plan cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {PLANS.map((plan) => {
+                const displayPrice = annual
+                  ? `$${(plan.annualPrice / 1.15 / 12).toFixed(0)}`
+                  : `$${(plan.monthlyPrice / 1.15).toFixed(0)}`;
+                const billedNote = annual
+                  ? `$${(plan.annualPrice / 1.15).toFixed(0)}+GST/yr billed annually`
+                  : '';
+                return (
+                  <div
+                    key={plan.tier}
+                    className={`relative flex flex-col rounded-2xl border p-6 sm:p-8 ${
+                      plan.highlighted
+                        ? dark
+                          ? 'border-purple-500 bg-gray-800 shadow-lg shadow-purple-500/10'
+                          : 'border-primary-500 bg-white shadow-lg shadow-primary-500/10'
+                        : dark
+                          ? 'border-gray-700 bg-gray-800'
+                          : 'border-gray-200 bg-white'
+                    }`}
+                  >
+                    {plan.highlighted && (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-xs font-semibold rounded-full bg-primary-600 text-white">
+                        Most Popular
+                      </span>
+                    )}
+
+                    <h3 className={`text-lg font-semibold ${dark ? 'text-white' : 'text-gray-900'}`}>
+                      {plan.name}
+                    </h3>
+
+                    <div className="mt-4 flex items-baseline gap-1">
+                      <span className={`text-4xl font-bold tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>
+                        {displayPrice}
+                      </span>
+                      <span className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
+                        +GST/mo
+                      </span>
+                    </div>
+                    {annual && (
+                      <p className={`mt-1 text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {billedNote}
+                      </p>
+                    )}
+
+                    <ul className="mt-6 space-y-3 flex-1">
+                      {plan.features.map((f) => (
+                        <li key={f.name} className="flex items-start gap-2 text-sm">
+                          {f.included === false ? (
+                            <Minus className={`w-4 h-4 mt-0.5 flex-shrink-0 ${dark ? 'text-gray-600' : 'text-gray-300'}`} />
+                          ) : (
+                            <Check className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                              plan.highlighted
+                                ? 'text-primary-500'
+                                : dark ? 'text-purple-400' : 'text-success-500'
+                            }`} />
+                          )}
+                          <span className={
+                            f.included === false
+                              ? dark ? 'text-gray-600' : 'text-gray-400'
+                              : dark ? 'text-gray-300' : 'text-gray-700'
+                          }>
+                            {typeof f.included === 'string' ? `${f.name} (${f.included})` : f.name}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Link
+                      href="/auth/signup"
+                      className={`mt-8 block text-center px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
+                        plan.highlighted
+                          ? 'bg-primary-600 hover:bg-primary-700 text-white'
+                          : dark
+                            ? 'bg-slate-700 hover:bg-slate-600 text-white'
+                            : 'bg-gray-900 hover:bg-gray-800 text-white'
+                      }`}
+                    >
+                      Start Free Trial
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className={`mt-10 text-center text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+              All prices in NZD, plus GST (15%).
+            </p>
           </div>
         </section>
 
@@ -414,13 +587,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
-              © 2026 Ledgr by CloudPro Digital. Made with ❤️ in New Zealand 🇳🇿
+              © 2026 Ledgr — a CloudPro Digital product. All rights reserved.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
               <a href="#features" className={`transition-colors ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Features</a>
               <a href="#pricing" className={`transition-colors ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Pricing</a>
               <a href={`mailto:${CONTACT_EMAIL}`} className={`transition-colors ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Contact</a>
+              <Link href="/privacy" className={`transition-colors ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Privacy</Link>
               <Link href="/auth/login" className={`transition-colors ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Sign In</Link>
               <Link href="/auth/signup" className={`transition-colors ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>Sign Up</Link>
             </div>

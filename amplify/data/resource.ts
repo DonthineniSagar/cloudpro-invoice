@@ -37,6 +37,15 @@ const schema = a.schema({
       identityId: a.string(), // Cognito identity ID for S3 path scoping
       expenseIngestActive: a.boolean().default(false),
       expenseWhitelistedEmails: a.string().array(), // only process from these senders
+      // Subscription & billing
+      subscriptionPlan: a.enum(['STARTER', 'BUSINESS', 'BUSINESS_PRO']),
+      subscriptionStatus: a.enum(['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELLED', 'EXPIRED']),
+      subscriptionInterval: a.enum(['MONTHLY', 'ANNUAL']),
+      stripeCustomerId: a.string(),
+      stripeSubscriptionId: a.string(),
+      trialStartDate: a.datetime(),
+      trialEndDate: a.datetime(),
+      subscriptionCurrentPeriodEnd: a.datetime(),
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })
