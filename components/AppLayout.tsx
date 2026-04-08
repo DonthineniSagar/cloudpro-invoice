@@ -10,6 +10,7 @@ import { Moon, Sun, Menu, X } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
 import TrialBanner from '@/components/TrialBanner';
 import UsageMeter from '@/components/UsageMeter';
+import { TeamProvider, useTeam } from '@/lib/team-context';
 import { canAccess, isSubscriptionActive } from '@/lib/subscription';
 import type { PlanTier, SubscriptionStatus, Feature } from '@/lib/subscription';
 import { getInvoiceCount, getClientCount, getEffectiveOcrCount, getBillingPeriodStart } from '@/lib/usage';
@@ -219,7 +220,50 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {!sub.loading && (
         <TrialBanner status={sub.status} trialEndDate={sub.trialEndDate} dark={dark} />
       )}
-      <main>{children}</main>
+      <TeamProvider>
+        <ViewerBanners dark={dark} />
+        <main>{children}</main>
+      </TeamProvider>
     </div>
   );
+}
+
+function ViewerBanners({ dark }: { dark: boolean }) {
+  const { isViewer, ownerCompanyName, pendingInvite, acceptInvite, declineInvite, loading } = useTeam();
+
+  if (loading) return null;
+
+  if (pendingInvite) {
+    return (
+      <div className={`px-4 py-3 flex items-center justify-between gap-4 text-sm ${
+        dark ? 'bg-blue-900/30 border-b border-blue-500/30 text-blue-200' : 'bg-blue-50 border-b border-blue-200 text-blue-800'
+      }`}>
+        <span>
+          You&apos;ve been invited to view {pendingInvite.companyName || 'a team'}&apos;s account.
+        </span>
+        <div className="flex gap-2 flex-shrink-0">
+          <button onClick={acceptInvite}
+            className="px-3 py-1 text-xs font-medium rounded bg-blue-600 text-white hover:bg-blue-700">
+            Accept
+          </button>
+          <button onClick={declineInvite}
+            className={`px-3 py-1 text-xs font-medium rounded ${dark ? 'bg-slate-700 text-slate-300' : 'bg-white text-gray-700 border border-gray-300'}`}>
+            Decline
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isViewer) {
+    return (
+      <div className={`px-4 py-2 text-center text-sm ${
+        dark ? 'bg-slate-800 border-b border-slate-700 text-slate-300' : 'bg-blue-50 border-b border-blue-100 text-blue-700'
+      }`}>
+        Viewing {ownerCompanyName || 'shared'} account (read-only)
+      </div>
+    );
+  }
+
+  return null;
 }

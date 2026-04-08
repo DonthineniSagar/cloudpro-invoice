@@ -53,7 +53,7 @@ const schema = a.schema({
       user: a.belongsTo('User', 'userId'),
     })
     .secondaryIndexes((index) => [index('expenseIngestKey')])
-    .authorization((allow) => allow.owner()),
+    .authorization((allow) => [allow.owner(), allow.publicApiKey().to(['read'])]),
 
   User: a
     .model({
@@ -82,7 +82,7 @@ const schema = a.schema({
       user: a.belongsTo('User', 'userId'),
       invoices: a.hasMany('Invoice', 'clientId'),
     })
-    .authorization((allow) => allow.owner()),
+    .authorization((allow) => [allow.owner(), allow.publicApiKey().to(['read'])]),
 
   Invoice: a
     .model({
@@ -156,7 +156,7 @@ const schema = a.schema({
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })
-    .authorization((allow) => allow.owner()),
+    .authorization((allow) => [allow.owner(), allow.publicApiKey().to(['read'])]),
 
   Notification: a
     .model({
@@ -167,7 +167,7 @@ const schema = a.schema({
       link: a.string(), // e.g. /invoices/abc123 or /expenses/xyz
       userId: a.string().required(),
     })
-    .authorization((allow) => allow.owner()),
+    .authorization((allow) => [allow.owner(), allow.publicApiKey().to(['read'])]),
 
   RecurringInvoice: a
     .model({
@@ -186,7 +186,26 @@ const schema = a.schema({
       lastGeneratedDate: a.date(),
       userId: a.string().required(),
     })
-    .authorization((allow) => allow.owner()),
+    .authorization((allow) => [allow.owner(), allow.publicApiKey().to(['read'])]),
+
+  CompanyMember: a
+    .model({
+      ownerUserId: a.string().required(),
+      companyName: a.string(),
+      email: a.string().required(),
+      role: a.enum(['OWNER', 'VIEWER']),
+      status: a.enum(['INVITED', 'ACTIVE', 'REMOVED']),
+      memberUserId: a.string(),
+    })
+    .secondaryIndexes((index) => [
+      index('email'),
+      index('memberUserId'),
+      index('ownerUserId'),
+    ])
+    .authorization((allow) => [
+      allow.owner(),
+      allow.authenticated().to(['read']),
+    ]),
 
   // Custom mutation for sending invoice emails
   sendInvoiceEmail: a

@@ -29,6 +29,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
     { name: 'Profile', href: '/settings/profile' },
     { name: 'Company', href: '/settings/company' },
     { name: 'Email', href: '/settings/email' },
+    { name: 'Team', href: '/settings/team' },
     { name: 'Security', href: '/settings/security' },
   ];
 
