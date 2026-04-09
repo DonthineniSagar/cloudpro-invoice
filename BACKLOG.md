@@ -220,6 +220,26 @@ Full mobile experience without app store.
 
 ## 📋 Phase 4 — SaaS & Monetisation
 
+### Expense Enhancements (ready to implement — code in stash `local: categories, mileage, business%, GST fixes, HelpTip`)
+- [ ] IRD-aligned categories with subcategories (Vehicle → Mileage/Fuel/Parking, Travel → Flights/Accommodation, etc.)
+- [ ] Mileage claim calculator with IRD km rates (Tier 1/2, petrol/diesel/hybrid/electric)
+- [ ] Business Use % on every expense (default 100%, adjustable — replaces classification)
+- [ ] Auto-derive classification from business % (100%=business, 1-99%=partial, 0%=personal)
+- [ ] GST override checkbox (for mixed-GST bills like phone with device EMI)
+- [ ] GST rounding to 2dp across all expense forms
+- [ ] Business % adjusts claimable amount, GST, and ex-GST in real-time
+- [ ] HelpTip component (? icon with popup explanation on every form field)
+- [ ] Category auto-inference from vendor name on receipt scan
+- [ ] Shared expense-categories.ts config (lib/expense-categories.ts)
+
+### UX — Help & Onboarding
+- [ ] HelpTip on all pages (dashboard, invoices, clients, settings, reports)
+- [ ] First-time user guided tour (step-by-step walkthrough)
+- [ ] Contextual help panel per page
+- [ ] Keyboard shortcuts guide
+- [ ] Empty state guidance
+- [ ] Akahu bank account integration (daily transaction sync, auto-reconciliation)
+
 ### Landing Page & Marketing
 - [ ] Professional landing page at root URL (hero, features, pricing, FAQ, footer)
 - [ ] Support email: info@cloudpro-digital.co.nz
