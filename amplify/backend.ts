@@ -22,6 +22,11 @@ const backend = defineBackend({
   processExpenseEmail,
 });
 
+// Enable WebAuthn/Passkey as a first-factor authentication method
+const { cfnUserPool } = backend.auth.resources.cfnResources;
+cfnUserPool.addPropertyOverride('WebAuthnRelyingPartyID', 'cloudpro-digital.co.nz');
+cfnUserPool.addPropertyOverride('WebAuthnUserVerification', 'preferred');
+
 // Tag all resources
 const stack = backend.createStack('tags');
 Tags.of(stack.node.root).add('app', 'cloudpro-invoice');

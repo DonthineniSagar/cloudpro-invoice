@@ -2,7 +2,7 @@
 
 ## Introduction
 
-CloudPro Invoice currently uses a basic email/password authentication flow with a light-themed UI. This feature enhances the authentication experience with a polished dark-mode-aware login/signup UI, branded verification emails, multi-factor authentication (TOTP), passkey (WebAuthn) support, Google social sign-in, and an enhanced signup flow that collects initial company profile information during registration.
+CloudPro Invoice currently uses a basic email/password authentication flow with a light-themed UI. This feature enhances the authentication experience with a polished dark-mode-aware login/signup UI, branded verification emails, multi-factor authentication (TOTP for email/password sign-in only), passkey (WebAuthn) support, Google social sign-in, and an enhanced signup flow that collects initial company profile information during registration. Following security best practices, TOTP-based MFA is only required for email/password authentication, since passkeys inherently provide multi-factor security (device possession + biometric/PIN) and Google enforces its own multi-factor protections.
 
 ## Glossary
 
@@ -12,7 +12,7 @@ CloudPro Invoice currently uses a basic email/password authentication flow with 
 - **Auth_Config**: The Amplify Gen 2 authentication resource defined in `amplify/auth/resource.ts`
 - **Auth_Context**: The React context at `lib/auth-context.tsx` providing authentication state and methods to the application
 - **Verification_Email**: The HTML email sent to users during signup to confirm their email address
-- **MFA**: Multi-Factor Authentication using Time-based One-Time Passwords (TOTP) via authenticator apps
+- **MFA**: Multi-Factor Authentication using Time-based One-Time Passwords (TOTP) via authenticator apps, required only for email/password sign-in since passkeys and social providers inherently satisfy multi-factor requirements
 - **Passkey**: A WebAuthn/FIDO2 credential stored on the user's device enabling passwordless authentication
 - **Google_IDP**: Google as an external identity provider for OAuth 2.0 social sign-in
 - **Company_Profile_Step**: An additional step in the signup flow that collects basic business information (company name, GST number, bank account)
@@ -45,43 +45,44 @@ CloudPro Invoice currently uses a basic email/password authentication flow with 
 4. THE Verification_Email SHALL include the text "CloudPro Invoice" as the sender display name
 5. IF the verification code expires, THEN THE Verification_Email SHALL instruct the user to request a new code from the Login_Page
 
-### Requirement 3: Multi-Factor Authentication (TOTP)
+### Requirement 3: Multi-Factor Authentication (TOTP) for Email/Password Sign-In
 
-**User Story:** As a security-conscious user, I want to enable TOTP-based multi-factor authentication, so that my account has an additional layer of protection.
+**User Story:** As a security-conscious user, I want to enable TOTP-based multi-factor authentication for email/password sign-in, so that my account has an additional layer of protection when using credentials.
 
 #### Acceptance Criteria
 
-1. THE Auth_Config SHALL support TOTP as an MFA method
+1. THE Auth_Config SHALL support TOTP as an MFA method for email/password authentication only
 2. WHEN a user enables MFA in account settings, THE Auth_Context SHALL initiate TOTP setup by providing a QR code and secret key
-3. WHEN a user signs in with MFA enabled, THE Login_Page SHALL display a TOTP code input step after successful credential verification
+3. WHEN a user signs in via email/password with MFA enabled, THE Login_Page SHALL display a TOTP code input step after successful credential verification
 4. THE Login_Page SHALL accept a 6-digit TOTP code and submit it for verification
 5. IF the TOTP code is invalid, THEN THE Login_Page SHALL display an error message "Invalid verification code. Please try again." and allow re-entry
 6. IF the TOTP code entry fails three consecutive times, THEN THE Login_Page SHALL display a message directing the user to contact support
+7. WHEN a user authenticates via passkey or Google_IDP, THE Auth_Context SHALL bypass the TOTP verification step because passkeys and social providers inherently satisfy multi-factor requirements
 
 ### Requirement 4: Passkey (WebAuthn) Support
 
-**User Story:** As a user, I want to sign in using a passkey stored on my device, so that I can authenticate quickly without typing a password.
+**User Story:** As a user, I want to sign in using a passkey stored on my device, so that I can authenticate quickly without typing a password or entering an MFA code.
 
 #### Acceptance Criteria
 
 1. THE Auth_Config SHALL enable WebAuthn as a first-factor authentication method
 2. WHEN a user visits the Login_Page and has a registered passkey, THE Login_Page SHALL display a "Sign in with Passkey" button
 3. WHEN the user activates the "Sign in with Passkey" button, THE Login_Page SHALL invoke the browser WebAuthn API to authenticate using the stored credential
-4. WHEN passkey authentication succeeds, THE Auth_Context SHALL establish the user session and redirect to the dashboard
+4. WHEN passkey authentication succeeds, THE Auth_Context SHALL establish the user session and redirect to the dashboard without requiring TOTP verification, because passkeys inherently provide multi-factor authentication (device possession combined with biometric or PIN verification)
 5. IF the browser does not support WebAuthn, THEN THE Login_Page SHALL hide the "Sign in with Passkey" button
 6. IF passkey authentication fails, THEN THE Login_Page SHALL display an error message and allow the user to fall back to email/password sign-in
 
 ### Requirement 5: Google Social Sign-In
 
-**User Story:** As a user, I want to sign in with my Google account, so that I can access CloudPro Invoice without creating a separate password.
+**User Story:** As a user, I want to sign in with my Google account, so that I can access CloudPro Invoice without creating a separate password or entering an MFA code.
 
 #### Acceptance Criteria
 
 1. THE Auth_Config SHALL configure Google as an external identity provider using OAuth 2.0
 2. THE Login_Page SHALL display a "Continue with Google" button with the Google logo, visually separated from the email/password form by a divider with "or" text
 3. WHEN the user activates the "Continue with Google" button, THE Auth_Context SHALL initiate the Google OAuth flow via Amplify
-4. WHEN Google authentication succeeds for a new user, THE Auth_Context SHALL create the user account and redirect to the Company_Profile_Step
-5. WHEN Google authentication succeeds for an existing user, THE Auth_Context SHALL establish the session and redirect to the dashboard
+4. WHEN Google authentication succeeds for a new user, THE Auth_Context SHALL create the user account and redirect to the Company_Profile_Step without requiring TOTP verification, because Google enforces its own multi-factor security
+5. WHEN Google authentication succeeds for an existing user, THE Auth_Context SHALL establish the session and redirect to the dashboard without requiring TOTP verification
 6. IF Google authentication fails or the user cancels, THEN THE Login_Page SHALL display an appropriate error message and remain on the login screen
 7. THE Signup_Page SHALL display the same "Continue with Google" button to allow social sign-up
 
@@ -101,15 +102,17 @@ CloudPro Invoice currently uses a basic email/password authentication flow with 
 
 ### Requirement 7: Auth Context Updates for New Auth Methods
 
-**User Story:** As a developer, I want the auth context to support all new authentication methods, so that the application can handle MFA, passkeys, and social sign-in flows consistently.
+**User Story:** As a developer, I want the auth context to support all new authentication methods with conditional MFA logic, so that the application can handle passkeys, social sign-in, and email/password flows with appropriate security levels.
 
 #### Acceptance Criteria
 
 1. THE Auth_Context SHALL expose a method to initiate Google social sign-in via Amplify `signInWithRedirect`
-2. THE Auth_Context SHALL handle the `CONFIRM_SIGN_IN_WITH_TOTP_CODE` sign-in step by surfacing the MFA requirement to the calling component
+2. THE Auth_Context SHALL handle the `CONFIRM_SIGN_IN_WITH_TOTP_CODE` sign-in step by surfacing the MFA requirement to the calling component only when the user authenticated via email/password
 3. THE Auth_Context SHALL handle the `CONTINUE_SIGN_IN_WITH_FIRST_FACTOR_SELECTION` step to support passkey authentication flows
 4. WHEN a social sign-in creates a new user, THE Auth_Context SHALL detect the new account and set a flag indicating the Company_Profile_Step is needed
 5. THE Auth_Context SHALL populate the User object with attributes from both Cognito user pool and social identity provider tokens
+6. THE Auth_Context SHALL track the authentication method used (email/password, passkey, or Google_IDP) to determine whether TOTP verification is required for the current session
+7. WHEN the authentication method is passkey or Google_IDP, THE Auth_Context SHALL skip any pending TOTP challenge and proceed directly to session establishment
 
 ### Requirement 8: Responsive and Accessible Auth UI
 
