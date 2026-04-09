@@ -19,6 +19,14 @@
 
 ---
 
+## 🐛 Issues Detected (April 2026)
+
+### Billing & Subscription UI
+- [ ] After starting a trial, company profile page shows "Billing → Choose a Plan" instead of showing the selected plan — should reflect the active trial/plan
+- [ ] Add a dedicated Subscription tab under Settings (separate from company profile) showing: current plan name, billing cycle (monthly/annual), next billing date, trial end date, payment method, and manage subscription button (Stripe portal link)
+
+---
+
 ## 🚀 Pre-Launch (Before April 1)
 
 ### Deployment & Infrastructure
@@ -30,6 +38,7 @@
 - [ ] Test on mobile (iOS Safari, Android Chrome)
 - [ ] Set up custom domain (if applicable)
 - [ ] Create `prod` branch on GitHub, connect to Amplify as production environment
+- [ ] Custom Cognito domain for Google OAuth consent screen (use `auth.cloudpro-digital.co.nz` or prefix `cloudpro-auth` instead of random hash domain — requires ACM cert in us-east-1 for custom domain, or CDK override for prefix)
 
 ### Quick Wins
 - [x] Add loading skeletons on dashboard, invoice list, client list
@@ -311,6 +320,8 @@ Full mobile experience without app store.
 - [ ] Role-based nav and action visibility
 - [ ] Activity log / audit trail (who did what, when)
 - [ ] Company switcher (future: user belongs to multiple companies)
+- [ ] Cognito account linking: auto-link Google IDP accounts with existing email/password accounts (Pre Sign-Up Lambda trigger with email verification check)
+- [ ] Update Google OAuth consent screen branding (app name, logo, privacy policy URL, terms of service URL)
 
 ### AI-Powered Dashboard Insights
 Use Bedrock (Claude) to analyse financial data and surface actionable insights.

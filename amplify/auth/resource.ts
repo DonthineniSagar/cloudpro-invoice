@@ -53,10 +53,12 @@ export const auth = defineAuth({
       },
       callbackUrls: [
         'http://localhost:3000/auth/login',
+        'http://localhost:3001/auth/login',
         'https://cloudpro-digital.co.nz/auth/login',
       ],
       logoutUrls: [
         'http://localhost:3000/auth/login',
+        'http://localhost:3001/auth/login',
         'https://cloudpro-digital.co.nz/auth/login',
       ],
     },

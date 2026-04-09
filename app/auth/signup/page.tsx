@@ -232,6 +232,10 @@ export default function SignupPage() {
                 )}
               </button>
 
+              <p className={`text-xs text-center mt-2 ${dark ? 'text-slate-500' : 'text-gray-400'}`}>
+                Google sign-up creates a separate account from email/password registration.
+              </p>
+
               {/* 8.4: Visual divider */}
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">

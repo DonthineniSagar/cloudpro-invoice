@@ -423,6 +423,10 @@ export default function LoginPage() {
               )}
             </button>
 
+            <p className={`text-xs text-center mt-2 ${dark ? 'text-slate-500' : 'text-gray-400'}`}>
+              Google sign-in creates a separate account. If you already have an email/password account, sign in with your password instead.
+            </p>
+
             {/* 7.6: Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
