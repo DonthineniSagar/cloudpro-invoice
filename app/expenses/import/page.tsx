@@ -11,6 +11,7 @@ import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { validateFile, parseStatement, type BankTransaction } from '@/lib/bank-statement-parser';
+import { getFY, isFYClosed, isPreviousFYOpen, fyShort } from '@/lib/fy-utils';
 
 export default function ImportStatementPage() {
   const router = useRouter();
@@ -39,15 +40,19 @@ export default function ImportStatementPage() {
 
   const handleDrop = (e: React.DragEvent) => { e.preventDefault(); e.dataTransfer.files[0] && handleFile(e.dataTransfer.files[0]); };
 
+  // Partition transactions by FY status
+  const openTransactions = transactions.filter(tx => !isFYClosed(getFY(tx.date)));
+  const closedTransactions = transactions.filter(tx => isFYClosed(getFY(tx.date)));
+
   const handleImport = async () => {
-    if (!transactions.length) return;
+    if (!openTransactions.length) return;
     setImporting(true);
     const client = generateClient<Schema>();
     const { getCurrentUser } = await import('aws-amplify/auth');
     const user = await getCurrentUser();
     let imported = 0;
 
-    for (const tx of transactions) {
+    for (const tx of openTransactions) {
       try {
         const absAmount = Math.abs(tx.amount);
         const gstAmount = Math.round(absAmount * 3 / 23 * 100) / 100;
@@ -83,14 +88,15 @@ export default function ImportStatementPage() {
           });
         }
         imported++;
-        setProgress(Math.round((imported / transactions.length) * 100));
+        setProgress(Math.round((imported / openTransactions.length) * 100));
       } catch (err) {
         console.error('Failed to import:', tx.description, err);
         toast.error(`Failed: ${tx.description}`);
       }
     }
 
-    toast.success(`${imported} transactions imported — classify them on the expenses page`);
+    const skippedMsg = closedTransactions.length > 0 ? ` (${closedTransactions.length} skipped — closed FY)` : '';
+    toast.success(`${imported} transactions imported${skippedMsg} — classify them on the expenses page`);
     setTimeout(() => router.push('/expenses/review'), 1000);
   };
 
@@ -124,7 +130,7 @@ export default function ImportStatementPage() {
         ) : importing ? (
           <div className={t.card}>
             <div className="text-center py-12">
-              <p className={dark ? 'text-white text-lg mb-4' : 'text-gray-900 text-lg mb-4'}>Importing {transactions.length} transactions...</p>
+              <p className={dark ? 'text-white text-lg mb-4' : 'text-gray-900 text-lg mb-4'}>Importing {openTransactions.length} transactions...</p>
               <div className={`w-full h-3 rounded-full ${dark ? 'bg-gray-800' : 'bg-gray-200'}`}>
                 <div className="h-3 rounded-full bg-green-500 transition-all" style={{ width: `${progress}%` }} />
               </div>
@@ -133,12 +139,24 @@ export default function ImportStatementPage() {
           </div>
         ) : (
           <>
+            {/* Closed FY Warning */}
+            {closedTransactions.length > 0 && (
+              <div className={`flex items-center gap-2 px-4 py-3 rounded-lg mb-4 ${dark ? 'bg-amber-900/20 border border-amber-500/30 text-amber-400' : 'bg-amber-50 border border-amber-200 text-amber-700'}`}>
+                <span className="text-sm">
+                  ⚠ {closedTransactions.length} transaction{closedTransactions.length > 1 ? 's' : ''} fall in a closed FY and will be skipped.
+                </span>
+              </div>
+            )}
+
             {/* Summary */}
             <div className={`${dark ? 'bg-gray-900 border border-purple-500/30' : 'bg-white border border-gray-200'} rounded-lg p-4 mb-4 flex gap-6 text-sm`}>
               <span className={dark ? 'text-slate-400' : 'text-gray-500'}>{bankName} format detected</span>
               <span className={dark ? 'text-white' : 'text-gray-900'}>{transactions.length} transactions</span>
               <span className="text-red-400">{debits.length} debits</span>
               <span className="text-green-400">{credits.length} credits</span>
+              {closedTransactions.length > 0 && (
+                <span className={dark ? 'text-amber-400' : 'text-amber-600'}>{closedTransactions.length} closed FY (skipped)</span>
+              )}
             </div>
 
             {/* Preview table */}
@@ -151,14 +169,18 @@ export default function ImportStatementPage() {
                       <th className={`text-left px-4 py-3 ${dark ? 'text-slate-400' : 'text-gray-500'}`}>Description</th>
                       <th className={`text-right px-4 py-3 ${dark ? 'text-slate-400' : 'text-gray-500'}`}>Amount</th>
                       <th className={`text-center px-4 py-3 ${dark ? 'text-slate-400' : 'text-gray-500'}`}>Type</th>
+                      <th className={`text-center px-4 py-3 ${dark ? 'text-slate-400' : 'text-gray-500'}`}>FY</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.map(tx => (
-                      <tr key={tx.id} className={`border-t ${dark ? 'border-gray-800' : 'border-gray-100'}`}>
-                        <td className={`px-4 py-2 ${dark ? 'text-slate-300' : 'text-gray-700'}`}>{tx.date}</td>
-                        <td className={`px-4 py-2 max-w-sm truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{tx.description}</td>
-                        <td className={`px-4 py-2 text-right font-mono ${tx.amount < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                    {transactions.map(tx => {
+                      const txClosed = isFYClosed(getFY(tx.date));
+                      const txFY = getFY(tx.date);
+                      return (
+                      <tr key={tx.id} className={`border-t ${dark ? 'border-gray-800' : 'border-gray-100'} ${txClosed ? 'opacity-50' : ''}`}>
+                        <td className={`px-4 py-2 ${txClosed ? 'line-through' : ''} ${dark ? 'text-slate-300' : 'text-gray-700'}`}>{tx.date}</td>
+                        <td className={`px-4 py-2 max-w-sm truncate ${txClosed ? 'line-through' : ''} ${dark ? 'text-white' : 'text-gray-900'}`}>{tx.description}</td>
+                        <td className={`px-4 py-2 text-right font-mono ${txClosed ? 'line-through' : ''} ${tx.amount < 0 ? 'text-red-400' : 'text-green-400'}`}>
                           ${Math.abs(tx.amount).toFixed(2)}
                         </td>
                         <td className="px-4 py-2 text-center">
@@ -166,16 +188,25 @@ export default function ImportStatementPage() {
                             {tx.type}
                           </span>
                         </td>
+                        <td className="px-4 py-2 text-center">
+                          {txClosed ? (
+                            <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700">Closed FY</span>
+                          ) : txFY < (getFY(new Date())) ? (
+                            <span className="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700">{fyShort(txFY)}</span>
+                          ) : null}
+                        </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             </div>
 
             <div className="flex gap-4 mt-6">
-              <button onClick={handleImport} className={`flex-1 ${t.btnPrimary}`}>
-                <Check className="w-4 h-4 mr-2 inline" /> Import All {transactions.length} Transactions
+              <button onClick={handleImport} disabled={openTransactions.length === 0}
+                className={`flex-1 ${openTransactions.length === 0 ? 'opacity-50 cursor-not-allowed' : ''} ${t.btnPrimary}`}>
+                <Check className="w-4 h-4 mr-2 inline" /> Import {openTransactions.length} Transaction{openTransactions.length !== 1 ? 's' : ''}
               </button>
               <button onClick={() => { setParsed(false); setTransactions([]); }} className={t.btnSecondary}>
                 Start Over

@@ -47,7 +47,7 @@ export default function InstallPrompt() {
       <div className="flex items-start gap-3">
         <Download className="w-5 h-5 text-indigo-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">Install CloudPro</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-white">Install Ledgr</p>
           <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Add to your home screen for quick access</p>
           <button onClick={handleInstall} className="mt-2 px-4 py-1.5 bg-indigo-600 dark:bg-purple-500 text-white text-sm rounded-lg hover:bg-indigo-700 dark:hover:bg-purple-600 transition-colors">
             Install

@@ -37,6 +37,18 @@ const schema = a.schema({
       identityId: a.string(), // Cognito identity ID for S3 path scoping
       expenseIngestActive: a.boolean().default(false),
       expenseWhitelistedEmails: a.string().array(), // only process from these senders
+      // OCR usage tracking
+      ocrUsageCount: a.integer().default(0),
+      ocrUsageResetDate: a.datetime(),
+      // Subscription & billing
+      subscriptionPlan: a.enum(['STARTER', 'BUSINESS', 'BUSINESS_PRO']),
+      subscriptionStatus: a.enum(['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELLED', 'EXPIRED']),
+      subscriptionInterval: a.enum(['MONTHLY', 'ANNUAL']),
+      stripeCustomerId: a.string(),
+      stripeSubscriptionId: a.string(),
+      trialStartDate: a.datetime(),
+      trialEndDate: a.datetime(),
+      subscriptionCurrentPeriodEnd: a.datetime(),
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
     })
@@ -143,6 +155,17 @@ const schema = a.schema({
       duplicateOf: a.string(), // ID of the suspected original expense
       userId: a.string().required(),
       user: a.belongsTo('User', 'userId'),
+    })
+    .authorization((allow) => allow.owner()),
+
+  Notification: a
+    .model({
+      type: a.enum(['EXPENSE_CREATED', 'INVOICE_PAID', 'INVOICE_OVERDUE', 'REMINDER_SENT', 'RECURRING_GENERATED', 'OCR_COMPLETE', 'SYSTEM']),
+      title: a.string().required(),
+      message: a.string().required(),
+      read: a.boolean().default(false),
+      link: a.string(), // e.g. /invoices/abc123 or /expenses/xyz
+      userId: a.string().required(),
     })
     .authorization((allow) => allow.owner()),
 

@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { downloadCSV } from '@/lib/csv-export';
 import { Download, FileText, Receipt, TrendingUp, Filter } from 'lucide-react';
+import { currentFY, fyStart as fyStartFn, fyEnd as fyEndFn, fyLabel, fyShort, selectableFYs } from '@/lib/fy-utils';
 
 export default function ReportsPage() {
   const { theme } = useTheme();
@@ -18,16 +19,31 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
 
   // Date range filter — default to current financial year (April 1 - March 31)
-  const now = new Date();
-  const fyStart = now.getMonth() >= 3
-    ? `${now.getFullYear()}-04-01`
-    : `${now.getFullYear() - 1}-04-01`;
-  const fyEnd = now.getMonth() >= 3
-    ? `${now.getFullYear() + 1}-03-31`
-    : `${now.getFullYear()}-03-31`;
+  const [selectedFY, setSelectedFY] = useState<number | null>(currentFY());
 
-  const [startDate, setStartDate] = useState(fyStart);
-  const [endDate, setEndDate] = useState(fyEnd);
+  const defaultStart = fyStartFn(currentFY());
+  const defaultEnd = fyEndFn(currentFY());
+
+  const [startDate, setStartDate] = useState(defaultStart);
+  const [endDate, setEndDate] = useState(defaultEnd);
+
+  const handleFYChange = (fy: number | null) => {
+    setSelectedFY(fy);
+    if (fy !== null) {
+      setStartDate(fyStartFn(fy));
+      setEndDate(fyEndFn(fy));
+    }
+  };
+
+  const handleStartDateChange = (value: string) => {
+    setStartDate(value);
+    setSelectedFY(null); // manual date change deselects FY
+  };
+
+  const handleEndDateChange = (value: string) => {
+    setEndDate(value);
+    setSelectedFY(null); // manual date change deselects FY
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -100,7 +116,8 @@ export default function ReportsPage() {
       new Date(i.issueDate).toLocaleDateString(), i.dueDate ? new Date(i.dueDate).toLocaleDateString() : '',
       i.subtotal?.toFixed(2), i.gstAmount?.toFixed(2), i.total?.toFixed(2), i.status,
     ]);
-    downloadCSV(`invoices-${startDate}-to-${endDate}.csv`, headers, rows);
+    const suffix = selectedFY !== null ? fyShort(selectedFY) : `${startDate}-to-${endDate}`;
+    downloadCSV(`invoices-${suffix}.csv`, headers, rows);
   };
 
   const exportExpensesCSV = () => {
@@ -111,7 +128,8 @@ export default function ReportsPage() {
       e.amount?.toFixed(2), e.amountExGst?.toFixed(2), e.gstAmount?.toFixed(2),
       e.gstClaimable ? 'Yes' : 'No', e.status,
     ]);
-    downloadCSV(`expenses-${startDate}-to-${endDate}.csv`, headers, rows);
+    const suffix = selectedFY !== null ? fyShort(selectedFY) : `${startDate}-to-${endDate}`;
+    downloadCSV(`expenses-${suffix}.csv`, headers, rows);
   };
 
   const exportTaxSummaryCSV = () => {
@@ -126,7 +144,8 @@ export default function ReportsPage() {
       ['Net GST (Owed to IRD)', netGst.toFixed(2)],
       ['Taxable Profit', taxableProfit.toFixed(2)],
     ];
-    downloadCSV(`tax-summary-${startDate}-to-${endDate}.csv`, headers, rows);
+    const suffix = selectedFY !== null ? fyShort(selectedFY) : `${startDate}-to-${endDate}`;
+    downloadCSV(`tax-summary-${suffix}.csv`, headers, rows);
   };
 
   if (loading) {
@@ -159,13 +178,28 @@ export default function ReportsPage() {
           <div className="flex items-center gap-4 flex-wrap">
             <Filter className={`w-5 h-5 ${t.textMuted}`} />
             <div>
+              <label className={`text-xs ${t.textMuted}`}>Financial Year</label>
+              <select value={selectedFY ?? 'custom'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'custom') { setSelectedFY(null); }
+                  else { handleFYChange(Number(val)); }
+                }}
+                className={`block ${dark ? 'bg-black border border-purple-500/30 text-white rounded-lg px-3 py-2 text-sm focus:border-purple-500 focus:outline-none' : 'border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500'}`}>
+                {selectableFYs().map(fy => (
+                  <option key={fy} value={fy}>{fyLabel(fy)}</option>
+                ))}
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+            <div>
               <label className={`text-xs ${t.textMuted}`}>From</label>
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+              <input type="date" value={startDate} onChange={(e) => handleStartDateChange(e.target.value)}
                 style={dark ? { colorScheme: 'dark' } : {}} className={`${t.input} !py-2`} />
             </div>
             <div>
               <label className={`text-xs ${t.textMuted}`}>To</label>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+              <input type="date" value={endDate} onChange={(e) => handleEndDateChange(e.target.value)}
                 style={dark ? { colorScheme: 'dark' } : {}} className={`${t.input} !py-2`} />
             </div>
             <div className={`text-sm ${t.textMuted}`}>

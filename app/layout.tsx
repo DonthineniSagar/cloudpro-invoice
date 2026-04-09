@@ -7,20 +7,20 @@ import AmplifyConfig from "@/lib/amplify-config";
 import InstallPrompt from "@/components/InstallPrompt";
 
 export const metadata: Metadata = {
-  title: "CloudPro Invoice - Professional Invoicing for NZ Businesses",
-  description: "Modern invoicing platform for freelancers and small businesses in New Zealand. Create tax invoices, track expenses, manage clients, and get paid faster.",
-  keywords: ["invoice", "invoicing", "New Zealand", "NZ", "GST", "tax invoice", "freelancer", "small business", "accounting"],
+  title: "Ledgr - Business Tools for NZ Freelancers & Small Businesses",
+  description: "Invoicing, expenses, payroll, and more — all in one place. Built for New Zealand freelancers and small businesses.",
+  keywords: ["invoice", "invoicing", "New Zealand", "NZ", "GST", "tax invoice", "freelancer", "small business", "accounting", "payroll", "expenses", "Ledgr"],
   openGraph: {
-    title: "CloudPro Invoice - Professional Invoicing",
-    description: "Create beautiful tax invoices, track expenses, and manage clients. Built for NZ freelancers and small businesses.",
+    title: "Ledgr - Business Tools for NZ Freelancers",
+    description: "Invoicing, expenses, payroll, and more — all in one place. Built for NZ freelancers and small businesses.",
     type: "website",
     locale: "en_NZ",
-    siteName: "CloudPro Invoice",
+    siteName: "Ledgr",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CloudPro Invoice - Professional Invoicing",
-    description: "Create beautiful tax invoices, track expenses, and manage clients. Built for NZ freelancers and small businesses.",
+    title: "Ledgr - Business Tools for NZ Freelancers",
+    description: "Invoicing, expenses, payroll, and more — all in one place. Built for NZ freelancers and small businesses.",
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.json",

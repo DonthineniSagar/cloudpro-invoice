@@ -10,7 +10,7 @@ import type { Schema } from '@/amplify/data/resource';
 import AppLayout from '@/components/AppLayout';
 import { FileText, Receipt } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/Skeleton';
-import { currentFY, fyLabel, fyShort, fyMonthKeys, FY_MONTHS, fyStart, fyEnd, getFY, availableFYs } from '@/lib/fy-utils';
+import { currentFY, fyLabel, fyShort, fyMonthKeys, FY_MONTHS, fyStart, fyEnd, getFY, availableFYs, selectableFYs, isFYClosed, isPreviousFYOpen } from '@/lib/fy-utils';
 
 type MonthData = { month: string; revenue: number; expenses: number };
 
@@ -23,6 +23,7 @@ export default function DashboardPage() {
     totalRevenue: 0, revenueExGst: 0, gstCollected: 0,
     outstanding: 0, paidCount: 0, pendingCount: 0, overdueCount: 0,
     totalExpenses: 0, expensesExGst: 0, gstPaid: 0,
+    invoiceCount: 0, expenseCount: 0,
   });
   const [monthlyData, setMonthlyData] = useState<MonthData[]>([]);
   const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
@@ -83,7 +84,7 @@ export default function DashboardPage() {
       const expensesExGst = fyExpenses.reduce((sum, e) => sum + (e.amountExGst || 0), 0);
       const gstPaid = fyExpenses.filter(e => e.gstClaimable).reduce((sum, e) => sum + (e.gstAmount || 0), 0);
 
-      setMetrics({ totalRevenue, revenueExGst, gstCollected, outstanding, paidCount, pendingCount, overdueCount, totalExpenses, expensesExGst, gstPaid });
+      setMetrics({ totalRevenue, revenueExGst, gstCollected, outstanding, paidCount, pendingCount, overdueCount, totalExpenses, expensesExGst, gstPaid, invoiceCount: fyInvoices.length, expenseCount: fyExpenses.length });
 
       // Status breakdown (FY-scoped)
       const breakdown: Record<string, number> = {};
@@ -177,8 +178,9 @@ export default function DashboardPage() {
               <p className={`${muted} mt-1`}>Welcome back, {user.firstName || user.email}</p>
             </div>
             <select value={selectedFY} onChange={(e) => setSelectedFY(Number(e.target.value))}
+              aria-label="Financial Year"
               className={`px-4 py-2 rounded-lg text-sm font-medium ${dark ? 'bg-black border-2 border-purple-500/40 text-white' : 'border border-gray-300 text-gray-700'}`}>
-              {[currentFY(), currentFY() - 1, currentFY() - 2].map(fy => (
+              {selectableFYs().map(fy => (
                 <option key={fy} value={fy}>{fyLabel(fy)}</option>
               ))}
             </select>
@@ -230,6 +232,54 @@ export default function DashboardPage() {
             <div className={label}>Profit (ex-GST)</div>
             <div className={`text-2xl font-bold ${(metrics.revenueExGst - metrics.expensesExGst) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {loadingMetrics ? '...' : `$${(metrics.revenueExGst - metrics.expensesExGst).toFixed(2)}`}
+            </div>
+          </div>
+        </div>
+
+        {/* FY Summary Card */}
+        <div className={`${card} mb-8`}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className={heading}>
+              {fyShort(selectedFY)} Summary
+            </h3>
+            {selectedFY < currentFY() && (
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                isFYClosed(selectedFY)
+                  ? (dark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-700')
+                  : (dark ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-100 text-amber-700')
+              }`}>
+                {isFYClosed(selectedFY) ? `🔒 ${fyShort(selectedFY)} — Closed` : `${fyShort(selectedFY)} — Open until May 15`}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div>
+              <p className={`text-xs ${muted}`}>Revenue (incl GST)</p>
+              <p className={`text-lg font-bold ${text}`}>${metrics.totalRevenue.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className={`text-xs ${muted}`}>Expenses (incl GST)</p>
+              <p className={`text-lg font-bold text-red-400`}>${metrics.totalExpenses.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className={`text-xs ${muted}`}>Net GST Position</p>
+              <p className={`text-lg font-bold ${(metrics.gstCollected - metrics.gstPaid) >= 0 ? 'text-orange-400' : 'text-green-400'}`}>
+                ${(metrics.gstCollected - metrics.gstPaid).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className={`text-xs ${muted}`}>Pre-Tax Margin</p>
+              <p className={`text-lg font-bold ${(metrics.revenueExGst - metrics.expensesExGst) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                ${(metrics.revenueExGst - metrics.expensesExGst).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className={`text-xs ${muted}`}>Invoices</p>
+              <p className={`text-lg font-bold ${text}`}>{loadingMetrics ? '...' : metrics.invoiceCount}</p>
+            </div>
+            <div>
+              <p className={`text-xs ${muted}`}>Expenses</p>
+              <p className={`text-lg font-bold ${text}`}>{loadingMetrics ? '...' : metrics.expenseCount}</p>
             </div>
           </div>
         </div>

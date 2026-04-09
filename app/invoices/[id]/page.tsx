@@ -13,6 +13,7 @@ import { tc } from '@/lib/theme-classes';
 import { generateInvoicePDF, TEMPLATES } from '@/lib/generate-pdf';
 import type { TemplateName } from '@/lib/generate-pdf';
 import { useToast } from '@/lib/toast-context';
+import { createNotification } from '@/lib/notifications';
 
 type EmailForm = {
   to: string[];
@@ -73,6 +74,9 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         status: status as any
       });
       setInvoice({ ...invoice, status });
+      if (status === 'PAID') {
+        createNotification('INVOICE_PAID', `Invoice ${invoice.invoiceNumber} paid`, `${invoice.clientName} — $${invoice.total?.toFixed(2)}`, invoice.userId, `/invoices/${params.id}`);
+      }
     } catch (error) {
       console.error('Error updating status:', error);
       toast.error('Failed to update status');
@@ -147,6 +151,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       });
       setInvoice({ ...invoice, lastReminderSent: now, reminderCount: (invoice.reminderCount || 0) + 1 });
       toast.success(`Reminder sent to ${invoice.clientEmail}`);
+      createNotification('REMINDER_SENT', `Reminder sent for ${invoice.invoiceNumber}`, `Sent to ${invoice.clientEmail}`, invoice.userId, `/invoices/${params.id}`);
     } catch (error) {
       console.error('Error sending reminder:', error);
       toast.error('Failed to send reminder');

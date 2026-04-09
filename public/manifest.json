@@ -1,7 +1,7 @@
 {
-  "name": "CloudPro Invoice",
-  "short_name": "CloudPro",
-  "description": "Professional invoicing for NZ businesses",
+  "name": "Ledgr",
+  "short_name": "Ledgr",
+  "description": "Business tools for NZ freelancers and small businesses",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",

@@ -11,7 +11,7 @@ import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { TEMPLATES } from '@/lib/generate-pdf';
 import type { TemplateName } from '@/lib/generate-pdf';
-import { Mail, Plus, X, Copy, Check, Shield } from 'lucide-react';
+import { Mail, Plus, X, Copy, Check, Shield, CreditCard } from 'lucide-react';
 
 const client = generateClient<Schema>();
 const INGEST_DOMAIN = 'expenses.cloudpro-digital.co.nz';
@@ -28,6 +28,8 @@ export default function CompanyProfilePage() {
   const [logoPreview, setLogoPreview] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [newWhitelistEmail, setNewWhitelistEmail] = useState('');
+  const [stripeCustomerId, setStripeCustomerId] = useState<string | null>(null);
+  const [billingLoading, setBillingLoading] = useState(false);
   const [ingest, setIngest] = useState({
     expenseIngestKey: '',
     expenseIngestActive: false,
@@ -66,6 +68,7 @@ export default function CompanyProfilePage() {
               expenseIngestActive: e.expenseIngestActive ?? false,
               expenseWhitelistedEmails: (e.expenseWhitelistedEmails?.filter(Boolean) as string[]) ?? [],
             });
+            setStripeCustomerId(e.stripeCustomerId || null);
             if (e.logoUrl) {
               try {
                 const { url } = await getUrl({ path: e.logoUrl });
@@ -81,6 +84,25 @@ export default function CompanyProfilePage() {
       })();
     }
   }, [user]);
+
+  async function handleManageBilling() {
+    if (!stripeCustomerId) return;
+    setBillingLoading(true);
+    try {
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: stripeCustomerId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create portal session');
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Billing portal error:', error);
+      toast.error('Failed to open billing portal. Please try again.');
+      setBillingLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -344,6 +366,44 @@ export default function CompanyProfilePage() {
               </>
             )}
           </div>
+        </div>
+
+        {/* Billing */}
+        <div>
+          <h2 className={`${t.sectionTitle} mb-4`}>Billing</h2>
+          {stripeCustomerId ? (
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={handleManageBilling}
+                disabled={billingLoading}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-purple-900/30 border border-purple-500/40 text-purple-400 hover:bg-purple-900/50 disabled:opacity-50'
+                    : 'bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100 disabled:opacity-50'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                {billingLoading ? 'Loading...' : 'Manage Billing'}
+              </button>
+              <p className={`text-xs ${t.textMuted}`}>Change plan, update payment method, or view invoices</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <a
+                href="/pricing"
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-purple-900/30 border border-purple-500/40 text-purple-400 hover:bg-purple-900/50'
+                    : 'bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                Choose a Plan
+              </a>
+              <p className={`text-xs ${t.textMuted}`}>Subscribe to unlock all features</p>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4">

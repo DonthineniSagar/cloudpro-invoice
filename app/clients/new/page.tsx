@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
@@ -10,17 +10,54 @@ import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
+import { getClientCount, checkLimit } from '@/lib/usage';
+import type { LimitStatus } from '@/lib/usage';
+import type { PlanTier } from '@/lib/subscription';
+import { isSubscriptionActive } from '@/lib/subscription';
+import type { SubscriptionStatus } from '@/lib/subscription';
+import LimitReachedPrompt from '@/components/LimitReachedPrompt';
 
 export default function NewClientPage() {
   const router = useRouter();
   const { theme } = useTheme();
   const t = tc(theme);
   const toast = useToast();
+  const dark = theme === 'dark';
   const [saving, setSaving] = useState(false);
+  const [usageLoading, setUsageLoading] = useState(true);
+  const [clientLimit, setClientLimit] = useState<LimitStatus | null>(null);
+  const [planName, setPlanName] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', address: '',
     city: '', state: '', postalCode: '', country: 'New Zealand', notes: ''
   });
+
+  useEffect(() => {
+    const loadUsage = async () => {
+      try {
+        const client = generateClient<Schema>();
+        const { data: profiles } = await client.models.CompanyProfile.list();
+        const profile = profiles?.[0];
+        const plan = (profile?.subscriptionPlan as PlanTier) || null;
+        const status = (profile?.subscriptionStatus as SubscriptionStatus) || null;
+        const effectivePlan = status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : plan;
+        setPlanName(effectivePlan ? effectivePlan.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : '');
+
+        if (effectivePlan && isSubscriptionActive(status)) {
+          const count = await getClientCount(client);
+          const limit = checkLimit('clients', count, effectivePlan);
+          setClientLimit(limit);
+        } else {
+          setClientLimit({ allowed: false, current: 0, max: 0, label: '0 / 0' });
+        }
+      } catch (error) {
+        console.error('Error checking client limit:', error);
+      } finally {
+        setUsageLoading(false);
+      }
+    };
+    loadUsage();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +84,21 @@ export default function NewClientPage() {
           <ArrowLeft className="w-4 h-4" /> Back to Clients
         </Link>
 
+        {usageLoading ? (
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <div className={dark ? 'text-slate-400' : 'text-gray-500'}>Loading...</div>
+          </div>
+        ) : clientLimit && !clientLimit.allowed ? (
+          <LimitReachedPrompt
+            resource="Client"
+            current={clientLimit.current}
+            max={clientLimit.max}
+            planName={planName || 'current'}
+            backHref="/clients"
+            backLabel="Back to Clients"
+            upgradeMessage="Upgrade for unlimited clients."
+          />
+        ) : (
         <div className={t.card}>
           <h1 className={t.heading}>Add New Client</h1>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -122,6 +174,7 @@ export default function NewClientPage() {
             </div>
           </form>
         </div>
+        )}
       </div>
     </AppLayout>
   );

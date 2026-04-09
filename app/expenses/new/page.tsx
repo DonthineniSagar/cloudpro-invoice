@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,10 @@ import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { expenseSchema, validate, FormErrors } from '@/lib/validation';
 import { getFY, currentFY, isPreviousFYOpen, fyShort } from '@/lib/fy-utils';
+import { getEffectiveOcrCount, incrementOcrUsage, checkLimit } from '@/lib/usage';
+import type { PlanTier } from '@/lib/subscription';
+import { isSubscriptionActive } from '@/lib/subscription';
+import type { SubscriptionStatus } from '@/lib/subscription';
 
 // IRD NZ deductible expense categories (IR3/IR4 aligned)
 const CATEGORIES = [
@@ -44,10 +48,46 @@ export default function NewExpensePage() {
   const [scanning, setScanning] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [ocrCount, setOcrCount] = useState(0);
+  const [ocrMax, setOcrMax] = useState(-1);
+  const [ocrResetDate, setOcrResetDate] = useState<string | null>(null);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     description: '', category: 'Other', amount: '',
     gstClaimable: true, gstOverride: '', date: new Date().toISOString().split('T')[0], notes: ''
   });
+
+  useEffect(() => {
+    const loadOcrUsage = async () => {
+      try {
+        const client = generateClient<Schema>();
+        const { data: profiles } = await client.models.CompanyProfile.list();
+        const profile = profiles?.[0];
+        if (profile) {
+          setProfileId(profile.id);
+          const plan = (profile.subscriptionPlan as PlanTier) || null;
+          const status = (profile.subscriptionStatus as SubscriptionStatus) || null;
+          const effectivePlan = status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : plan;
+          if (effectivePlan && isSubscriptionActive(status)) {
+            const effective = getEffectiveOcrCount(
+              profile.ocrUsageCount ?? 0,
+              profile.ocrUsageResetDate ?? null
+            );
+            setOcrCount(effective);
+            setOcrResetDate(profile.ocrUsageResetDate ?? null);
+            const limit = checkLimit('ocr', effective, effectivePlan);
+            setOcrMax(limit.max);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading OCR usage:', error);
+      }
+    };
+    loadOcrUsage();
+  }, []);
+
+  const ocrLimitReached = ocrMax !== -1 && ocrMax !== 0 && ocrCount >= ocrMax;
+  const ocrHidden = ocrMax === 0;
 
   const handleScanReceipt = async (file: File) => {
     setScanning(true);
@@ -75,6 +115,20 @@ export default function NewExpensePage() {
       console.error('OCR error:', e);
       toast.error('Failed to scan receipt. You can still fill in manually.');
     } finally { setScanning(false); }
+
+    // Increment OCR usage counter after successful scan
+    if (profileId) {
+      try {
+        const ocrClient = generateClient<Schema>();
+        const { newCount, newResetDate } = await incrementOcrUsage(
+          ocrClient, profileId, ocrCount, ocrResetDate
+        );
+        setOcrCount(newCount);
+        setOcrResetDate(newResetDate);
+      } catch (err) {
+        console.error('Failed to increment OCR usage:', err);
+      }
+    }
   };
 
   // Parse receipt date — handles NZ formats like 27/03/2026, 27-03-2026, 27 Mar 2026
@@ -250,6 +304,13 @@ export default function NewExpensePage() {
 
             <div>
               <label className={t.label}>Receipt {scanning && <span className="text-indigo-500 ml-2"><Loader2 className="w-3 h-3 inline animate-spin" /> Scanning...</span>}</label>
+              {!ocrHidden && ocrMax !== -1 && (
+                <p className={`text-xs mb-2 ${ocrLimitReached ? 'text-amber-500' : dark ? 'text-slate-500' : 'text-gray-400'}`}>
+                  {ocrLimitReached
+                    ? `You've used ${ocrCount} of ${ocrMax} receipt scans this month. Upgrade for unlimited scans.`
+                    : `${ocrCount} / ${ocrMax} scans used this month`}
+                </p>
+              )}
               {receiptFile ? (
                 <div className={`flex items-center justify-between px-4 py-3 rounded-lg ${dark ? 'bg-purple-900/20 border border-purple-500/30' : 'bg-indigo-50 border border-indigo-200'}`}>
                   <span className={`text-sm truncate ${dark ? 'text-white' : 'text-gray-900'}`}>{receiptFile.name}</span>
@@ -257,17 +318,25 @@ export default function NewExpensePage() {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-              ) : (
+              ) : !ocrHidden ? (
                 <div className="flex gap-2">
-                  <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg cursor-pointer ${dark ? 'border-2 border-dashed border-purple-500/40 hover:border-purple-500 text-slate-400' : 'border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500'}`}>
+                  <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg ${
+                    ocrLimitReached
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer'
+                  } ${dark ? 'border-2 border-dashed border-purple-500/40 hover:border-purple-500 text-slate-400' : 'border-2 border-dashed border-gray-300 hover:border-indigo-400 text-gray-500'}`}>
                     <Camera className="w-4 h-4" />
-                    <span className="text-sm">Snap or upload receipt</span>
-                    <input type="file" accept="image/*,.pdf" capture="environment" className="hidden"
-                      onChange={(e) => e.target.files?.[0] && handleReceiptSelect(e.target.files[0])} />
+                    <span className="text-sm">{ocrLimitReached ? 'Scan limit reached' : 'Snap or upload receipt'}</span>
+                    {!ocrLimitReached && (
+                      <input type="file" accept="image/*,.pdf" capture="environment" className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleReceiptSelect(e.target.files[0])} />
+                    )}
                   </label>
                 </div>
+              ) : null}
+              {!ocrHidden && !ocrLimitReached && (
+                <p className={`text-xs mt-1 ${t.textMuted}`}>Receipt will be auto-scanned to fill in amount, date, and vendor</p>
               )}
-              <p className={`text-xs mt-1 ${t.textMuted}`}>Receipt will be auto-scanned to fill in amount, date, and vendor</p>
             </div>
 
             <div>

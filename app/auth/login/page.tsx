@@ -94,7 +94,7 @@ export default function LoginPage() {
           <p className="mt-2 text-gray-600">
             {needsVerification 
               ? `We sent a verification code to ${email}` 
-              : 'Welcome back to CloudPro Invoice'}
+              : 'Welcome back to Ledgr'}
           </p>
         </div>
 

@@ -45,3 +45,4 @@ localstack-data/
 # Misc
 *.tsbuildinfo
 .cache/*.pdf
+cnv.hist

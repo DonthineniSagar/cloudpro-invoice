@@ -21,6 +21,7 @@ const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const EXPENSE_TABLE = process.env.EXPENSE_TABLE_NAME!;
 const COMPANY_PROFILE_TABLE = process.env.COMPANY_PROFILE_TABLE_NAME!;
+const NOTIFICATION_TABLE = process.env.NOTIFICATION_TABLE_NAME || '';
 const BEDROCK_MODEL = process.env.BEDROCK_MODEL_ID!;
 
 interface ExtractedExpense {
@@ -336,6 +337,29 @@ async function createDraftExpense(
       updatedAt: now,
     },
   }));
+
+  // Create in-app notification
+  if (NOTIFICATION_TABLE) {
+    try {
+      const desc = expense.vendor ? `${expense.vendor} - $${total.toFixed(2)}` : `$${total.toFixed(2)} expense`;
+      await ddb.send(new PutCommand({
+        TableName: NOTIFICATION_TABLE,
+        Item: {
+          id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          __typename: 'Notification',
+          type: 'EXPENSE_CREATED',
+          title: 'Expense auto-created from email',
+          message: `${desc} (${expense.confidence} confidence)`,
+          read: false,
+          link: `/expenses/${id}/edit`,
+          userId,
+          owner,
+          createdAt: now,
+          updatedAt: now,
+        },
+      }));
+    } catch {}
+  }
 }
 
 /** Find an existing expense by a specific field value for this owner */

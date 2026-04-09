@@ -159,6 +159,19 @@ Snap a receipt, auto-fill the expense.
 
 ---
 
+### 2.6b Expense Email Ingest Improvements
+
+**Tasks:**
+- [ ] Rejected sender notification: when an email is rejected due to whitelist, show a notification/banner in the frontend for the user (e.g. "Email from forwarding-noreply@google.com was rejected — add to whitelist?")
+- [ ] Gmail forwarding support: auto-detect Gmail forwarded emails (From: forwarding-noreply@google.com) and extract original sender from headers/body
+- [ ] Whitelist suggestion: when a rejected sender is detected, offer one-click "Add to whitelist" action in the UI
+- [x] Duplicate detection: dedup by messageId, content hash, fuzzy match
+- [x] Receipt attachment: upload PDF/image attachments to S3 from email ingest
+- [x] PDF receipt viewer: iframe for PDFs, img for images
+- [x] Created date audit field on expense edit page
+
+---
+
 ### 2.7 Advanced Reporting
 Deeper financial insights for tax time and business planning.
 
@@ -202,6 +215,123 @@ Full mobile experience without app store.
 - [ ] Touch-optimised: larger tap targets, swipe actions on lists
 - [x] Splash screen with CloudPro branding
 - [ ] Test on iOS Safari, Android Chrome, Samsung Internet
+
+---
+
+## 📋 Phase 4 — SaaS & Monetisation
+
+### Expense Enhancements (ready to implement — code in stash `local: categories, mileage, business%, GST fixes, HelpTip`)
+- [ ] IRD-aligned categories with subcategories (Vehicle → Mileage/Fuel/Parking, Travel → Flights/Accommodation, etc.)
+- [ ] Mileage claim calculator with IRD km rates (Tier 1/2, petrol/diesel/hybrid/electric)
+- [ ] Business Use % on every expense (default 100%, adjustable — replaces classification)
+- [ ] Auto-derive classification from business % (100%=business, 1-99%=partial, 0%=personal)
+- [ ] GST override checkbox (for mixed-GST bills like phone with device EMI)
+- [ ] GST rounding to 2dp across all expense forms
+- [ ] Business % adjusts claimable amount, GST, and ex-GST in real-time
+- [ ] HelpTip component (? icon with popup explanation on every form field)
+- [ ] Category auto-inference from vendor name on receipt scan
+- [ ] Shared expense-categories.ts config (lib/expense-categories.ts)
+
+### UX — Help & Onboarding
+- [ ] HelpTip on all pages (dashboard, invoices, clients, settings, reports)
+- [ ] First-time user guided tour (step-by-step walkthrough)
+- [ ] Contextual help panel per page
+- [ ] Keyboard shortcuts guide
+- [ ] Empty state guidance
+- [ ] Akahu bank account integration (daily transaction sync, auto-reconciliation)
+
+### Landing Page & Marketing
+- [ ] Professional landing page at root URL (hero, features, pricing, FAQ, footer)
+- [ ] Support email: info@cloudpro-digital.co.nz
+- [ ] SEO optimised with OG tags
+- [ ] "Start Free Trial" CTA → signup flow
+- [ ] "Made in New Zealand 🇳🇿" branding
+
+### Plans & Billing (Stripe)
+
+**Plans:**
+| | Invoice Only ($9/mo) | Business ($29/mo) | Business Pro ($59/mo) |
+|---|---|---|---|
+| Invoices | 10/mo | Unlimited | Unlimited |
+| Clients | 5 | Unlimited | Unlimited |
+| Templates | 1 | All 3 | All 3 + custom |
+| Client Portal | ✅ | ✅ | ✅ |
+| Recurring | ✕ | ✅ | ✅ |
+| Reminders | Manual | Auto | Auto |
+| Expenses | ✕ | ✅ | ✅ |
+| Receipt OCR | ✕ | 30/mo | Unlimited |
+| Email Ingest | ✕ | ✕ | ✅ |
+| Reports | Invoice only | Full | Full + export |
+| Users | 1 | 1 | Up to 5 |
+| AI Insights | ✕ | Basic | Full |
+| Support | Email | Email | Priority |
+
+**Annual pricing:** 2 months free (save 17%)
+
+**Tasks:**
+- [ ] Stripe Checkout integration for subscription signup
+- [ ] Stripe Customer Portal for plan changes/cancellation
+- [ ] Webhook Lambda for subscription events (created, updated, cancelled, payment_failed)
+- [ ] Plan-based feature gating middleware
+- [ ] Nav visibility per plan (hide locked modules)
+- [ ] Upgrade prompts on locked features
+- [ ] Usage tracking (invoice count, OCR count per billing period)
+- [ ] Usage limit enforcement before create operations
+
+### Trial Model
+- [ ] 14-day free trial with full Business Pro access, no card required
+- [ ] Trial countdown banner in app
+- [ ] Email reminders at day 7, 12, 14
+- [ ] After expiry: read-only mode (view/download but no create/edit)
+- [ ] "Trial expired" banner with plan selection CTA
+- [ ] Admin ability to extend trial per user
+- [ ] Admin ability to toggle features per company (e.g. give trial user expenses access)
+
+### Auth & Multi-User Model
+
+**Company-scoped data model:**
+- [ ] `Company` model (companyId, name, plan, subscription, settings)
+- [ ] All data models scoped by companyId (invoices, expenses, clients)
+- [ ] `CompanyUser` join model (companyId, userId, role, status)
+- [ ] Migrate from owner-based auth to company-based auth
+
+**Roles:**
+| Role | Access |
+|---|---|
+| OWNER | Full access + billing + user management |
+| ADMIN | Full access + user management (no billing) |
+| MEMBER | Create/edit invoices, expenses, clients |
+| VIEWER | Read-only access to all data |
+| ACCOUNTANT | Read-only + reports + CSV export |
+
+**Tasks:**
+- [ ] Invite team members by email (sends invite link)
+- [ ] Self-serve role assignment (owner can set roles)
+- [ ] Self-serve read-only users (VIEWER role)
+- [ ] Role-based nav and action visibility
+- [ ] Activity log / audit trail (who did what, when)
+- [ ] Company switcher (future: user belongs to multiple companies)
+
+### AI-Powered Dashboard Insights
+Use Bedrock (Claude) to analyse financial data and surface actionable insights.
+
+**Features:**
+- [ ] Spending trend analysis (month-over-month, category trends)
+- [ ] Anomaly detection (unusual expenses, spikes vs historical average)
+- [ ] Highest spend alerts ("Office expenses up 40% this month")
+- [ ] Cash flow prediction (based on outstanding invoices + recurring)
+- [ ] Tax optimisation tips ("You have $X unclaimed GST")
+- [ ] Client revenue insights ("Top client revenue declining")
+- [ ] Seasonal patterns ("You typically spend more in Q3")
+- [ ] Weekly/monthly AI summary widget on dashboard
+- [ ] "Ask AI" chat about your finances (natural language queries)
+
+**Implementation:**
+- [ ] Lambda function: aggregates data → sends to Bedrock → returns insights
+- [ ] Cache insights (regenerate daily or on-demand)
+- [ ] Dashboard widget: "AI Insights" card with top 3 observations
+- [ ] Expandable detail view with full analysis
+- [ ] Plan-gated: Basic insights on Business, full on Business Pro
 
 ---
 
@@ -264,6 +394,20 @@ Monthly PAYE processing for employees.
 - [ ] Show "Expenses (ex-GST)" metric alongside total expenses
 - [ ] Pre-Tax Margin = Revenue ex-GST minus Expenses ex-GST (current calc is correct, label is wrong)
 - [ ] Consider adding gross margin % indicator
+
+### Multi-Currency Expenses
+Support expenses in foreign currencies with NZD conversion.
+
+**Tasks:**
+- [ ] Add `currency` field to Expense model (default NZD)
+- [ ] Currency selector on expense form (NZD, AUD, USD, GBP, EUR, INR, SGD, FJD)
+- [ ] Add `exchangeRate` field (manual entry, rate at time of expense)
+- [ ] Add `nzdAmount` field (original amount × exchange rate)
+- [ ] All dashboard/report totals use `nzdAmount` for consistency
+- [ ] Expense list shows original currency + NZD equivalent
+- [ ] GST calculation based on NZD amount
+- [ ] Auto-populate exchange rate from API (optional, exchangerate.host or RBNZ)
+- [ ] Reports: breakdown by currency, total foreign spend
 
 ### Email History & SES
 - [ ] Email history model (invoiceId, to, cc, subject, sentAt, status)
