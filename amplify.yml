@@ -12,7 +12,7 @@ frontend:
     preBuild:
       commands:
         - nvm use 24
-        - npm ci
+        - npm install --prefer-offline
     build:
       commands:
         - npm run build --legacy-peer-deps
