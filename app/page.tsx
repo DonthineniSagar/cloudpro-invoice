@@ -70,11 +70,11 @@ interface FaqItem {
 }
 
 const FAQ_ITEMS: FaqItem[] = [
-  { question: 'What is Ledgr?', answer: 'A modern business platform built for NZ freelancers and small businesses. Invoicing, expenses, payroll, client management, and financial reporting — all in one place.' },
-  { question: 'Is Ledgr GST compliant?', answer: 'Yes. All invoices include GST at the standard NZ rate of 15%. Invoices follow the IRD requirements for valid tax invoices.' },
+  { question: 'What is CloudPro Books?', answer: 'A modern business platform built for NZ freelancers and small businesses. Invoicing, expenses, payroll, client management, and financial reporting — all in one place.' },
+  { question: 'Is CloudPro Books GST compliant?', answer: 'Yes. All invoices include GST at the standard NZ rate of 15%. Invoices follow the IRD requirements for valid tax invoices.' },
   { question: 'How does invoice numbering work?', answer: 'Invoices are automatically numbered using the format INV-YYMM-XXX (e.g., INV-2604-001), so you never have to worry about duplicates.' },
   { question: 'Can I track expenses too?', answer: 'Yes. Log expenses manually, snap receipts for automatic OCR extraction, or import bank statements via CSV.' },
-  { question: 'Is my data secure?', answer: 'Absolutely. Ledgr runs on AWS with Cognito authentication, encrypted storage, and owner-scoped data isolation. Your data is never accessible to other users.' },
+  { question: 'Is my data secure?', answer: 'Absolutely. CloudPro Books runs on AWS with Cognito authentication, encrypted storage, and owner-scoped data isolation. Your data is never accessible to other users.' },
   { question: 'How do I get started?', answer: 'Sign up for a free account — it takes less than a minute. You can start creating invoices immediately.' },
 ];
 
@@ -201,13 +201,13 @@ export default function LandingPage() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
               <Image
-                src="/ledgr-logo.svg"
-                alt="Ledgr logo"
+                src="/cloudpro-logo.png"
+                alt="CloudPro Books logo"
                 width={32}
                 height={32}
               />
               <span className="text-lg font-bold tracking-tight">
-                Ledgr
+                CloudPro Books
               </span>
             </Link>
 
@@ -587,7 +587,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
-              © 2026 Ledgr — a CloudPro Digital product. All rights reserved.
+              © 2026 CloudPro Books — a CloudPro Digital product. All rights reserved.
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm">

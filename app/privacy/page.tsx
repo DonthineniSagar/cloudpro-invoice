@@ -30,8 +30,8 @@ export default function PrivacyPage() {
       <nav className={`sticky top-0 z-50 backdrop-blur-md border-b ${dark ? 'bg-gray-950/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/ledgr-logo.svg" alt="Ledgr logo" width={28} height={28} />
-            <span className="text-lg font-bold tracking-tight">Ledgr</span>
+            <Image src="/cloudpro-logo.png" alt="CloudPro Books logo" width={28} height={28} />
+            <span className="text-lg font-bold tracking-tight">CloudPro Books</span>
           </Link>
           <Link href="/" className={`text-sm flex items-center gap-1 ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>
             <ArrowLeft className="w-4 h-4" /> Back to home
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
         </p>
 
         <p className={p}>
-          Ledgr is operated by CloudPro Digital Limited, a New Zealand company. We are committed to protecting your
+          CloudPro Books is operated by CloudPro Digital Limited, a New Zealand company. We are committed to protecting your
           personal information in accordance with the New Zealand Privacy Act 2020 and the thirteen Information Privacy
           Principles (IPPs). This policy explains what information we collect, why we collect it, how we use and protect
           it, and your rights.
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
 
         <h2 className={h2}>1. Who we are</h2>
         <p className={p}>
-          Ledgr is a cloud-based business platform for invoicing, expense tracking, and financial management. Our
+          CloudPro Books is a cloud-based business platform for invoicing, expense tracking, and financial management. Our
           services are provided by CloudPro Digital Limited. For privacy enquiries, contact us at{' '}
           <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary-500 underline underline-offset-2">{CONTACT_EMAIL}</a>.
         </p>
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
         <h2 className={h2}>4. Purpose of collection</h2>
         <p className={p}>We collect and use your personal information for the following purposes (IPP 3):</p>
         <ul className={ul}>
-          <li className={li}>Providing and operating the Ledgr platform</li>
+          <li className={li}>Providing and operating the CloudPro Books platform</li>
           <li className={li}>Generating invoices, tracking expenses, and producing financial reports</li>
           <li className={li}>Processing receipt images using optical character recognition (OCR)</li>
           <li className={li}>Sending invoice emails on your behalf</li>
@@ -169,13 +169,13 @@ export default function PrivacyPage() {
 
         <h2 className={h2}>11. Cookies and analytics</h2>
         <p className={p}>
-          Ledgr uses essential cookies for authentication and session management. We do not use third-party tracking
+          CloudPro Books uses essential cookies for authentication and session management. We do not use third-party tracking
           cookies or advertising cookies. We may use anonymised, aggregated analytics to improve our service.
         </p>
 
         <h2 className={h2}>12. Children</h2>
         <p className={p}>
-          Ledgr is a business tool and is not intended for use by individuals under 16 years of age. We do not
+          CloudPro Books is a business tool and is not intended for use by individuals under 16 years of age. We do not
           knowingly collect personal information from children.
         </p>
 
@@ -208,7 +208,7 @@ export default function PrivacyPage() {
       <footer className={`border-t py-8 ${dark ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className={`text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
-            © 2026 Ledgr — a CloudPro Digital product. All rights reserved.
+            © 2026 CloudPro Books — a CloudPro Digital product. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs">
             <Link href="/" className={`${dark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>Home</Link>

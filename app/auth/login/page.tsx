@@ -61,6 +61,11 @@ export default function LoginPage() {
 
   // 7.3: WebAuthn feature detection
   useEffect(() => {
+    // If user is already signed in, redirect to dashboard
+    if (!authLoading && user && step === 'credentials') {
+      router.push('/dashboard');
+      return;
+    }
     async function detectWebAuthn() {
       if (
         typeof window !== 'undefined' &&
@@ -76,14 +81,16 @@ export default function LoginPage() {
       }
     }
     detectWebAuthn();
-  }, []);
+  }, [authLoading, user, step, router]);
 
   // 7.13: Listen for Google sign-in redirect failures
   useEffect(() => {
     const hubListenerCancel = Hub.listen('auth', ({ payload }) => {
       if (payload.event === 'signInWithRedirect_failure') {
-        setError('Google sign-in failed. Please try again or use another method.');
-        toast.error('Google sign-in failed');
+        // Clear stale OAuth state and retry silently
+        setError('Unable to connect to Google. Please try again.');
+        toast.error('Google sign-in failed. Please try again.');
+        setLoadingAction(null);
       }
     });
     return () => hubListenerCancel();
@@ -339,7 +346,7 @@ export default function LoginPage() {
         {/* 7.2: Brand logo and tagline */}
         <div className="text-center">
           <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>
-            ☁ CloudPro Invoice
+            ☁ CloudPro Books
           </h1>
           <p className={`mt-1 text-sm ${dark ? 'text-slate-400' : 'text-gray-500'}`}>
             Professional invoicing. Ridiculously fast.
@@ -353,7 +360,7 @@ export default function LoginPage() {
                 Sign in
               </h2>
               <p className={`mt-1 text-sm ${dark ? 'text-slate-300' : 'text-gray-600'}`}>
-                Welcome back to CloudPro Invoice
+                Welcome back to CloudPro Books
               </p>
             </div>
 

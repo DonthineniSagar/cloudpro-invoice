@@ -100,7 +100,7 @@ export default function TrialBanner({ status, trialEndDate, dark }: TrialBannerP
           >
             Choose a plan
           </Link>{' '}
-          to continue using Ledgr.
+          to continue using CloudPro Books.
         </span>
         <button
           onClick={() => setDismissed(true)}

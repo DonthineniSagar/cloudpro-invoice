@@ -1,6 +1,6 @@
 {
-  "name": "Ledgr",
-  "short_name": "Ledgr",
+  "name": "CloudPro Books",
+  "short_name": "CloudPro Books",
   "description": "Business tools for NZ freelancers and small businesses",
   "start_url": "/dashboard",
   "display": "standalone",

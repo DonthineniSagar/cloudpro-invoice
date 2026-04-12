@@ -7,19 +7,19 @@ import AmplifyConfig from "@/lib/amplify-config";
 import InstallPrompt from "@/components/InstallPrompt";
 
 export const metadata: Metadata = {
-  title: "Ledgr - Business Tools for NZ Freelancers & Small Businesses",
+  title: "CloudPro Books - Business Tools for NZ Freelancers & Small Businesses",
   description: "Invoicing, expenses, payroll, and more — all in one place. Built for New Zealand freelancers and small businesses.",
-  keywords: ["invoice", "invoicing", "New Zealand", "NZ", "GST", "tax invoice", "freelancer", "small business", "accounting", "payroll", "expenses", "Ledgr"],
+  keywords: ["invoice", "invoicing", "New Zealand", "NZ", "GST", "tax invoice", "freelancer", "small business", "accounting", "payroll", "expenses", "CloudPro Books"],
   openGraph: {
-    title: "Ledgr - Business Tools for NZ Freelancers",
+    title: "CloudPro Books - Business Tools for NZ Freelancers",
     description: "Invoicing, expenses, payroll, and more — all in one place. Built for NZ freelancers and small businesses.",
     type: "website",
     locale: "en_NZ",
-    siteName: "Ledgr",
+    siteName: "CloudPro Books",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ledgr - Business Tools for NZ Freelancers",
+    title: "CloudPro Books - Business Tools for NZ Freelancers",
     description: "Invoicing, expenses, payroll, and more — all in one place. Built for NZ freelancers and small businesses.",
   },
   robots: { index: true, follow: true },

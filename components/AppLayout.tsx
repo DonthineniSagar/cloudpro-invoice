@@ -132,9 +132,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-8">
               <Link href="/dashboard" className="flex items-center gap-3">
-                <Image src="/ledgr-logo.svg" alt="Ledgr" width={32} height={32} className="h-8 w-8" />
+                <Image src="/cloudpro-logo.png" alt="CloudPro Books" width={32} height={32} className="h-8 w-8" />
                 <span className={dark ? 'text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent' : 'text-xl font-bold text-gray-900'}>
-                  Ledgr
+                  CloudPro Books
                 </span>
               </Link>
               <nav className="hidden md:flex items-center gap-6">

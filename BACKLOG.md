@@ -395,6 +395,11 @@ Monthly PAYE processing for employees.
 - [ ] S3 bucket lifecycle policy (archive old PDFs after 7 years per IRD)
 - [ ] CloudWatch alarms (Lambda errors, API latency)
 - [ ] DynamoDB point-in-time recovery
+- [ ] OWASP ZAP baseline scan in GitHub Actions CI pipeline (zaproxy/action-baseline on every PR against sandbox URL)
+- [ ] OWASP ZAP full scan on weekly schedule (zaproxy/action-full-scan against sandbox)
+- [ ] OWASP ZAP API scan for Stripe webhook and API routes (zaproxy/action-api-scan)
+- [ ] Accessibility audit: add @axe-core/react for dev-time a11y violation logging
+- [ ] Accessibility audit: Lighthouse CI in GitHub Actions for automated a11y scoring on PRs
 
 ---
 
