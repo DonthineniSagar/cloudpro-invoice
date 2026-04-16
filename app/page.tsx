@@ -201,7 +201,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <MyBizLogo />
+              <MyBizLogo dark={dark} />
             </Link>
 
             {/* Desktop links */}
