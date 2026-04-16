@@ -180,7 +180,7 @@ export default function SubscriptionPage() {
           <div className={`text-center py-8 ${t.textMuted}`}>
             <CreditCard className={`w-12 h-12 mx-auto mb-4 ${dark ? 'text-slate-600' : 'text-gray-300'}`} />
             <p className={`text-lg font-medium mb-2 ${dark ? 'text-white' : 'text-gray-900'}`}>No active subscription</p>
-            <p className={`mb-6 ${t.textMuted}`}>Choose a plan to get started with CloudPro Books</p>
+            <p className={`mb-6 ${t.textMuted}`}>Choose a plan to get started with MyBiz</p>
             <Link href="/pricing" className={t.btnPrimary}>
               Choose a Plan
             </Link>

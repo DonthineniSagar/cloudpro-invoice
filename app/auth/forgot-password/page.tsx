@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
           {/* Brand logo */}
           <div className="mb-6">
             <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>
-              ☁ CloudPro Books
+              <span style={{fontFamily: "'Lobster', cursive"}}><span className="text-indigo-400">My</span>Biz</span>
             </h1>
             <p className={`mt-1 text-sm ${dark ? 'text-slate-400' : 'text-gray-500'}`}>
               Professional invoicing. Ridiculously fast.
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
         {/* Brand logo */}
         <div className="text-center">
           <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>
-            ☁ CloudPro Books
+            <span style={{fontFamily: "'Lobster', cursive"}}><span className="text-indigo-400">My</span>Biz</span>
           </h1>
           <p className={`mt-1 text-sm ${dark ? 'text-slate-400' : 'text-gray-500'}`}>
             Professional invoicing. Ridiculously fast.

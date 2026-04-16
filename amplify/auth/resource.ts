@@ -10,7 +10,7 @@ function brandedEmailTemplate(createCode: () => string): string {
       <table width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <!-- Header -->
         <tr><td style="background:linear-gradient(135deg,#4F46E5,#7C3AED);padding:24px 32px;">
-          <span style="color:#ffffff;font-size:20px;font-weight:700;">&#9729; CloudPro Books</span>
+          <span style="color:#ffffff;font-size:20px;font-weight:700;">&#9729; MyBiz</span>
         </td></tr>
         <!-- Body -->
         <tr><td style="padding:32px;">
@@ -24,7 +24,7 @@ function brandedEmailTemplate(createCode: () => string): string {
         </td></tr>
         <!-- Footer -->
         <tr><td style="padding:16px 32px;border-top:1px solid #E5E7EB;">
-          <p style="color:#9CA3AF;font-size:12px;margin:0;">&copy; 2026 CloudPro Books &middot; Professional invoicing. Ridiculously fast.</p>
+          <p style="color:#9CA3AF;font-size:12px;margin:0;">&copy; 2026 MyBiz &middot; Professional invoicing. Ridiculously fast.</p>
         </td></tr>
       </table>
     </td></tr>
@@ -37,7 +37,7 @@ export const auth = defineAuth({
   loginWith: {
     email: {
       verificationEmailStyle: 'CODE',
-      verificationEmailSubject: 'Your CloudPro Books verification code',
+      verificationEmailSubject: 'Your MyBiz verification code',
       verificationEmailBody: (createCode) => brandedEmailTemplate(createCode),
     },
     externalProviders: {

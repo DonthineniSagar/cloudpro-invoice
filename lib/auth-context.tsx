@@ -198,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function handleSetupTotp(): Promise<{ qrUri: string; secretKey: string }> {
     const totpSetup = await setUpTOTP();
     const secretKey = totpSetup.sharedSecret;
-    const qrUri = totpSetup.getSetupUri('CloudPro Books').toString();
+    const qrUri = totpSetup.getSetupUri('MyBiz').toString();
     return { qrUri, secretKey };
   }
 
