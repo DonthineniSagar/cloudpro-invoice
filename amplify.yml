@@ -14,6 +14,7 @@ frontend:
         - npm ci
     build:
       commands:
+        - node scripts/resolve-table-name.js
         - npm run build --legacy-peer-deps
         - echo "Build completed, checking directories:"
         - ls -la
