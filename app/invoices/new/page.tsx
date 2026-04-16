@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { calculateGST, calculateTotal } from '@/lib/gst-calculations';
@@ -25,6 +25,7 @@ type LineItem = {
 
 export default function NewInvoicePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { theme } = useTheme();
   const t = tc(theme);
   const toast = useToast();
@@ -89,6 +90,50 @@ export default function NewInvoicePage() {
     const num = `INV-${now.getFullYear().toString().slice(-2)}${(now.getMonth()+1).toString().padStart(2,'0')}-${Math.floor(Math.random()*1000).toString().padStart(3,'0')}`;
     setFormData(prev => ({ ...prev, invoiceNumber: num }));
   }, []);
+
+  // Clone invoice if ?clone=id is present
+  useEffect(() => {
+    const cloneId = searchParams.get('clone');
+    if (!cloneId) return;
+    (async () => {
+      try {
+        const client = generateClient<Schema>();
+        const { data: invoice } = await client.models.Invoice.get({ id: cloneId });
+        if (!invoice) return;
+        setClientDetails({
+          name: invoice.clientName || '',
+          email: invoice.clientEmail || '',
+          address: invoice.clientAddress || '',
+        });
+        setFormData(prev => ({
+          ...prev,
+          notes: invoice.notes || '',
+          paymentTerms: invoice.paymentTerms || prev.paymentTerms,
+        }));
+        // Load line items
+        const { data: items } = await client.models.InvoiceItem.list({
+          filter: { invoiceId: { eq: cloneId } },
+        });
+        if (items?.length) {
+          setLineItems(items.map(item => ({
+            id: Date.now().toString() + Math.random(),
+            description: item.description || '',
+            wbs: (item as Record<string, unknown>).wbs as string || '',
+            quantity: item.quantity || 1,
+            unitPrice: item.unitPrice || 0,
+            amount: item.amount || 0,
+          })));
+        }
+        // Select matching client
+        if (invoice.clientId) {
+          const c = clients.find((c: unknown) => (c as Record<string, unknown>).id === invoice.clientId) as Record<string, unknown> | undefined;
+          if (c) setSelectedClient(c);
+        }
+      } catch (err) {
+        console.error('Failed to clone invoice:', err);
+      }
+    })();
+  }, [searchParams, clients]);
 
   const handleClientSelect = (clientId: string) => {
     const c = clients.find((c: unknown) => (c as Record<string, unknown>).id === clientId) as Record<string, unknown> | undefined;

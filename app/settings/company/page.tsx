@@ -11,7 +11,8 @@ import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
 import { TEMPLATES } from '@/lib/generate-pdf';
 import type { TemplateName } from '@/lib/generate-pdf';
-import { Mail, Plus, X, Copy, Check, Shield, CreditCard } from 'lucide-react';
+import TemplateThumbnail from '@/components/TemplateThumbnail';
+import { Mail, Plus, X, Copy, Check, Shield } from 'lucide-react';
 
 const client = generateClient<Schema>();
 const INGEST_DOMAIN = 'expenses.cloudpro-digital.co.nz';
@@ -40,7 +41,10 @@ export default function CompanyProfilePage() {
     companyCity: '', companyState: '', companyPostalCode: '', companyCountry: 'New Zealand',
     gstNumber: '', bankAccount: '', defaultCurrency: 'NZD', defaultGstRate: 15,
     defaultTemplate: 'modern' as TemplateName,
+    accentColor: '#6366F1',
+    invoiceFooterText: '',
   });
+  const [hexError, setHexError] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) router.push('/auth/login');
@@ -62,6 +66,8 @@ export default function CompanyProfilePage() {
               gstNumber: e.gstNumber || '', bankAccount: e.bankAccount || '',
               defaultCurrency: e.defaultCurrency || 'NZD', defaultGstRate: e.defaultGstRate || 15,
               defaultTemplate: (e.defaultTemplate as TemplateName) || 'modern',
+              accentColor: e.accentColor || '#6366F1',
+              invoiceFooterText: e.invoiceFooterText || '',
             });
             setIngest({
               expenseIngestKey: e.expenseIngestKey || '',
@@ -84,25 +90,6 @@ export default function CompanyProfilePage() {
       })();
     }
   }, [user]);
-
-  async function handleManageBilling() {
-    if (!stripeCustomerId) return;
-    setBillingLoading(true);
-    try {
-      const res = await fetch('/api/stripe/portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: stripeCustomerId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to create portal session');
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Billing portal error:', error);
-      toast.error('Failed to open billing portal. Please try again.');
-      setBillingLoading(false);
-    }
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -128,7 +115,16 @@ export default function CompanyProfilePage() {
       const { fetchAuthSession } = await import('aws-amplify/auth');
       const session = await fetchAuthSession();
       const cognitoIdentityId = session.identityId || '';
-      const saveData = { ...profile, ...(logoUrl && { logoUrl }), ...ingest, identityId: cognitoIdentityId };
+      const saveData = {
+        ...profile,
+        accentColor: profile.accentColor || '#6366F1',
+        invoiceFooterText: profile.invoiceFooterText || '',
+        ...(logoUrl && { logoUrl }),
+        ...ingest,
+        identityId: cognitoIdentityId,
+      };
+      console.log('saveData:', JSON.stringify(saveData, null, 2));
+      console.log('profile.accentColor:', profile.accentColor);
       if (existing && existing.length > 0) {
         await client.models.CompanyProfile.update({ id: existing[0].id, ...saveData });
       } else {
@@ -254,17 +250,85 @@ export default function CompanyProfilePage() {
           <h2 className={`${t.sectionTitle} mb-4`}>Invoice Template</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {TEMPLATES.map(tmpl => (
-              <button key={tmpl.id} type="button"
-                onClick={() => setProfile({ ...profile, defaultTemplate: tmpl.id })}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                  profile.defaultTemplate === tmpl.id
-                    ? theme === 'dark' ? 'border-purple-500 bg-purple-500/10' : 'border-indigo-600 bg-indigo-50'
-                    : theme === 'dark' ? 'border-purple-500/20 hover:border-purple-500/50' : 'border-gray-200 hover:border-gray-300'
-                }`}>
-                <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{tmpl.name}</div>
-                <div className={`text-xs mt-1 ${t.textMuted}`}>{tmpl.description}</div>
-              </button>
+              <div key={tmpl.id} className="space-y-2">
+                <TemplateThumbnail
+                  templateId={tmpl.id}
+                  accentColor={profile.accentColor || '#6366F1'}
+                  selected={profile.defaultTemplate === tmpl.id}
+                  dark={theme === 'dark'}
+                  onClick={() => setProfile({ ...profile, defaultTemplate: tmpl.id })}
+                />
+                <div className="text-center">
+                  <div className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{tmpl.name}</div>
+                  <div className={`text-xs ${t.textMuted}`}>{tmpl.description}</div>
+                </div>
+              </div>
             ))}
+          </div>
+
+          {/* Accent Color Picker */}
+          <div className="mt-6">
+            <label className={t.label}>Accent Color</label>
+            <div className="flex items-center gap-3 mt-1">
+              <input
+                type="color"
+                value={profile.accentColor || '#6366F1'}
+                onChange={(e) => {
+                  setProfile({ ...profile, accentColor: e.target.value });
+                  setHexError('');
+                }}
+                className="w-10 h-10 rounded-lg border cursor-pointer p-0.5"
+                aria-label="Pick accent color"
+              />
+              <input
+                type="text"
+                value={profile.accentColor || '#6366F1'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setProfile({ ...profile, accentColor: val });
+                  if (val && !/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                    setHexError('Enter a valid hex color (e.g. #6366F1)');
+                  } else {
+                    setHexError('');
+                  }
+                }}
+                placeholder="#6366F1"
+                maxLength={7}
+                className={`${t.input} w-32 font-mono text-sm`}
+                aria-label="Hex color code"
+              />
+              <button
+                type="button"
+                onClick={() => { setProfile({ ...profile, accentColor: '#6366F1' }); setHexError(''); }}
+                className={`text-xs ${theme === 'dark' ? 'text-purple-400 hover:text-purple-300' : 'text-indigo-600 hover:text-indigo-500'}`}
+              >
+                Reset to default
+              </button>
+            </div>
+            {hexError && (
+              <p className="text-sm text-red-500 mt-1">{hexError}</p>
+            )}
+          </div>
+
+          {/* Footer Text */}
+          <div className="mt-6">
+            <label className={t.label}>Invoice Footer Text</label>
+            <textarea
+              value={profile.invoiceFooterText}
+              onChange={(e) => setProfile({ ...profile, invoiceFooterText: e.target.value })}
+              placeholder="e.g. Thank you for your business. Payment due within 14 days."
+              maxLength={500}
+              rows={3}
+              className={`${t.input} mt-1 resize-none`}
+              aria-label="Invoice footer text"
+            />
+            <p className={`text-xs mt-1 ${
+              profile.invoiceFooterText.length >= 450
+                ? 'text-amber-500'
+                : t.textMuted
+            }`}>
+              {profile.invoiceFooterText.length} / 500 characters
+            </p>
           </div>
         </div>
 
@@ -366,44 +430,6 @@ export default function CompanyProfilePage() {
               </>
             )}
           </div>
-        </div>
-
-        {/* Billing */}
-        <div>
-          <h2 className={`${t.sectionTitle} mb-4`}>Billing</h2>
-          {stripeCustomerId ? (
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={handleManageBilling}
-                disabled={billingLoading}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-purple-900/30 border border-purple-500/40 text-purple-400 hover:bg-purple-900/50 disabled:opacity-50'
-                    : 'bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100 disabled:opacity-50'
-                }`}
-              >
-                <CreditCard className="w-4 h-4" />
-                {billingLoading ? 'Loading...' : 'Manage Billing'}
-              </button>
-              <p className={`text-xs ${t.textMuted}`}>Change plan, update payment method, or view invoices</p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              <a
-                href="/pricing"
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-purple-900/30 border border-purple-500/40 text-purple-400 hover:bg-purple-900/50'
-                    : 'bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100'
-                }`}
-              >
-                <CreditCard className="w-4 h-4" />
-                Choose a Plan
-              </a>
-              <p className={`text-xs ${t.textMuted}`}>Subscribe to unlock all features</p>
-            </div>
-          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4">

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import AppLayout from '@/components/AppLayout';
+import FeatureGate from '@/components/FeatureGate';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { downloadCSV } from '@/lib/csv-export';
@@ -149,11 +150,12 @@ export default function ReportsPage() {
   };
 
   if (loading) {
-    return <AppLayout><div className="min-h-screen flex items-center justify-center"><div className={t.textMuted}>Loading reports...</div></div></AppLayout>;
+    return <AppLayout><FeatureGate featureName="Financial Reports" requiredPlan="Business"><div className="min-h-screen flex items-center justify-center"><div className={t.textMuted}>Loading reports...</div></div></FeatureGate></AppLayout>;
   }
 
   return (
     <AppLayout>
+      <FeatureGate featureName="Financial Reports" requiredPlan="Business">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-start mb-8">
           <div>
@@ -315,6 +317,7 @@ export default function ReportsPage() {
           </div>
         </div>
       </div>
+      </FeatureGate>
     </AppLayout>
   );
 }

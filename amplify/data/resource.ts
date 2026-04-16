@@ -26,6 +26,8 @@ const schema = a.schema({
       emailReplyTo: a.string(),
       emailCcSelf: a.boolean().default(true),
       defaultTemplate: a.string().default('modern'),
+      accentColor: a.string(),          // hex color string e.g. "#6366F1"
+      invoiceFooterText: a.string(),    // free text, max 500 chars (validated by Zod)
       // Reminder settings
       reminderEnabled: a.boolean().default(false),
       reminderDaysBefore: a.string().default('7,3,1'),

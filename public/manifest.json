@@ -1,6 +1,6 @@
 {
-  "name": "Ledgr",
-  "short_name": "Ledgr",
+  "name": "MyBiz",
+  "short_name": "MyBiz",
   "description": "Business tools for NZ freelancers and small businesses",
   "start_url": "/dashboard",
   "display": "standalone",

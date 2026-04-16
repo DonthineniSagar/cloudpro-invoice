@@ -30,7 +30,47 @@ export const clientSchema = z.object({
 export const companySchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
   companyEmail: z.string().email('Invalid email address').or(z.literal('')).optional(),
-  gstNumber: z.string().regex(/^\d{2,3}-?\d{3}-?\d{3}$/, 'Invalid NZ GST number (e.g. 12-345-678)').or(z.literal('')).optional(),
+  gstNumber: z.string().regex(/^(\d{2,3}-\d{3}-\d{3}|\d{8,9})$/, 'Invalid NZ GST number (e.g. 12-345-678)').or(z.literal('')).optional(),
+  accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Enter a valid hex color (e.g. #6366F1)').or(z.literal('')).optional(),
+  invoiceFooterText: z.string().max(500, 'Footer text must be 500 characters or less').optional(),
+});
+
+// Signup form validation
+export const signupSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+}).refine(
+  (data) => data.password === data.confirmPassword,
+  { message: 'Passwords do not match', path: ['confirmPassword'] }
+);
+
+// Login form validation
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+// TOTP code validation
+export const totpSchema = z.object({
+  code: z.string().length(6, 'Code must be 6 digits').regex(/^\d{6}$/, 'Code must be 6 digits'),
+});
+
+// Company profile step validation (signup flow)
+export const companyProfileStepSchema = z.object({
+  companyName: z.string().min(1, 'Company name is required'),
+  gstNumber: z
+    .string()
+    .regex(/^(\d{2,3}-\d{3}-\d{3}|\d{8,9})$/, 'Invalid NZ GST number (e.g., 12-345-678 or 123-456-789)')
+    .or(z.literal(''))
+    .optional(),
+  bankAccount: z
+    .string()
+    .regex(/^\d{2}-\d{4}-\d{7}-\d{2,3}$/, 'Invalid NZ bank account (e.g., 06-0123-0456789-00)')
+    .or(z.literal(''))
+    .optional(),
 });
 
 export type FormErrors = Record<string, string>;

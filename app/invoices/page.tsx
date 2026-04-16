@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Search, FileText, Calendar, DollarSign } from 'lucide-react';
+import { Plus, Search, FileText, Calendar, DollarSign, Copy } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
@@ -158,6 +158,9 @@ export default function InvoicesPage() {
                   <th className={theme === 'dark' ? 'px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'}>
                     Status
                   </th>
+                  <th className={theme === 'dark' ? 'px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'}>
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className={theme === 'dark' ? 'bg-black divide-y divide-purple-500/20' : 'bg-white divide-y divide-gray-200'}>
@@ -194,6 +197,20 @@ export default function InvoicesPage() {
                       <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
                         {invoice.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <Link
+                        href={`/invoices/new?clone=${invoice.id}`}
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                          theme === 'dark'
+                            ? 'text-slate-400 hover:text-white hover:bg-purple-500/20'
+                            : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'
+                        }`}
+                        title="Copy invoice"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        Copy
+                      </Link>
                     </td>
                   </tr>
                 ))}

@@ -12,7 +12,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 // DynamoDB direct access — bypasses AppSync auth for server-side webhook writes
 const ddbClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-// Table name from Amplify — set via env var or derive from amplify_outputs
+// Table name: set COMPANY_PROFILE_TABLE_NAME in env, or auto-resolve via build script
 const COMPANY_PROFILE_TABLE = process.env.COMPANY_PROFILE_TABLE_NAME || 'CompanyProfile';
 
 export async function POST(request: NextRequest) {

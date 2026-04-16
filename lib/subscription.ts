@@ -65,7 +65,7 @@ export const PLAN_FEATURES: Record<PlanTier, Set<Feature>> = {
 };
 
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
-  STARTER:      { maxInvoicesPerMonth: 10, maxClients: 5,  maxOcrPerMonth: 0,  maxUsers: 1 },
+  STARTER:      { maxInvoicesPerMonth: -1, maxClients: -1, maxOcrPerMonth: 0,  maxUsers: 1 },
   BUSINESS:     { maxInvoicesPerMonth: -1, maxClients: -1, maxOcrPerMonth: 30, maxUsers: 1 },
   BUSINESS_PRO: { maxInvoicesPerMonth: -1, maxClients: -1, maxOcrPerMonth: -1, maxUsers: 2 },
 };
@@ -87,29 +87,49 @@ export function isSubscriptionActive(status: SubscriptionStatus | null): boolean
   return status === 'TRIALING' || status === 'ACTIVE' || status === 'PAST_DUE';
 }
 
-// Stripe product → internal plan mapping
-export const PRODUCT_TO_PLAN: Record<string, PlanTier> = {
-  'prod_UINcOjzo9FGPIc': 'STARTER',
-  'prod_UINcDnUQuxSwga': 'BUSINESS',
-  'prod_UINcPSlDVttHpn': 'BUSINESS_PRO',
-};
+// Stripe product → internal plan mapping (from env vars)
+export const PRODUCT_TO_PLAN: Record<string, PlanTier> = Object.fromEntries(
+  [
+    [process.env.NEXT_PUBLIC_STRIPE_PRODUCT_STARTER, 'STARTER'],
+    [process.env.NEXT_PUBLIC_STRIPE_PRODUCT_BUSINESS, 'BUSINESS'],
+  ].filter(([k]) => k)
+) as Record<string, PlanTier>;
 
-// Whitelist of valid Stripe price IDs
-export const VALID_PRICE_IDS = new Set([
-  'price_1TJndVRRCRfUSdl9rivSIDKQ', // Starter monthly $10.35
-  'price_1TJndWRRCRfUSdl9baePpusb', // Starter annual $113.85
-  'price_1TJndYRRCRfUSdl9IlFTYGBn', // Business monthly $33.35
-  'price_1TJndZRRCRfUSdl9eWRqEycI', // Business annual $333.50
-  'price_1TJndaRRCRfUSdl9TaFc2RrI', // Pro monthly $90.85
-  'price_1TJndbRRCRfUSdl9B6Kl1YAu', // Pro annual $908.50
-]);
+// Whitelist of valid Stripe price IDs (from env vars)
+export const VALID_PRICE_IDS = new Set(
+  [
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY,
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_MONTHLY,
+  ].filter(Boolean)
+);
 
 // Price ID → plan tier mapping
-export const PRICE_TO_PLAN: Record<string, PlanTier> = {
-  'price_1TJndVRRCRfUSdl9rivSIDKQ': 'STARTER',
-  'price_1TJndWRRCRfUSdl9baePpusb': 'STARTER',
-  'price_1TJndYRRCRfUSdl9IlFTYGBn': 'BUSINESS',
-  'price_1TJndZRRCRfUSdl9eWRqEycI': 'BUSINESS',
-  'price_1TJndaRRCRfUSdl9TaFc2RrI': 'BUSINESS_PRO',
-  'price_1TJndbRRCRfUSdl9B6Kl1YAu': 'BUSINESS_PRO',
+export const PRICE_TO_PLAN: Record<string, PlanTier> = Object.fromEntries(
+  [
+    [process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY, 'STARTER'],
+    [process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_MONTHLY, 'BUSINESS'],
+  ].filter(([k]) => k)
+) as Record<string, PlanTier>;
+
+
+// Route-level visibility per plan tier — centralized config for nav filtering and page gating
+export const PLAN_VISIBLE_ROUTES: Record<PlanTier, string[]> = {
+  STARTER: ['/dashboard', '/invoices', '/clients', '/settings'],
+  BUSINESS: ['/dashboard', '/invoices', '/settings', '/clients', '/expenses', '/reports'],
+  BUSINESS_PRO: ['/dashboard', '/invoices', '/settings', '/clients', '/expenses', '/reports'],
 };
+
+/** Check if a plan tier is allowed to access a given route pathname */
+export function canAccessRoute(plan: PlanTier | null, pathname: string): boolean {
+  // Fallback: no subscription data → allow all routes
+  if (!plan) return true;
+
+  // BUSINESS and BUSINESS_PRO have full access
+  if (plan === 'BUSINESS' || plan === 'BUSINESS_PRO') return true;
+
+  // STARTER: explicitly block /invoices/recurring even though /invoices is allowed
+  if (pathname.startsWith('/invoices/recurring')) return false;
+
+  // STARTER: check if pathname starts with any allowed prefix
+  return PLAN_VISIBLE_ROUTES[plan].some((prefix) => pathname.startsWith(prefix));
+}

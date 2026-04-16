@@ -18,7 +18,6 @@ export default function PricingPage() {
   const { theme } = useTheme();
   const toast = useToast();
   const dark = theme === 'dark';
-  const [annual, setAnnual] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const [companyProfileId, setCompanyProfileId] = useState<string | null>(null);
   const [hasExistingTrial, setHasExistingTrial] = useState(false);
@@ -51,19 +50,18 @@ export default function PricingPage() {
       toast.error('Please set up your company profile before choosing a plan.');
       return;
     }
-    const priceId = annual ? plan.annualPriceId : plan.monthlyPriceId;
     setLoadingPlan(plan.tier);
     try {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          priceId,
+          priceId: plan.monthlyPriceId,
           planName: plan.tier,
-          interval: annual ? 'annual' : 'monthly',
+          interval: 'monthly',
           userId: user.id,
           userEmail: user.email,
-          companyProfileId: companyProfileId || user.id,
+          companyProfileId,
           hasExistingTrial,
         }),
       });
@@ -80,20 +78,19 @@ export default function PricingPage() {
   function getButtonLabel(planTier: string): string {
     if (!currentPlan) return 'Start Free Trial';
     if (currentPlan === planTier) return 'Current Plan';
-    const tiers = ['STARTER', 'BUSINESS', 'BUSINESS_PRO'];
+    const tiers = ['STARTER', 'BUSINESS'];
     return tiers.indexOf(planTier) > tiers.indexOf(currentPlan) ? 'Upgrade' : 'Downgrade';
   }
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Profile setup prompt */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {!loading && !companyProfileId && (
           <div className={`mb-8 p-4 rounded-lg flex items-center justify-between gap-4 ${
             dark ? 'bg-amber-900/20 border border-amber-500/30' : 'bg-amber-50 border border-amber-200'
           }`}>
             <p className={`text-sm ${dark ? 'text-amber-300' : 'text-amber-800'}`}>
-              Set up your company profile before choosing a plan — we need your business details to get started.
+              Set up your company profile before choosing a plan.
             </p>
             <a href="/settings/company"
               className="flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition-colors">
@@ -109,29 +106,10 @@ export default function PricingPage() {
           <p className={`mt-2 ${dark ? 'text-slate-400' : 'text-gray-600'}`}>
             {currentPlan ? 'Upgrade or change your plan anytime.' : 'Start with a 14-day free trial. No credit card required.'}
           </p>
-
-          {/* Toggle */}
-          <div className="mt-6 flex items-center justify-center gap-3">
-            <span className={`text-sm font-medium ${!annual ? (dark ? 'text-white' : 'text-gray-900') : (dark ? 'text-gray-400' : 'text-gray-500')}`}>Monthly</span>
-            <button type="button" onClick={() => setAnnual(!annual)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${annual ? 'bg-primary-600' : (dark ? 'bg-gray-700' : 'bg-gray-300')}`}
-              role="switch" aria-checked={annual} aria-label="Toggle annual billing">
-              <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${annual ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
-            <span className={`text-sm font-medium ${annual ? (dark ? 'text-white' : 'text-gray-900') : (dark ? 'text-gray-400' : 'text-gray-500')}`}>Annual</span>
-            {annual && <span className="ml-1 px-2 py-0.5 text-xs font-medium rounded-full bg-success-500 text-white">Save 17%</span>}
-          </div>
         </div>
 
-        {/* Plan cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {PLANS.map((plan) => {
-            const displayPrice = annual
-              ? `$${(plan.annualPrice / 1.15 / 12).toFixed(0)}`
-              : `$${(plan.monthlyPrice / 1.15).toFixed(0)}`;
-            const billedNote = annual
-              ? `$${(plan.annualPrice / 1.15).toFixed(0)}+GST/yr billed annually`
-              : '';
             const buttonLabel = getButtonLabel(plan.tier);
             const isCurrentPlan = currentPlan === plan.tier;
             const isLoading = loadingPlan === plan.tier;
@@ -148,12 +126,26 @@ export default function PricingPage() {
                     Most Popular
                   </span>
                 )}
+                {plan.discount && (
+                  <span className={`absolute -top-3 right-4 px-3 py-1 text-xs font-semibold rounded-full ${
+                    dark ? 'bg-green-900/50 text-green-400 border border-green-500/30' : 'bg-green-100 text-green-700'
+                  }`}>
+                    {plan.discount}
+                  </span>
+                )}
                 <h3 className={`text-lg font-semibold ${dark ? 'text-white' : 'text-gray-900'}`}>{plan.name}</h3>
-                <div className="mt-4 flex items-baseline gap-1">
-                  <span className={`text-4xl font-bold tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>{displayPrice}</span>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className={`text-lg line-through ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                    ${plan.displayPrice.toFixed(2)}
+                  </span>
+                  <span className={`text-4xl font-bold tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>
+                    ${(plan.monthlyPrice / 1.15).toFixed(2)}
+                  </span>
                   <span className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>+GST/mo</span>
                 </div>
-                {annual && <p className={`mt-1 text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>{billedNote}</p>}
+                <p className={`mt-1 text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                  ${plan.monthlyPrice.toFixed(2)} NZD/mo incl. GST
+                </p>
 
                 <ul className="mt-6 space-y-3 flex-1">
                   {plan.features.map((f) => (
@@ -186,7 +178,7 @@ export default function PricingPage() {
         </div>
 
         <p className={`mt-8 text-center text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
-          All prices in NZD, plus GST (15%). Promo codes can be applied at checkout.
+          All prices in NZD. GST (15%) applies.
         </p>
       </div>
     </AppLayout>
