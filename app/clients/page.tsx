@@ -22,7 +22,8 @@ export default function ClientsPage() {
   const loadClients = async () => {
     try {
       const client = generateClient<Schema>();
-      const { data } = await client.models.Client.list();
+      const { listAll } = await import('@/lib/list-all');
+      const data = await listAll(client.models.Client);
       setClients(data);
     } catch (error) {
       console.error('Error loading clients:', error);

@@ -51,16 +51,8 @@ export default function ExpensesPage() {
     (async () => {
       try {
         const client = generateClient<Schema>();
-        const allExpenses: any[] = [];
-        let nextToken: string | null | undefined = undefined;
-        do {
-          const { data, nextToken: nt } = await client.models.Expense.list({
-            ...(nextToken ? { nextToken } : {}),
-            limit: 500,
-          } as any);
-          allExpenses.push(...(data || []));
-          nextToken = nt;
-        } while (nextToken);
+        const { listAll } = await import('@/lib/list-all');
+        const allExpenses = await listAll(client.models.Expense);
         setSummaryData(allExpenses);
       } catch (e) { console.error(e); }
       setLoading(false);

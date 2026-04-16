@@ -29,8 +29,8 @@ export default function ReviewExpensesPage() {
 
   const fetchData = async () => {
     const client = generateClient<Schema>();
-    const { data } = await client.models.Expense.list();
-    const all = (data || []) as Expense[];
+    const { listAll } = await import('@/lib/list-all');
+    const all = await listAll(client.models.Expense) as Expense[];
     setUnclassified(all.filter(e => !e.classification || e.classification === 'unclassified' || e.notes?.includes('[bank_import]')));
     setExistingExpenses(all.filter(e => e.classification && e.classification !== 'unclassified' && !e.notes?.includes('[bank_import]')));
     setLoading(false);

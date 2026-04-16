@@ -50,12 +50,13 @@ export default function ReportsPage() {
     const load = async () => {
       try {
         const client = generateClient<Schema>();
-        const [invRes, expRes] = await Promise.all([
-          client.models.Invoice.list(),
-          client.models.Expense.list(),
+        const { listAll } = await import('@/lib/list-all');
+        const [invoices, expenses] = await Promise.all([
+          listAll(client.models.Invoice),
+          listAll(client.models.Expense),
         ]);
-        setInvoices(invRes.data);
-        setExpenses(expRes.data);
+        setInvoices(invoices);
+        setExpenses(expenses);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
