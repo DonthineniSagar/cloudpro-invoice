@@ -67,7 +67,7 @@ export default function NewExpensePage() {
           setProfileId(profile.id);
           const plan = (profile.subscriptionPlan as PlanTier) || null;
           const status = (profile.subscriptionStatus as SubscriptionStatus) || null;
-          const effectivePlan = status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : plan;
+          const effectivePlan = plan;
           if (effectivePlan && isSubscriptionActive(status)) {
             const effective = getEffectiveOcrCount(
               profile.ocrUsageCount ?? 0,

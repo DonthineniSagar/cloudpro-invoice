@@ -113,7 +113,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isActive = (path: string) => pathname.startsWith(path);
 
   // Filter nav links based on plan — show all if trialing or no gating needed
-  const effectivePlan = sub.status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : sub.plan;
+  const effectivePlan = sub.plan;
   const navLinks = ALL_NAV_LINKS.filter((link) => {
     // If no subscription at all, show all links (they'll see upgrade prompts on the pages)
     if (!sub.plan && !sub.status) return true;
