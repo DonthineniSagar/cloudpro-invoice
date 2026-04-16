@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import MyBizLogo from '@/components/MyBizLogo';
 import Image from 'next/image';
 import {
   FileText,
@@ -200,10 +201,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl tracking-tight" style={{ fontFamily: "'Lobster', cursive" }}>
-                <span className="text-indigo-500">My</span>
-                <span>Biz</span>
-              </span>
+              <MyBizLogo />
             </Link>
 
             {/* Desktop links */}

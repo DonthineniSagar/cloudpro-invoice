@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import MyBizLogo from '@/components/MyBizLogo';
 import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 
@@ -30,10 +31,7 @@ export default function PrivacyPage() {
       <nav className={`sticky top-0 z-50 backdrop-blur-md border-b ${dark ? 'bg-gray-950/80 border-gray-800' : 'bg-white/80 border-gray-200'}`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl tracking-tight" style={{ fontFamily: "'Lobster', cursive" }}>
-              <span className={dark ? 'text-purple-400' : 'text-indigo-500'}>My</span>
-              <span className={dark ? 'text-white' : 'text-gray-900'}>Biz</span>
-            </span>
+            <MyBizLogo dark={dark} />
           </Link>
           <Link href="/" className={`text-sm flex items-center gap-1 ${dark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'}`}>
             <ArrowLeft className="w-4 h-4" /> Back to home

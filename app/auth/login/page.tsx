@@ -1,3 +1,4 @@
+import MyBizLogo from '@/components/MyBizLogo';
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -346,7 +347,7 @@ export default function LoginPage() {
         {/* 7.2: Brand logo and tagline */}
         <div className="text-center">
           <h1 className={`text-2xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>
-            <span style={{fontFamily: "'Lobster', cursive"}}><span className="text-indigo-400">My</span>Biz</span>
+            <MyBizLogo />
           </h1>
           <p className={`mt-1 text-sm ${dark ? 'text-slate-400' : 'text-gray-500'}`}>
             Professional invoicing. Ridiculously fast.
