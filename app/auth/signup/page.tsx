@@ -1,5 +1,5 @@
-import MyBizLogo from '@/components/MyBizLogo';
 'use client';
+import MyBizLogo from '@/components/MyBizLogo';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';

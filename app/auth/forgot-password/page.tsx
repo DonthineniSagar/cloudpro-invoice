@@ -1,5 +1,5 @@
-import MyBizLogo from '@/components/MyBizLogo';
 'use client';
+import MyBizLogo from '@/components/MyBizLogo';
 
 import { useState } from 'react';
 import { resetPassword, confirmResetPassword } from 'aws-amplify/auth';

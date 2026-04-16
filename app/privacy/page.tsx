@@ -1,8 +1,8 @@
 'use client';
+import MyBizLogo from '@/components/MyBizLogo';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import MyBizLogo from '@/components/MyBizLogo';
 import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 
