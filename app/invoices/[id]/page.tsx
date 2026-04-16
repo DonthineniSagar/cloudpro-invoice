@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Download, Send, Check, X, Edit2, Loader2, FileCheck, Plus, Trash2, Link2, Bell } from 'lucide-react';
+import { ArrowLeft, Download, Send, Check, X, Edit2, Loader2, FileCheck, Plus, Trash2, Link2, Bell, Copy } from 'lucide-react';
 import { uploadData, getUrl } from 'aws-amplify/storage';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
@@ -326,6 +326,13 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
             Edit Invoice
           </Link>
           )}
+          <Link
+            href={`/invoices/new?clone=${params.id}`}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+          >
+            <Copy className="w-4 h-4" />
+            Copy Invoice
+          </Link>
           {canEmail && (
           <button
             onClick={openEmailDialog}
