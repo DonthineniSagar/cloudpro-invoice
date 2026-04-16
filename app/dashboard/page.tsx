@@ -45,12 +45,11 @@ export default function DashboardPage() {
   const loadMetrics = async () => {
     try {
       const client = generateClient<Schema>();
-      const [invoicesRes, expensesRes] = await Promise.all([
-        client.models.Invoice.list(),
-        client.models.Expense.list(),
+      const { listAll } = await import('@/lib/list-all');
+      const [invoices, expenses] = await Promise.all([
+        listAll(client.models.Invoice),
+        listAll(client.models.Expense),
       ]);
-      const invoices = invoicesRes.data;
-      const expenses = expensesRes.data;
 
       // Filter to selected FY based on date (not createdAt)
       const fyInvoices = invoices.filter(inv => inv.issueDate && getFY(inv.issueDate) === selectedFY);

@@ -46,7 +46,8 @@ export default function RecurringInvoicesPage() {
   const load = async () => {
     try {
       const client = generateClient<Schema>();
-      const { data } = await client.models.RecurringInvoice.list();
+      const { listAll } = await import('@/lib/list-all');
+      const data = await listAll(client.models.RecurringInvoice);
       setItems(data || []);
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };

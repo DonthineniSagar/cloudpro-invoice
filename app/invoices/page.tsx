@@ -25,7 +25,8 @@ export default function InvoicesPage() {
   const loadInvoices = async () => {
     try {
       const client = generateClient<Schema>();
-      const { data } = await client.models.Invoice.list();
+      const { listAll } = await import('@/lib/list-all');
+      const data = await listAll(client.models.Invoice);
       setInvoices(data);
     } catch (error) {
       console.error('Error loading invoices:', error);
