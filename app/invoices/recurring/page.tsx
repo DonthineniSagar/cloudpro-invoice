@@ -10,6 +10,7 @@ import type { Schema } from '@/amplify/data/resource';
 import { Plus, RefreshCw, Pause, Play, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
+import FeatureGate from '@/components/FeatureGate';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { useToast } from '@/lib/toast-context';
@@ -130,6 +131,7 @@ export default function RecurringInvoicesPage() {
 
   return (
     <AppLayout>
+      <FeatureGate featureName="Recurring Invoices" requiredPlan="Business">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -196,6 +198,7 @@ export default function RecurringInvoicesPage() {
           </div>
         )}
       </div>
+      </FeatureGate>
     </AppLayout>
   );
 }

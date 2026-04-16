@@ -113,3 +113,26 @@ export const PRICE_TO_PLAN: Record<string, PlanTier> = {
   'price_1TJndaRRCRfUSdl9TaFc2RrI': 'BUSINESS_PRO',
   'price_1TJndbRRCRfUSdl9B6Kl1YAu': 'BUSINESS_PRO',
 };
+
+
+// Route-level visibility per plan tier — centralized config for nav filtering and page gating
+export const PLAN_VISIBLE_ROUTES: Record<PlanTier, string[]> = {
+  STARTER: ['/dashboard', '/invoices', '/clients', '/settings'],
+  BUSINESS: ['/dashboard', '/invoices', '/settings', '/clients', '/expenses', '/reports'],
+  BUSINESS_PRO: ['/dashboard', '/invoices', '/settings', '/clients', '/expenses', '/reports'],
+};
+
+/** Check if a plan tier is allowed to access a given route pathname */
+export function canAccessRoute(plan: PlanTier | null, pathname: string): boolean {
+  // Fallback: no subscription data → allow all routes
+  if (!plan) return true;
+
+  // BUSINESS and BUSINESS_PRO have full access
+  if (plan === 'BUSINESS' || plan === 'BUSINESS_PRO') return true;
+
+  // STARTER: explicitly block /invoices/recurring even though /invoices is allowed
+  if (pathname.startsWith('/invoices/recurring')) return false;
+
+  // STARTER: check if pathname starts with any allowed prefix
+  return PLAN_VISIBLE_ROUTES[plan].some((prefix) => pathname.startsWith(prefix));
+}

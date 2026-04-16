@@ -85,6 +85,8 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
 
   const buildPdfDoc = async () => {
     let logoDataUrl: string | undefined;
+    let accentColor: string | undefined;
+    let footerText: string | undefined;
     try {
       const client = generateClient<Schema>();
       const { data: profiles } = await client.models.CompanyProfile.list();
@@ -102,14 +104,19 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       if (profiles?.[0]?.defaultTemplate) {
         setTemplate(prev => prev || (profiles[0].defaultTemplate as TemplateName) || 'modern');
       }
-    } catch {}
+      accentColor = profiles?.[0]?.accentColor || undefined;
+      footerText = profiles?.[0]?.invoiceFooterText || undefined;
+    } catch (error) {
+      console.error('Failed to load company profile:', error);
+    }
+    if (!accentColor) accentColor = '#6366F1';
     return generateInvoicePDF({
       ...invoice, logoDataUrl,
       lineItems: lineItems.map(i => ({
         description: i.description, wbs: i.wbs,
         quantity: i.quantity, unitPrice: i.unitPrice, amount: i.amount,
       })),
-    }, template);
+    }, template, { accentColor, footerText });
   };
 
   const canEmail = invoice && ['DRAFT', 'OVERDUE'].includes(invoice?.status) && invoice.pdfUrl;
@@ -247,20 +254,6 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
 
   const handleDownloadPDF = async () => {
     if (!invoice) return;
-
-    // If PDF already stored in S3, download from there
-    if (invoice.pdfUrl) {
-      try {
-        const { url } = await getUrl({ path: invoice.pdfUrl });
-        const link = document.createElement('a');
-        link.href = url.toString();
-        link.download = `${invoice.invoiceNumber}.pdf`;
-        link.click();
-        return;
-      } catch (error) {
-        console.error('Error downloading from S3, regenerating:', error);
-      }
-    }
 
     setGeneratingPdf(true);
     try {

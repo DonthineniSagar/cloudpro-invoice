@@ -10,8 +10,8 @@ import { Moon, Sun, Menu, X } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
 import TrialBanner from '@/components/TrialBanner';
 import UsageMeter from '@/components/UsageMeter';
-import { canAccess, isSubscriptionActive } from '@/lib/subscription';
-import type { PlanTier, SubscriptionStatus, Feature } from '@/lib/subscription';
+import { canAccessRoute, isSubscriptionActive } from '@/lib/subscription';
+import type { PlanTier, SubscriptionStatus } from '@/lib/subscription';
 import { getInvoiceCount, getClientCount, getEffectiveOcrCount, getBillingPeriodStart } from '@/lib/usage';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
@@ -28,16 +28,15 @@ interface SubscriptionState {
 interface NavLink {
   href: string;
   label: string;
-  requiredFeature?: Feature;
 }
 
 const ALL_NAV_LINKS: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/invoices', label: 'Invoices' },
-  { href: '/invoices/recurring', label: 'Recurring', requiredFeature: 'recurring' },
+  { href: '/invoices/recurring', label: 'Recurring' },
   { href: '/clients', label: 'Clients' },
-  { href: '/expenses', label: 'Expenses', requiredFeature: 'expenses' },
-  { href: '/reports', label: 'Reports', requiredFeature: 'reports_full' },
+  { href: '/expenses', label: 'Expenses' },
+  { href: '/reports', label: 'Reports' },
   { href: '/settings/profile', label: 'Settings' },
 ];
 
@@ -115,11 +114,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Filter nav links based on plan — show all if trialing or no gating needed
   const effectivePlan = sub.status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : sub.plan;
   const navLinks = ALL_NAV_LINKS.filter((link) => {
-    if (!link.requiredFeature) return true;
     // If no subscription at all, show all links (they'll see upgrade prompts on the pages)
     if (!sub.plan && !sub.status) return true;
     if (!isSubscriptionActive(sub.status)) return true;
-    return canAccess(effectivePlan, link.requiredFeature);
+    return canAccessRoute(effectivePlan, link.href);
   });
 
   const linkClass = (path: string) =>

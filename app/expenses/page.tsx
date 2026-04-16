@@ -9,6 +9,7 @@ import { Plus, Receipt, Search, CheckCircle, AlertTriangle, Trash2, FileText, Fi
 const isPdfUrl = (url: string) => /\.pdf(\?|$)/i.test(url);
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
+import FeatureGate from '@/components/FeatureGate';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
 import { currentFY, fyLabel, getFY, fyMonthKeys, FY_MONTHS, isFYClosed, selectableFYs } from '@/lib/fy-utils';
@@ -169,6 +170,7 @@ export default function ExpensesPage() {
 
   return (
     <AppLayout>
+      <FeatureGate featureName="Expense Tracking" requiredPlan="Business">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -375,6 +377,7 @@ export default function ExpensesPage() {
           </div>
         )}
       </div>
+      </FeatureGate>
 
       {/* Receipt Viewer Modal */}
       {viewingReceipt && (
