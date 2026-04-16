@@ -115,7 +115,14 @@ export default function CompanyProfilePage() {
       const { fetchAuthSession } = await import('aws-amplify/auth');
       const session = await fetchAuthSession();
       const cognitoIdentityId = session.identityId || '';
-      const saveData = { ...profile, ...(logoUrl && { logoUrl }), ...ingest, identityId: cognitoIdentityId };
+      const saveData = {
+        ...profile,
+        accentColor: profile.accentColor || '#6366F1',
+        invoiceFooterText: profile.invoiceFooterText || '',
+        ...(logoUrl && { logoUrl }),
+        ...ingest,
+        identityId: cognitoIdentityId,
+      };
       console.log('saveData:', JSON.stringify(saveData, null, 2));
       console.log('profile.accentColor:', profile.accentColor);
       if (existing && existing.length > 0) {
