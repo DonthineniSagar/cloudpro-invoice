@@ -40,7 +40,7 @@ export default function NewClientPage() {
         const profile = profiles?.[0];
         const plan = (profile?.subscriptionPlan as PlanTier) || null;
         const status = (profile?.subscriptionStatus as SubscriptionStatus) || null;
-        const effectivePlan = status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : plan;
+        const effectivePlan = plan;
         setPlanName(effectivePlan ? effectivePlan.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : '');
 
         if (effectivePlan && isSubscriptionActive(status)) {

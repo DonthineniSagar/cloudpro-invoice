@@ -60,7 +60,7 @@ export default function FeatureGate({ featureName, requiredPlan, children }: Fea
   // Inactive subscription → show everything (same as AppLayout fallback)
   if (!isSubscriptionActive(status)) return <>{children}</>;
 
-  const effectivePlan: PlanTier = status === 'TRIALING' ? 'BUSINESS_PRO' : (plan || 'STARTER');
+  const effectivePlan: PlanTier = plan || 'STARTER';
 
   if (!canAccessRoute(effectivePlan, pathname)) {
     return <UpgradePrompt feature={featureName} requiredPlan={requiredPlan} />;

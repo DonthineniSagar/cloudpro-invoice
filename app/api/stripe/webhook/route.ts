@@ -94,7 +94,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const expressionValues: Record<string, unknown> = {
     ':customerId': typeof session.customer === 'string' ? session.customer : session.customer?.id || '',
     ':subId': subscriptionId,
-    ':plan': isTrialing ? 'BUSINESS_PRO' : (planName || 'STARTER'),
+    ':plan': planName || 'STARTER',
     ':status': mapStripeStatus(subscription.status),
     ':interval': interval === 'annual' ? 'ANNUAL' : 'MONTHLY',
     ':periodEnd': new Date(subscription.current_period_end * 1000).toISOString(),
@@ -141,7 +141,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   ];
 
   const expressionValues: Record<string, unknown> = {
-    ':plan': isTrialing ? 'BUSINESS_PRO' : plan,
+    ':plan': plan,
     ':status': status,
     ':interval': interval,
     ':periodEnd': new Date(subscription.current_period_end * 1000).toISOString(),

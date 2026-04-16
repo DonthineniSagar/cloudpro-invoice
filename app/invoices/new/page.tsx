@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { calculateGST, calculateTotal } from '@/lib/gst-calculations';
@@ -25,7 +25,6 @@ type LineItem = {
 
 export default function NewInvoicePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { theme } = useTheme();
   const t = tc(theme);
   const toast = useToast();
@@ -64,7 +63,7 @@ export default function NewInvoicePage() {
         // Invoice limit check
         const plan = (profile?.subscriptionPlan as PlanTier) || null;
         const status = profile?.subscriptionStatus as string | null;
-        const effectivePlan = status === 'TRIALING' ? 'BUSINESS_PRO' as PlanTier : plan;
+        const effectivePlan = plan;
         setPlanName(effectivePlan ? effectivePlan.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()).replace('Business Pro', 'Business Pro') : '');
 
         if (effectivePlan && isSubscriptionActive(status as import('@/lib/subscription').SubscriptionStatus | null)) {
@@ -93,7 +92,7 @@ export default function NewInvoicePage() {
 
   // Clone invoice if ?clone=id is present
   useEffect(() => {
-    const cloneId = searchParams.get('clone');
+    const cloneId = new URLSearchParams(window.location.search).get('clone');
     if (!cloneId) return;
     (async () => {
       try {
@@ -133,7 +132,7 @@ export default function NewInvoicePage() {
         console.error('Failed to clone invoice:', err);
       }
     })();
-  }, [searchParams, clients]);
+  }, [clients]);
 
   const handleClientSelect = (clientId: string) => {
     const c = clients.find((c: unknown) => (c as Record<string, unknown>).id === clientId) as Record<string, unknown> | undefined;
