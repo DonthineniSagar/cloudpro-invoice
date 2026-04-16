@@ -6,9 +6,9 @@ interface MyBizLogoProps {
 }
 
 const sizes = {
-  sm: 'text-lg',
-  md: 'text-xl',
-  lg: 'text-3xl',
+  sm: 'text-xl',
+  md: 'text-2xl',
+  lg: 'text-4xl',
 };
 
 export default function MyBizLogo({ size = 'md', dark = false }: MyBizLogoProps) {
