@@ -5,7 +5,7 @@ import { storage } from './storage/resource';
 import { sendInvoiceEmail } from './functions/send-invoice-email/resource';
 import { processReceipt } from './functions/process-receipt/resource';
 import { processExpenseEmail } from './functions/process-expense-email/resource';
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Effect, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Tags } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
@@ -76,12 +76,22 @@ const companyProfileTableName = backend.data.resources.tables['CompanyProfile'].
 const processEmailLambda = backend.processExpenseEmail.resources.lambda;
 const processEmailFn = processEmailLambda as lambda.Function;
 
-inboundEmailBucket.grantRead(processEmailLambda);
+inboundEmailBucket.grantReadWrite(processEmailLambda);
 
 // Grant write to main storage bucket for receipt uploads
 const storageBucket = backend.storage.resources.bucket;
 storageBucket.grantWrite(processEmailLambda);
 processEmailFn.addEnvironment('STORAGE_BUCKET_NAME', storageBucket.bucketName);
+
+// Allow Textract service to read temp PDFs from the SES bucket
+inboundEmailBucket.addToResourcePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    principals: [new ServicePrincipal('textract.amazonaws.com')],
+    actions: ['s3:GetObject'],
+    resources: [`${inboundEmailBucket.bucketArn}/temp-receipts/*`],
+  })
+);
 
 processEmailLambda.addToRolePolicy(
   new PolicyStatement({

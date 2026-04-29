@@ -202,8 +202,8 @@ function isImage(att: Attachment): boolean {
 }
 
 async function processPdfWithTextractAndAI(pdfBytes: Buffer): Promise<ExtractedExpense | null> {
-  // PDFs must be uploaded to S3 for Textract — inline Bytes fails for many PDF formats
-  const bucket = process.env.STORAGE_BUCKET_NAME || process.env.SES_BUCKET_NAME!;
+  // Use SES bucket for temp PDFs — Lambda already has full access and Textract can read from it
+  const bucket = process.env.SES_BUCKET_NAME!;
   const tempKey = `temp-receipts/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.pdf`;
 
   await s3.send(new PutObjectCommand({ Bucket: bucket, Key: tempKey, Body: pdfBytes, ContentType: 'application/pdf' }));
