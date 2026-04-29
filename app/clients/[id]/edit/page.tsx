@@ -147,7 +147,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
               <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
                 {saving ? 'Saving...' : 'Update Client'}
               </button>
-              <Link href="/clients" className={t.btnSecondary}>Cancel</Link>
+              <Link href="/clients" className={t.btnGhost}>Cancel</Link>
             </div>
           </form>
         </div>

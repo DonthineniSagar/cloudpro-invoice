@@ -148,7 +148,7 @@ export default function RecurringInvoicesPage() {
         {loading ? (
           <div className={`${t.textMuted} text-center py-12`}>Loading...</div>
         ) : items.length === 0 ? (
-          <div className={dark ? 'bg-black rounded-xl border-2 border-purple-500/40 p-12 text-center' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center'}>
+          <div className={dark ? 'bg-black rounded-xl border-2 border-purple-500/40 p-12 text-center' : 'bg-white rounded-xl border-2 border-indigo-600 p-12 text-center'}>
             <RefreshCw className={`w-16 h-16 mx-auto mb-4 ${dark ? 'text-slate-600' : 'text-gray-400'}`} />
             <h3 className={dark ? 'text-xl font-semibold text-white mb-2' : 'text-xl font-semibold text-gray-900 mb-2'}>No recurring invoices</h3>
             <p className={`${t.textMuted} mb-6`}>Set up recurring billing for retainer clients</p>
@@ -160,7 +160,7 @@ export default function RecurringInvoicesPage() {
         ) : (
           <div className="space-y-4">
             {items.map(item => (
-              <div key={item.id} className={dark ? 'bg-black rounded-xl border-2 border-purple-500/40 p-6' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-6'}>
+              <div key={item.id} className={dark ? 'bg-black rounded-xl border-2 border-purple-500/40 p-6' : 'bg-white rounded-xl border-2 border-indigo-600 p-6'}>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-3">

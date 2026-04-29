@@ -189,7 +189,7 @@ export default function PrivacyPage() {
         <p className={p}>
           If you have questions about this privacy policy or how we handle your personal information, contact us at:
         </p>
-        <div className={`p-4 rounded-lg mb-8 ${dark ? 'bg-gray-900 border border-gray-800' : 'bg-gray-50 border border-gray-200'}`}>
+        <div className={`p-4 rounded-lg mb-8 ${dark ? 'bg-gray-900 border border-gray-800' : 'bg-gray-50 border-2 border-indigo-600'}`}>
           <p className={`text-sm font-medium ${dark ? 'text-white' : 'text-gray-900'}`}>CloudPro Digital Limited</p>
           <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
             Email: <a href={`mailto:${CONTACT_EMAIL}`} className="text-primary-500 underline underline-offset-2">{CONTACT_EMAIL}</a>

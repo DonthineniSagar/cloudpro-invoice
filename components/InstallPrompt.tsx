@@ -43,7 +43,7 @@ export default function InstallPrompt() {
   if (!deferredPrompt || dismissed) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-purple-500/40 rounded-xl shadow-lg p-4 z-50 animate-slide-in">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white dark:bg-gray-900 border-2 border-indigo-600 dark:border-purple-500/40 rounded-xl shadow-lg p-4 z-50 animate-slide-in">
       <div className="flex items-start gap-3">
         <Download className="w-5 h-5 text-indigo-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">

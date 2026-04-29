@@ -9,7 +9,7 @@ Update `amplify/auth/resource.ts` to enable optional TOTP MFA and add the brande
 - [x] 1.1 Add `multifactor` config with `mode: 'OPTIONAL'` and `totp: true` to `defineAuth` in `amplify/auth/resource.ts`
 - [x] 1.2 Create the `brandedEmailTemplate` function in `amplify/auth/resource.ts` that returns the HTML email template with the verification code injected via `createCode()`
 - [x] 1.3 Update `loginWith.email` to use `verificationEmailStyle: 'CODE'`, custom `verificationEmailSubject`, and `verificationEmailBody` using the branded template function
-- [~] 1.4 Deploy to sandbox and verify: new signup sends branded HTML email with verification code, email renders correctly in Gmail/Outlook
+- [ ] 1.4 Deploy to sandbox and verify: new signup sends branded HTML email with verification code, email renders correctly in Gmail/Outlook
 
 ### Acceptance Criteria
 - Branded email is sent on signup with CloudPro logo, indigo/purple colors, and large verification code
@@ -24,11 +24,11 @@ Add Google as an external identity provider in Cognito.
 
 ### Sub-tasks
 
-- [~] 2.1 Create Google Cloud OAuth 2.0 credentials (Web application) with correct redirect URIs
-- [~] 2.2 Store `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` via `npx ampx secret set`
+- [ ] 2.1 Create Google Cloud OAuth 2.0 credentials (Web application) with correct redirect URIs
+- [ ] 2.2 Store `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` via `npx ampx secret set`
 - [x] 2.3 Add `externalProviders.google` config to `defineAuth` in `amplify/auth/resource.ts` with `secret()` references, scopes `['email', 'profile']`, and attribute mapping for email, givenName, familyName
 - [x] 2.4 Add `callbackUrls` and `logoutUrls` arrays to `externalProviders` (localhost + production domain)
-- [~] 2.5 Deploy to sandbox and verify: Google OAuth redirect works, user is created in Cognito with mapped attributes
+- [ ] 2.5 Deploy to sandbox and verify: Google OAuth redirect works, user is created in Cognito with mapped attributes
 
 ### Acceptance Criteria
 - Google sign-in redirects to Google consent screen and back
@@ -45,9 +45,9 @@ Enable WebAuthn as a first-factor authentication method via CDK override.
 ### Sub-tasks
 
 - [x] 3.1 Add CDK override in `amplify/backend.ts` to set `WebAuthnRelyingPartyID` and `WebAuthnUserVerification` on the Cognito User Pool `cfnUserPool`
-- [~] 3.2 Deploy to sandbox and verify: Cognito User Pool has WebAuthn enabled in the console
-- [~] 3.3 Test passkey registration via `associateWebAuthnCredential()` from `aws-amplify/auth` in a scratch page or browser console
-- [~] 3.4 Test passkey sign-in via `signIn({ options: { authFlowType: 'USER_AUTH', preferredChallenge: 'WEB_AUTHN' } })`
+- [ ] 3.2 Deploy to sandbox and verify: Cognito User Pool has WebAuthn enabled in the console
+- [ ] 3.3 Test passkey registration via `associateWebAuthnCredential()` from `aws-amplify/auth` in a scratch page or browser console
+- [ ] 3.4 Test passkey sign-in via `signIn({ options: { authFlowType: 'USER_AUTH', preferredChallenge: 'WEB_AUTHN' } })`
 
 ### Acceptance Criteria
 - WebAuthn is enabled on the Cognito User Pool

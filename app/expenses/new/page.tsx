@@ -350,7 +350,7 @@ export default function NewExpensePage() {
               <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
                 {saving ? 'Saving...' : 'Save Expense'}
               </button>
-              <Link href="/expenses" className={t.btnSecondary}>Cancel</Link>
+              <Link href="/expenses" className={t.btnGhost}>Cancel</Link>
             </div>
           </form>
         </div>

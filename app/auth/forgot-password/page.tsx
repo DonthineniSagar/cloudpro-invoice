@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
         <div className={`max-w-md w-full p-8 rounded-xl text-center ${
           dark
             ? 'bg-slate-900 border border-purple-500/30'
-            : 'bg-white shadow-sm border border-gray-200'
+            : 'bg-white border-2 border-indigo-600'
         }`}>
           {/* Brand logo */}
           <div className="mb-6">
@@ -98,7 +98,7 @@ export default function ForgotPasswordPage() {
       <div className={`max-w-md w-full space-y-6 p-8 rounded-xl ${
         dark
           ? 'bg-slate-900 border border-purple-500/30'
-          : 'bg-white shadow-sm border border-gray-200'
+          : 'bg-white border-2 border-indigo-600'
       }`}>
         {/* Brand logo */}
         <div className="text-center">

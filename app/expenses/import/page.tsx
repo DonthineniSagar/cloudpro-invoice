@@ -149,7 +149,7 @@ export default function ImportStatementPage() {
             )}
 
             {/* Summary */}
-            <div className={`${dark ? 'bg-gray-900 border border-purple-500/30' : 'bg-white border border-gray-200'} rounded-lg p-4 mb-4 flex gap-6 text-sm`}>
+            <div className={`${dark ? 'bg-gray-900 border border-purple-500/30' : 'bg-white border-2 border-indigo-600'} rounded-lg p-4 mb-4 flex gap-6 text-sm`}>
               <span className={dark ? 'text-slate-400' : 'text-gray-500'}>{bankName} format detected</span>
               <span className={dark ? 'text-white' : 'text-gray-900'}>{transactions.length} transactions</span>
               <span className="text-red-400">{debits.length} debits</span>
@@ -160,7 +160,7 @@ export default function ImportStatementPage() {
             </div>
 
             {/* Preview table */}
-            <div className={`${dark ? 'bg-black border border-purple-500/30' : 'bg-white border border-gray-200'} rounded-lg overflow-hidden`}>
+            <div className={`${dark ? 'bg-black border border-purple-500/30' : 'bg-white border-2 border-indigo-600'} rounded-lg overflow-hidden`}>
               <div className="max-h-[55vh] overflow-y-auto">
                 <table className="w-full text-sm">
                   <thead className={`sticky top-0 ${dark ? 'bg-gray-900' : 'bg-gray-50'}`}>

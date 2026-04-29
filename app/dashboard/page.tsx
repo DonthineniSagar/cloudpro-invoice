@@ -5,12 +5,17 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/lib/theme-context';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import AppLayout from '@/components/AppLayout';
+import MetricCard from '@/components/MetricCard';
 import { FileText, Receipt } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/Skeleton';
-import { currentFY, fyLabel, fyShort, fyMonthKeys, FY_MONTHS, fyStart, fyEnd, getFY, availableFYs, selectableFYs, isFYClosed, isPreviousFYOpen } from '@/lib/fy-utils';
+import { currentFY, fyLabel, fyShort, fyMonthKeys, FY_MONTHS, getFY, selectableFYs, isFYClosed } from '@/lib/fy-utils';
+import { formatNZD, preTaxMargin, netGstPosition } from '@/lib/format';
+
+const RevenueChart = dynamic(() => import('@/components/charts/RevenueChart'), { ssr: false });
 
 type MonthData = { month: string; revenue: number; expenses: number };
 
@@ -146,10 +151,10 @@ export default function DashboardPage() {
 
   const card = dark
     ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40'
-    : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
+    : 'bg-white p-6 rounded-xl border-2 border-indigo-600';
   const cardHover = dark
     ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40 hover:border-purple-500 transition-all'
-    : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
+    : 'bg-white p-6 rounded-xl border-2 border-indigo-600';
   const label = dark ? 'text-sm text-slate-400 mb-1' : 'text-sm text-gray-600 mb-1';
   const heading = dark ? 'text-lg font-semibold text-white mb-4' : 'text-lg font-semibold text-gray-900 mb-4';
   const muted = dark ? 'text-slate-400' : 'text-gray-600';
@@ -164,7 +169,6 @@ export default function DashboardPage() {
   }
   if (!user) return null;
 
-  const chartMax = Math.max(...monthlyData.map(d => Math.max(d.revenue, d.expenses)), 1);
   const totalStatusCount = Object.values(statusBreakdown).reduce((a, b) => a + b, 0);
 
   return (
@@ -188,52 +192,84 @@ export default function DashboardPage() {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className={cardHover}>
-            <div className={label}>Total Revenue</div>
-            <div className={`text-3xl font-bold ${text}`}>{loadingMetrics ? '...' : `$${metrics.totalRevenue.toFixed(2)}`}</div>
-          </div>
-          <div className={cardHover}>
-            <div className={label}>Outstanding</div>
-            <div className="text-3xl font-bold text-orange-400">{loadingMetrics ? '...' : `$${metrics.outstanding.toFixed(2)}`}</div>
-          </div>
-          <div className={cardHover}>
-            <div className={label}>Paid Invoices</div>
-            <div className="text-3xl font-bold text-green-400">{loadingMetrics ? '...' : metrics.paidCount}</div>
-          </div>
-          <div className={cardHover}>
-            <div className={label}>Pending</div>
-            <div className="text-3xl font-bold text-blue-400">{loadingMetrics ? '...' : metrics.pendingCount}</div>
-          </div>
+          <MetricCard
+            dark={dark}
+            label="Total Revenue"
+            value={loadingMetrics ? '...' : formatNZD(metrics.totalRevenue)}
+            subLabel={loadingMetrics ? undefined : `ex-GST ${formatNZD(metrics.revenueExGst)}`}
+          />
+          <MetricCard
+            dark={dark}
+            label="Outstanding"
+            value={loadingMetrics ? '...' : formatNZD(metrics.outstanding)}
+            variant="amber"
+          />
+          <MetricCard
+            dark={dark}
+            label="Paid Invoices"
+            value={loadingMetrics ? '...' : metrics.paidCount}
+            variant="green"
+          />
+          <MetricCard
+            dark={dark}
+            label="Pending"
+            value={loadingMetrics ? '...' : metrics.pendingCount}
+          />
           {metrics.overdueCount > 0 && (
-          <div className={cardHover}>
-            <div className={label}>Overdue</div>
-            <div className="text-3xl font-bold text-red-400">{metrics.overdueCount}</div>
-          </div>
+            <MetricCard
+              dark={dark}
+              label="Overdue"
+              value={metrics.overdueCount}
+              variant="red"
+            />
           )}
         </div>
 
         {/* Expense & GST Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className={card}>
-            <div className={label}>Total Expenses</div>
-            <div className="text-2xl font-bold text-red-400">{loadingMetrics ? '...' : `$${metrics.totalExpenses.toFixed(2)}`}</div>
-          </div>
-          <div className={card}>
-            <div className={label}>Net GST Position</div>
-            <div className={`text-2xl font-bold ${(metrics.gstCollected - metrics.gstPaid) >= 0 ? 'text-orange-400' : 'text-green-400'}`}>
-              {loadingMetrics ? '...' : `$${(metrics.gstCollected - metrics.gstPaid).toFixed(2)}`}
+        {(() => {
+          const margin = preTaxMargin(metrics.revenueExGst, metrics.expensesExGst);
+          const gstNet = netGstPosition(metrics.gstCollected, metrics.gstPaid);
+          const marginPct = metrics.revenueExGst > 0
+            ? (margin / metrics.revenueExGst) * 100
+            : 0;
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className={card}>
+                <div className={label}>Total Expenses</div>
+                <div className="text-2xl font-bold text-red-400">
+                  {loadingMetrics ? '...' : formatNZD(metrics.totalExpenses)}
+                </div>
+                {!loadingMetrics && (
+                  <div className={dark ? 'text-xs text-slate-500 mt-1' : 'text-xs text-gray-500 mt-1'}>
+                    ex-GST {formatNZD(metrics.expensesExGst)}
+                  </div>
+                )}
+              </div>
+              <div className={card}>
+                <div className={label}>Net GST Position</div>
+                <div className={`text-2xl font-bold ${gstNet >= 0 ? 'text-orange-400' : 'text-green-400'}`}>
+                  {loadingMetrics ? '...' : formatNZD(gstNet)}
+                </div>
+                {!loadingMetrics && (
+                  <div className={dark ? 'text-xs text-slate-500 mt-1' : 'text-xs text-gray-500 mt-1'}>
+                    Collected {formatNZD(metrics.gstCollected)} − Paid {formatNZD(metrics.gstPaid)}
+                  </div>
+                )}
+              </div>
+              <div className={card}>
+                <div className={label}>Pre-Tax Margin</div>
+                <div className={`text-2xl font-bold ${margin >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {loadingMetrics ? '...' : formatNZD(margin)}
+                </div>
+                {!loadingMetrics && (
+                  <div className={dark ? 'text-xs text-slate-500 mt-1' : 'text-xs text-gray-500 mt-1'}>
+                    {marginPct.toFixed(1)}% gross margin · GST net {formatNZD(gstNet)}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className={dark ? 'text-xs text-slate-500 mt-1' : 'text-xs text-gray-500 mt-1'}>
-              Collected ${metrics.gstCollected.toFixed(2)} − Paid ${metrics.gstPaid.toFixed(2)}
-            </div>
-          </div>
-          <div className={card}>
-            <div className={label}>Profit (ex-GST)</div>
-            <div className={`text-2xl font-bold ${(metrics.revenueExGst - metrics.expensesExGst) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {loadingMetrics ? '...' : `$${(metrics.revenueExGst - metrics.expensesExGst).toFixed(2)}`}
-            </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* FY Summary Card */}
         <div className={`${card} mb-8`}>
@@ -304,39 +340,7 @@ export default function DashboardPage() {
           {/* Monthly Revenue vs Expenses Bar Chart */}
           <div className={`${card} lg:col-span-2`}>
             <h3 className={heading}>Revenue vs Expenses ({fyShort(selectedFY)})</h3>
-            {monthlyData.length > 0 ? (
-              <div className="flex items-end gap-3 h-48">
-                {monthlyData.map((d) => (
-                  <div key={d.month} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-                    <div className="flex gap-1 items-end w-full justify-center" style={{ height: '80%' }}>
-                      <div
-                        className="w-5 rounded-t bg-indigo-500 transition-all"
-                        style={{ height: `${Math.max((d.revenue / chartMax) * 100, 2)}%` }}
-                        title={`Revenue: $${d.revenue.toFixed(2)}`}
-                      />
-                      <div
-                        className="w-5 rounded-t bg-red-400 transition-all"
-                        style={{ height: `${Math.max((d.expenses / chartMax) * 100, 2)}%` }}
-                        title={`Expenses: $${d.expenses.toFixed(2)}`}
-                      />
-                    </div>
-                    <span className={`text-xs ${muted}`}>{d.month}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className={`h-48 flex items-center justify-center ${muted}`}>No data yet</div>
-            )}
-            <div className="flex gap-6 mt-4">
-              <div className="flex items-center gap-2 text-xs">
-                <div className="w-3 h-3 rounded bg-indigo-500" />
-                <span className={muted}>Revenue</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <div className="w-3 h-3 rounded bg-red-400" />
-                <span className={muted}>Expenses</span>
-              </div>
-            </div>
+            <RevenueChart data={monthlyData} dark={dark} muted={muted} />
           </div>
 
           {/* Invoice Status Breakdown */}

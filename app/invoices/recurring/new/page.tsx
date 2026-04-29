@@ -172,7 +172,7 @@ export default function NewRecurringInvoicePage() {
               <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
                 {saving ? 'Creating...' : 'Create Recurring Invoice'}
               </button>
-              <Link href="/invoices/recurring" className={t.btnSecondary}>Cancel</Link>
+              <Link href="/invoices/recurring" className={t.btnGhost}>Cancel</Link>
             </div>
           </form>
         </div>
