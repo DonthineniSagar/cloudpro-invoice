@@ -429,8 +429,8 @@ async function findFuzzyDuplicate(owner: string, expense: ExtractedExpense): Pro
 
     if (expenseDate && item.date) {
       const daysDiff = Math.abs(new Date(item.date).getTime() - expenseDate) / (1000 * 60 * 60 * 24);
-      if (daysDiff <= 5 && vendorMatch) return item.id;
-      if (daysDiff === 0) return item.id; // Same amount + same date = likely duplicate
+      // Only flag as duplicate if same day + same vendor — recurring daily expenses (e.g. parking) are legitimate
+      if (daysDiff < 1 && vendorMatch) return item.id;
     } else if (vendorMatch) {
       return item.id; // Same amount + same vendor, no dates to compare
     }
