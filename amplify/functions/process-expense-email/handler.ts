@@ -50,14 +50,20 @@ interface SESEvent {
         destination: string[];
         source: string;
       };
+      receipt: {
+        recipients: string[];
+      };
     };
   }>;
 }
 
 export const handler = async (event: SESEvent) => {
   const record = event.Records[0];
-  const { messageId, destination, source: senderEmail } = record.ses.mail;
-  const recipientEmail = destination[0]?.toLowerCase();
+  const { messageId, source: senderEmail } = record.ses.mail;
+  // Use receipt.recipients (SES envelope recipient) — mail.destination contains
+  // the original To: header which may be a forwarding address like Gmail
+  const recipients = record.ses.receipt.recipients || record.ses.mail.destination;
+  const recipientEmail = recipients[0]?.toLowerCase();
 
   // Extract ingest key from recipient email
   const ingestKey = extractIngestKey(recipientEmail);
