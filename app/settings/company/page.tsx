@@ -13,6 +13,8 @@ import { TEMPLATES } from '@/lib/generate-pdf';
 import type { TemplateName } from '@/lib/generate-pdf';
 import TemplateThumbnail from '@/components/TemplateThumbnail';
 import { Mail, Plus, X, Copy, Check, Shield } from 'lucide-react';
+import BillingStatus from '@/components/BillingStatus';
+import type { PlanTier, SubscriptionStatus } from '@/lib/subscription';
 
 const client = generateClient<Schema>();
 const INGEST_DOMAIN = 'expenses.cloudpro-digital.co.nz';
@@ -31,6 +33,9 @@ export default function CompanyProfilePage() {
   const [newWhitelistEmail, setNewWhitelistEmail] = useState('');
   const [stripeCustomerId, setStripeCustomerId] = useState<string | null>(null);
   const [billingLoading, setBillingLoading] = useState(false);
+  const [subPlan, setSubPlan] = useState<PlanTier | null>(null);
+  const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
+  const [trialEndDate, setTrialEndDate] = useState<string | null>(null);
   const [ingest, setIngest] = useState({
     expenseIngestKey: '',
     expenseIngestActive: false,
@@ -75,6 +80,9 @@ export default function CompanyProfilePage() {
               expenseWhitelistedEmails: (e.expenseWhitelistedEmails?.filter(Boolean) as string[]) ?? [],
             });
             setStripeCustomerId(e.stripeCustomerId || null);
+            setSubPlan((e.subscriptionPlan as PlanTier) || null);
+            setSubStatus((e.subscriptionStatus as SubscriptionStatus) || null);
+            setTrialEndDate(e.trialEndDate || null);
             if (e.logoUrl) {
               try {
                 const { url } = await getUrl({ path: e.logoUrl });
@@ -150,6 +158,16 @@ export default function CompanyProfilePage() {
       <div className="mb-8">
         <h1 className={theme === 'dark' ? 'text-3xl font-bold text-white' : 'text-3xl font-bold text-gray-900'}>Company Profile</h1>
         <p className={`mt-1 ${t.textMuted}`}>Set up your business details for invoices</p>
+      </div>
+
+      {/* Billing Status */}
+      <div className="mb-6">
+        <BillingStatus
+          plan={subPlan}
+          status={subStatus}
+          trialEndDate={trialEndDate}
+          dark={theme === 'dark'}
+        />
       </div>
 
       <form onSubmit={handleSubmit} className={`${t.card} space-y-6`}>
