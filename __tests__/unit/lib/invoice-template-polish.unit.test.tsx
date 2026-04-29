@@ -59,3 +59,12 @@ function makeInvoice(overrides?: Partial<InvoiceData>): InvoiceData {
   };
 }
 
+
+// Placeholder – test data helpers are used by the property test suite
+describe('Invoice template test data', () => {
+  it('makeInvoice returns valid defaults', () => {
+    const inv = makeInvoice();
+    expect(inv.invoiceNumber).toBe('INV-2401-001');
+    expect(inv.total).toBe(115);
+  });
+});

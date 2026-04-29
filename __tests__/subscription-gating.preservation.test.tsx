@@ -204,20 +204,21 @@ describe('Preservation: Higher Tiers See All Nav Links', () => {
   });
 
   /**
-   * TRIALING user (treated as BUSINESS_PRO) sees all 7 nav links.
+   * TRIALING user on STARTER plan sees only STARTER-visible nav links.
    * **Validates: Requirements 3.2**
    */
-  it('TRIALING user sees all 7 nav links', async () => {
+  it('TRIALING user on STARTER sees STARTER nav links', async () => {
     mockSubscriptionPlan = 'STARTER';
     mockSubscriptionStatus = 'TRIALING';
 
     await renderAppLayout();
 
     const visibleLabels = getVisibleNavLabels();
-    for (const label of ALL_NAV_LABELS) {
+    const STARTER_NAV_LABELS = ['Dashboard', 'Invoices', 'Clients', 'Settings'];
+    for (const label of STARTER_NAV_LABELS) {
       expect(visibleLabels).toContain(label);
     }
-    expect(visibleLabels).toHaveLength(ALL_NAV_LABELS.length);
+    expect(visibleLabels).toHaveLength(STARTER_NAV_LABELS.length);
   });
 
   /**
@@ -387,14 +388,14 @@ describe('Preservation: checkLimit() numeric limits unaffected by route gating',
    * **Validates: Requirements 3.4**
    */
   it('checkLimit() returns correct invoice limits per plan', () => {
-    // STARTER: 10 invoices/month
+    // STARTER: unlimited invoices (-1)
     const starterInvoice = checkLimit('invoices', 5, 'STARTER');
     expect(starterInvoice.allowed).toBe(true);
-    expect(starterInvoice.max).toBe(10);
+    expect(starterInvoice.max).toBe(-1);
 
-    const starterAtLimit = checkLimit('invoices', 10, 'STARTER');
-    expect(starterAtLimit.allowed).toBe(false);
-    expect(starterAtLimit.max).toBe(10);
+    const starterHigh = checkLimit('invoices', 999, 'STARTER');
+    expect(starterHigh.allowed).toBe(true);
+    expect(starterHigh.max).toBe(-1);
 
     // BUSINESS: unlimited
     const businessInvoice = checkLimit('invoices', 999, 'BUSINESS');
@@ -403,14 +404,14 @@ describe('Preservation: checkLimit() numeric limits unaffected by route gating',
   });
 
   it('checkLimit() returns correct client limits per plan', () => {
-    // STARTER: 5 clients
+    // STARTER: unlimited clients (-1)
     const starterClient = checkLimit('clients', 3, 'STARTER');
     expect(starterClient.allowed).toBe(true);
-    expect(starterClient.max).toBe(5);
+    expect(starterClient.max).toBe(-1);
 
-    const starterAtLimit = checkLimit('clients', 5, 'STARTER');
-    expect(starterAtLimit.allowed).toBe(false);
-    expect(starterAtLimit.max).toBe(5);
+    const starterHigh = checkLimit('clients', 999, 'STARTER');
+    expect(starterHigh.allowed).toBe(true);
+    expect(starterHigh.max).toBe(-1);
 
     // BUSINESS: unlimited
     const businessClient = checkLimit('clients', 999, 'BUSINESS');
