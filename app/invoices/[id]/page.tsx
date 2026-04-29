@@ -10,8 +10,13 @@ import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
-import { generateInvoicePDF, TEMPLATES } from '@/lib/generate-pdf';
-import type { TemplateName } from '@/lib/generate-pdf';
+type TemplateName = 'modern' | 'classic' | 'minimal';
+
+const TEMPLATES: { id: TemplateName; name: string }[] = [
+  { id: 'modern',  name: 'Modern' },
+  { id: 'classic', name: 'Classic' },
+  { id: 'minimal', name: 'Minimal' },
+];
 import { useToast } from '@/lib/toast-context';
 import { createNotification } from '@/lib/notifications';
 
@@ -31,7 +36,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const [loading, setLoading] = useState(true);
   const [invoice, setInvoice] = useState<any>(null);
   const [lineItems, setLineItems] = useState<any[]>([]);
-  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
   const [sending, setSending] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [emailForm, setEmailForm] = useState<EmailForm>({ to: [''], cc: [], subject: '', body: '', replyTo: '' });
@@ -100,7 +105,6 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           reader.readAsDataURL(blob);
         });
       }
-      // Load default template if not already changed
       if (profiles?.[0]?.defaultTemplate) {
         setTemplate(prev => prev || (profiles[0].defaultTemplate as TemplateName) || 'modern');
       }
@@ -110,6 +114,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       console.error('Failed to load company profile:', error);
     }
     if (!accentColor) accentColor = '#6366F1';
+    const { generateInvoicePDF } = await import('@/lib/generate-pdf');
     return generateInvoicePDF({
       ...invoice, logoDataUrl,
       lineItems: lineItems.map(i => ({
@@ -255,7 +260,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const handleDownloadPDF = async () => {
     if (!invoice) return;
 
-    setGeneratingPdf(true);
+    setPdfGenerating(true);
     try {
       const doc = await buildPdfDoc();
 
@@ -280,7 +285,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       console.error('Error generating PDF:', error);
       toast.error('Failed to generate PDF');
     } finally {
-      setGeneratingPdf(false);
+      setPdfGenerating(false);
     }
   };
 
@@ -385,11 +390,11 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           </select>
           <button
             onClick={handleDownloadPDF}
-            disabled={generatingPdf}
+            disabled={pdfGenerating}
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
           >
-            {generatingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : invoice.pdfUrl ? <FileCheck className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-            {generatingPdf ? 'Generating...' : invoice.pdfUrl ? 'Download PDF' : 'Generate & Save PDF'}
+            {pdfGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : invoice.pdfUrl ? <FileCheck className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+            {pdfGenerating ? 'Generating...' : invoice.pdfUrl ? 'Download PDF' : 'Generate & Save PDF'}
           </button>
         </div>
 
