@@ -6,7 +6,7 @@ import { useTheme } from '@/lib/theme-context';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Moon, Sun, Menu, X } from 'lucide-react';
+import { Moon, Sun, Menu, X, LayoutDashboard, FileText, RefreshCw, Users, Receipt, BarChart3, Settings } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
 import TrialBanner from '@/components/TrialBanner';
 import MyBizLogo from '@/components/MyBizLogo';
@@ -30,6 +30,16 @@ interface NavLink {
   href: string;
   label: string;
 }
+
+const NAV_ICONS: Record<string, React.ElementType> = {
+  '/dashboard': LayoutDashboard,
+  '/invoices': FileText,
+  '/invoices/recurring': RefreshCw,
+  '/clients': Users,
+  '/expenses': Receipt,
+  '/reports': BarChart3,
+  '/settings/profile': Settings,
+};
 
 const ALL_NAV_LINKS: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -125,7 +135,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     `text-sm transition-colors ${isActive(path) ? (dark ? 'text-purple-400 font-medium' : 'text-indigo-600 font-medium') : (dark ? 'text-slate-300 hover:text-white' : 'text-gray-600 hover:text-gray-900')}`;
 
   return (
-    <div className={dark ? 'min-h-screen bg-black' : 'min-h-screen bg-gray-50'}>
+    <div className={dark ? 'min-h-screen bg-black' : 'min-h-screen bg-[#EDE8FF]'}>
       <header className={dark ? 'bg-black/50 backdrop-blur-xl border-b border-purple-500/30' : 'bg-white border-b border-gray-200'}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -133,10 +143,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Link href="/dashboard" className="flex items-center gap-3">
                 <MyBizLogo dark={dark} />
               </Link>
-              <nav className="hidden md:flex items-center gap-6">
-                {navLinks.slice(0, -1).map(l => (
-                  <Link key={l.href} href={l.href} className={linkClass(l.href)}>{l.label}</Link>
-                ))}
+              <nav className="hidden md:flex items-center gap-1">
+                {navLinks.slice(0, -1).map(l => {
+                  const Icon = NAV_ICONS[l.href];
+                  return (
+                    <Link key={l.href} href={l.href} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors ${isActive(l.href) ? (dark ? 'text-purple-400 font-medium bg-white/5' : 'text-indigo-600 font-medium bg-indigo-50') : (dark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100')} text-sm`}>
+                      {Icon && <Icon className="w-4 h-4 shrink-0" />}
+                      {l.label}
+                    </Link>
+                  );
+                })}
               </nav>
             </div>
             <div className="hidden md:flex items-center gap-3">
@@ -171,10 +187,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {mobileOpen && (
           <div className={`md:hidden border-t ${dark ? 'border-purple-500/30 bg-black/90' : 'border-gray-200 bg-white'}`}>
             <nav className="px-4 py-3 space-y-3">
-              {navLinks.map(l => (
-                <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)}
-                  className={`block py-2 ${linkClass(l.href)}`}>{l.label}</Link>
-              ))}
+              {navLinks.map(l => {
+                const Icon = NAV_ICONS[l.href];
+                return (
+                  <Link key={l.href} href={l.href} onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-2 py-2 ${linkClass(l.href)}`}>
+                    {Icon && <Icon className="w-4 h-4 shrink-0" />}
+                    {l.label}
+                  </Link>
+                );
+              })}
               <div className={`pt-3 border-t ${dark ? 'border-purple-500/20' : 'border-gray-100'}`}>
                 <span className={`block text-sm mb-2 ${dark ? 'text-slate-400' : 'text-gray-500'}`}>
                   {user?.firstName || user?.email}

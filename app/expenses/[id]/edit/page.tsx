@@ -174,7 +174,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
           <div className="flex justify-between items-center mb-6">
             <h1 className={dark ? 'text-2xl font-bold text-white' : 'text-2xl font-bold text-gray-900'}>Edit Expense</h1>
             {!isLocked && originalStatus !== 'APPROVED' && (
-              <button onClick={handleDelete} className="text-red-400 hover:text-red-300 flex items-center gap-2">
+              <button onClick={handleDelete} className={`${t.btnDanger} ${t.btnSm}`}>
                 <Trash2 className="w-4 h-4" /> Delete
               </button>
             )}
@@ -217,7 +217,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               </div>
               <div>
                 <label className={t.label}>Status</label>
-                <div className={`px-4 py-3 rounded-lg text-sm ${dark ? 'bg-gray-800 border border-purple-500/20' : 'bg-gray-100 border border-gray-200'}`}>
+                <div className={`px-4 py-3 rounded-lg text-sm ${dark ? 'bg-gray-800 border border-purple-500/20' : 'bg-gray-100 border-2 border-indigo-600'}`}>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     formData.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                     formData.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
@@ -229,7 +229,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               {createdAt && (
               <div>
                 <label className={t.label}>Created</label>
-                <div className={`px-4 py-3 rounded-lg text-sm ${dark ? 'bg-gray-800 border border-purple-500/20 text-gray-300' : 'bg-gray-100 border border-gray-200 text-gray-600'}`}>
+                <div className={`px-4 py-3 rounded-lg text-sm ${dark ? 'bg-gray-800 border border-purple-500/20 text-gray-300' : 'bg-gray-100 border-2 border-indigo-600 text-gray-600'}`}>
                   {new Date(createdAt).toLocaleString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
@@ -244,7 +244,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                     <button key={c} type="button" disabled={isLocked} onClick={() => setFormData({ ...formData, classification: c, ...(c === 'partial' ? { businessPercent: formData.businessPercent || '50' } : {}) })}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium capitalize ${formData.classification === c
                         ? c === 'business' ? 'bg-green-600 text-white' : c === 'personal' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-                        : dark ? 'bg-gray-800 text-slate-400 border border-gray-700' : 'bg-gray-100 text-gray-600 border border-gray-200'}`}>
+                        : dark ? 'bg-gray-800 text-slate-400 border border-gray-700' : 'bg-gray-100 text-gray-600 border-2 border-indigo-600'}`}>
                       {c}
                     </button>
                   ))}
@@ -313,7 +313,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                     <div className="flex items-center gap-3">
                       {isPdfUrl(receiptPreviewUrl) ? (
                         <div onClick={() => setViewingReceipt(true)}
-                          className="w-10 h-10 rounded flex items-center justify-center bg-red-50 border border-gray-200 cursor-zoom-in hover:opacity-80">
+                          className="w-10 h-10 rounded flex items-center justify-center bg-red-50 border-2 border-indigo-600 cursor-zoom-in hover:opacity-80">
                           <FileText className="w-5 h-5 text-red-500" />
                         </div>
                       ) : (
@@ -344,7 +344,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                       {receiptPreviewUrl && (
                         isPdfUrl(receiptPreviewUrl) ? (
                           <div onClick={() => setViewingReceipt(true)}
-                            className="w-10 h-10 rounded flex items-center justify-center bg-red-50 border border-gray-200 cursor-zoom-in hover:opacity-80">
+                            className="w-10 h-10 rounded flex items-center justify-center bg-red-50 border-2 border-indigo-600 cursor-zoom-in hover:opacity-80">
                             <FileText className="w-5 h-5 text-red-500" />
                           </div>
                         ) : (
@@ -392,7 +392,7 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
                 <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
                   {saving ? 'Saving...' : 'Update Expense'}
                 </button>
-                <Link href="/expenses" className={t.btnSecondary}>Cancel</Link>
+                <Link href="/expenses" className={t.btnGhost}>Cancel</Link>
               </div>
             )}
             {isLocked && (

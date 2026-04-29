@@ -170,7 +170,7 @@ export default function NewClientPage() {
               <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
                 {saving ? 'Saving...' : 'Save Client'}
               </button>
-              <Link href="/clients" className={t.btnSecondary}>Cancel</Link>
+              <Link href="/clients" className={t.btnGhost}>Cancel</Link>
             </div>
           </form>
         </div>

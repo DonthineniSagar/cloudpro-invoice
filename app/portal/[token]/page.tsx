@@ -80,7 +80,7 @@ export default function PortalPage({ params }: { params: { token: string } }) {
 
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Invoice Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border-2 border-indigo-600 overflow-hidden">
           {/* Top section */}
           <div className="p-8">
             <div className="flex justify-between items-start mb-8">
@@ -175,7 +175,7 @@ export default function PortalPage({ params }: { params: { token: string } }) {
 
         {/* Notes */}
         {invoice.notes && (
-          <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+          <div className="mt-4 p-4 bg-white rounded-lg border-2 border-indigo-600">
             <p className="text-sm text-gray-600">{invoice.notes}</p>
           </div>
         )}

@@ -32,7 +32,7 @@ export default function MetricCard({
 }: MetricCardProps) {
   const card = dark
     ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40 hover:border-purple-500 transition-all'
-    : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
+    : 'bg-white p-6 rounded-xl border-2 border-indigo-600';
   const labelCls = dark ? 'text-sm text-slate-400 mb-1' : 'text-sm text-gray-600 mb-1';
   const subCls   = dark ? 'text-xs text-slate-500 mt-1' : 'text-xs text-gray-500 mt-1';
   const { light, dark: darkColor } = valueColors[variant];
@@ -40,7 +40,7 @@ export default function MetricCard({
   return (
     <div className={`${card} ${className}`}>
       <div className={labelCls}>{label}</div>
-      <div className={`text-3xl font-bold ${dark ? darkColor : light}`}>{value}</div>
+      <div className={`text-3xl font-bold font-mono tabular-nums ${dark ? darkColor : light}`}>{value}</div>
       {subLabel && <div className={subCls}>{subLabel}</div>}
       {delta !== undefined && (
         <div className={`flex items-center gap-1 mt-1 text-xs ${delta >= 0 ? 'text-green-500' : 'text-red-500'}`}>

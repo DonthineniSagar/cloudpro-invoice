@@ -193,15 +193,15 @@ export default function ExpensesPage() {
         {/* Insights Bar */}
         {!loading && fyExpenses.length > 0 && (
           <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 mb-6`}>
-            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border border-gray-200'} rounded-lg p-4`}>
+            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border-2 border-indigo-600'} rounded-lg p-4`}>
               <p className={`text-xs ${dark ? 'text-slate-500' : 'text-gray-400'}`}>Total Spend</p>
               <p className={`text-xl font-bold ${dark ? 'text-white' : 'text-gray-900'}`}>${totalExpenses.toFixed(0)}</p>
             </div>
-            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border border-gray-200'} rounded-lg p-4`}>
+            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border-2 border-indigo-600'} rounded-lg p-4`}>
               <p className={`text-xs ${dark ? 'text-slate-500' : 'text-gray-400'}`}>GST Claimable</p>
               <p className={`text-xl font-bold ${dark ? 'text-green-400' : 'text-green-600'}`}>${totalGst.toFixed(0)}</p>
             </div>
-            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border border-gray-200'} rounded-lg p-4`}>
+            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border-2 border-indigo-600'} rounded-lg p-4`}>
               <p className={`text-xs ${dark ? 'text-slate-500' : 'text-gray-400'}`}>This Month vs Last</p>
               <div className="flex items-center gap-1">
                 {momChange > 0 ? <TrendingUp className="w-4 h-4 text-red-400" /> : <TrendingDown className="w-4 h-4 text-green-400" />}
@@ -211,7 +211,7 @@ export default function ExpensesPage() {
               </div>
             </div>
             {/* Mini spending trend */}
-            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border border-gray-200'} rounded-lg p-4`}>
+            <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border-2 border-indigo-600'} rounded-lg p-4`}>
               <p className={`text-xs mb-2 ${dark ? 'text-slate-500' : 'text-gray-400'}`}>Monthly Trend</p>
               <div className="flex items-end gap-0.5 h-8">
                 {monthlyTotals.map((v, i) => (
@@ -226,7 +226,7 @@ export default function ExpensesPage() {
 
         {/* Top Categories */}
         {!loading && topCategories.length > 0 && (
-          <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border border-gray-200'} rounded-lg p-4 mb-6`}>
+          <div className={`${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-white border-2 border-indigo-600'} rounded-lg p-4 mb-6`}>
             <p className={`text-xs mb-3 ${dark ? 'text-slate-500' : 'text-gray-400'}`}>Top Categories</p>
             <div className="space-y-2">
               {topCategories.map(([cat, amount]) => (
@@ -245,7 +245,7 @@ export default function ExpensesPage() {
         )}
 
         {/* Filters */}
-        <div className={`flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg ${dark ? 'bg-black border border-purple-500/20' : 'bg-gray-50 border border-gray-200'}`}>
+        <div className={`flex flex-wrap items-center gap-2 mb-6 p-3 rounded-lg ${dark ? 'bg-black border border-purple-500/20' : 'bg-gray-50 border-2 border-indigo-600'}`}>
           <select value={fyFilter} onChange={(e) => { setFyFilter(Number(e.target.value)); setExpandedMonths(new Set()); setMonthExpenses({}); }}
             aria-label="Financial Year"
             className={`text-sm px-3 py-1.5 rounded-md ${dark ? 'bg-gray-900 border border-purple-500/30 text-white' : 'bg-white border border-gray-300 text-gray-700'}`}>
@@ -288,7 +288,7 @@ export default function ExpensesPage() {
                 <div key={monthKey}>
                   <button onClick={() => toggleMonth(monthKey)}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${
-                      dark ? 'bg-gray-900 border border-purple-500/20 hover:border-purple-500/40' : 'bg-white border border-gray-200 hover:border-gray-300'
+                      dark ? 'bg-gray-900 border border-purple-500/20 hover:border-purple-500/40' : 'bg-white border-2 border-indigo-600 hover:border-gray-300'
                     }`}>
                     <div className="flex items-center gap-3">
                       {expanded ? <ChevronDown className="w-4 h-4 text-slate-500" /> : <ChevronRight className="w-4 h-4 text-slate-500" />}
@@ -315,12 +315,12 @@ export default function ExpensesPage() {
                                 {thumbs[expense.id] ? (
                                   isPdfUrl(thumbs[expense.id]) ? (
                                     <div onClick={(e) => { e.preventDefault(); setViewingReceipt(thumbs[expense.id]); }}
-                                      className="w-7 h-7 rounded flex-shrink-0 border border-gray-200 cursor-zoom-in hover:opacity-80 flex items-center justify-center bg-red-50">
+                                      className="w-7 h-7 rounded flex-shrink-0 border-2 border-indigo-600 cursor-zoom-in hover:opacity-80 flex items-center justify-center bg-red-50">
                                       <FileText className="w-3.5 h-3.5 text-red-500" />
                                     </div>
                                   ) : (
                                     <img src={thumbs[expense.id]} alt="" onClick={(e) => { e.preventDefault(); setViewingReceipt(thumbs[expense.id]); }}
-                                      className="w-7 h-7 rounded object-cover flex-shrink-0 border border-gray-200 cursor-zoom-in hover:opacity-80" />
+                                      className="w-7 h-7 rounded object-cover flex-shrink-0 border-2 border-indigo-600 cursor-zoom-in hover:opacity-80" />
                                   )
                                 ) : (
                                   <span className="text-sm">{categoryIcon(expense.category || 'Other')}</span>

@@ -151,7 +151,7 @@ export default function ReviewExpensesPage() {
         ) : (
           <>
             {/* Summary + bulk actions */}
-            <div className={`${dark ? 'bg-gray-900 border border-purple-500/30' : 'bg-white border border-gray-200'} rounded-lg p-4 mb-4 flex flex-wrap gap-4 items-center justify-between`}>
+            <div className={`${dark ? 'bg-gray-900 border border-purple-500/30' : 'bg-white border-2 border-indigo-600'} rounded-lg p-4 mb-4 flex flex-wrap gap-4 items-center justify-between`}>
               <div className="flex gap-4 text-sm">
                 <span className="text-yellow-500 font-medium">{counts.remaining} to review</span>
                 <span className="text-green-500">{counts.business} business</span>
@@ -172,7 +172,7 @@ export default function ReviewExpensesPage() {
             </div>
 
             {/* Transaction list */}
-            <div className={`${dark ? 'bg-black border border-purple-500/30' : 'bg-white border border-gray-200'} rounded-lg overflow-hidden`}>
+            <div className={`${dark ? 'bg-black border border-purple-500/30' : 'bg-white border-2 border-indigo-600'} rounded-lg overflow-hidden`}>
               <div className="max-h-[60vh] overflow-y-auto divide-y divide-gray-800">
                 {filtered.map(expense => {
                   const amt = Math.abs(expense.amount || 0);
@@ -242,7 +242,7 @@ export default function ReviewExpensesPage() {
 
                       {/* Link matches panel */}
                       {linkingId === expense.id && matches.length > 0 && (
-                        <div className={`mt-2 ml-4 p-3 rounded-lg text-sm ${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-gray-50 border border-gray-200'}`}>
+                        <div className={`mt-2 ml-4 p-3 rounded-lg text-sm ${dark ? 'bg-gray-900 border border-purple-500/20' : 'bg-gray-50 border-2 border-indigo-600'}`}>
                           <p className={`text-xs mb-2 ${dark ? 'text-slate-400' : 'text-gray-500'}`}>Link to existing expense (will merge and remove this import):</p>
                           {matches.map(m => (
                             <div key={m.id} className={`flex items-center justify-between py-1.5 ${dark ? 'border-b border-gray-800' : 'border-b border-gray-100'} last:border-0`}>

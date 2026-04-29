@@ -110,7 +110,7 @@ export default function CompanyProfileStep({ onComplete, onSkip }: CompanyProfil
     <div className={`max-w-md w-full space-y-8 p-8 rounded-xl ${
       dark
         ? 'bg-slate-900 border border-purple-500/30'
-        : 'bg-white shadow-sm border border-gray-200'
+        : 'bg-white border-2 border-indigo-600'
     }`}>
       <div className="text-center">
         <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${

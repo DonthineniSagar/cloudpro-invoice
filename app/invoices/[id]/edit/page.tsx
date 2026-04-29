@@ -248,7 +248,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
           Back to Invoice
         </Link>
 
-        <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-8' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-8'}>
+        <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-8' : 'bg-white rounded-xl border-2 border-indigo-600 p-8'}>
           <h1 className={theme === 'dark' ? 'text-2xl font-bold text-white mb-6' : 'text-2xl font-bold text-gray-900 mb-6'}>Edit Invoice</h1>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -298,7 +298,7 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
             </div>
 
             {/* Client Details */}
-            <div className={theme === 'dark' ? 'bg-black border-2 border-purple-500/40 p-4 rounded-lg space-y-3' : 'bg-gray-50 border border-gray-200 p-4 rounded-lg space-y-3'}>
+            <div className={theme === 'dark' ? 'bg-black border-2 border-purple-500/40 p-4 rounded-lg space-y-3' : 'bg-gray-50 border-2 border-indigo-600 p-4 rounded-lg space-y-3'}>
               <h4 className={theme === 'dark' ? 'font-medium text-white' : 'font-medium text-gray-900'}>Bill To:</h4>
               <div>
                 <label className={theme === 'dark' ? 'block text-sm font-medium text-slate-400 mb-2' : 'block text-sm font-medium text-gray-700 mb-2'}>

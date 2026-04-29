@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        white: '#F8F6FF',   /* cards: barely-there lavender, ties to indigo brand */
         primary: {
           50: '#EEF2FF',
           100: '#E0E7FF',
@@ -36,22 +37,51 @@ const config: Config = {
           900: '#581C87',
         },
         success: {
+          50: '#ECFDF5',
+          100: '#D1FAE5',
           500: '#10B981',
           600: '#059669',
         },
         warning: {
+          50: '#FFFBEB',
+          100: '#FEF3C7',
           500: '#F59E0B',
           600: '#D97706',
+          800: '#92400E',
         },
         error: {
+          50: '#FEF2F2',
+          100: '#FEE2E2',
           500: '#EF4444',
           600: '#DC2626',
+          800: '#991B1B',
         },
+        info: {
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          500: '#3B82F6',
+          600: '#2563EB',
+          800: '#1E40AF',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'SF Mono', 'Menlo', 'Consolas', 'monospace'],
+        display: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: "1rem",
         md: "0.75rem",
         sm: "0.5rem",
+      },
+      boxShadow: {
+        brand: '0 10px 15px -3px rgba(79,70,229,0.20), 0 4px 6px -4px rgba(79,70,229,0.20)',
+        accent: '0 10px 30px -5px rgba(168,85,247,0.35)',
+        focus: '0 0 0 3px rgba(79,70,229,0.35)',
+        'focus-dark': '0 0 0 3px rgba(168,85,247,0.50)',
+      },
+      transitionTimingFunction: {
+        'ease-design': 'cubic-bezier(0.2, 0.7, 0.1, 1)',
       },
     },
   },

@@ -18,7 +18,7 @@ function Pulse({ className = '' }: { className?: string }) {
 export function MetricCardSkeleton() {
   const { theme } = useTheme();
   return (
-    <div className={theme === 'dark' ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40' : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200'}>
+    <div className={theme === 'dark' ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40' : 'bg-white p-6 rounded-xl border-2 border-indigo-600'}>
       <Pulse className="h-4 w-24 mb-3" />
       <Pulse className="h-8 w-32" />
     </div>
@@ -40,7 +40,7 @@ export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
 export function ClientCardSkeleton() {
   const { theme } = useTheme();
   return (
-    <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-6' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-6'}>
+    <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-6' : 'bg-white rounded-xl border-2 border-indigo-600 p-6'}>
       <Pulse className="h-5 w-36 mb-4" />
       <div className="space-y-3">
         <Pulse className="h-4 w-48" />

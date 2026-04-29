@@ -169,7 +169,7 @@ export default function SignupPage() {
           className={`max-w-md w-full space-y-8 p-8 rounded-xl ${
             dark
               ? 'bg-slate-900 border border-purple-500/30'
-              : 'bg-white shadow-sm border border-gray-200'
+              : 'bg-white border-2 border-indigo-600'
           }`}
         >
           {/* 8.2: Brand logo and tagline */}

@@ -67,7 +67,7 @@ export default function InvoicesPage() {
               <p className={theme === 'dark' ? 'text-slate-400 mt-1' : 'text-gray-600 mt-1'}>Manage your invoices</p>
             </div>
           </div>
-          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 overflow-hidden' : 'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'}>
+          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 overflow-hidden' : 'bg-white rounded-xl border-2 border-indigo-600 overflow-hidden'}>
             <table className="min-w-full">
               <thead className={theme === 'dark' ? 'bg-black border-b border-purple-500/20' : 'bg-gray-50'}>
                 <tr>
@@ -125,7 +125,7 @@ export default function InvoicesPage() {
         </div>
 
         {filteredInvoices.length === 0 ? (
-          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-12 text-center' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center'}>
+          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-12 text-center' : 'bg-white rounded-xl border-2 border-indigo-600 p-12 text-center'}>
             <div className={theme === 'dark' ? 'text-slate-600 mb-4' : 'text-gray-400 mb-4'}>
               <FileText className="w-16 h-16 mx-auto" />
             </div>
@@ -140,7 +140,7 @@ export default function InvoicesPage() {
             </Link>
           </div>
         ) : (
-          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 overflow-hidden' : 'bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden'}>
+          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 overflow-hidden' : 'bg-white rounded-xl border-2 border-indigo-600 overflow-hidden'}>
             <table className="min-w-full divide-y divide-purple-500/20">
               <thead className={theme === 'dark' ? 'bg-black border-b border-purple-500/20' : 'bg-gray-50'}>
                 <tr>

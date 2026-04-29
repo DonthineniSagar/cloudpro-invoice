@@ -99,7 +99,7 @@ export default function ClientsPage() {
         </div>
 
         {filteredClients.length === 0 ? (
-          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-12 text-center' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center'}>
+          <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-12 text-center' : 'bg-white rounded-xl border-2 border-indigo-600 p-12 text-center'}>
             <div className={theme === 'dark' ? 'text-slate-600 mb-4' : 'text-gray-400 mb-4'}>
               <Plus className="w-16 h-16 mx-auto" />
             </div>
@@ -118,7 +118,7 @@ export default function ClientsPage() {
             {filteredClients.map((client) => (
               <div
                 key={client.id}
-                className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-6 hover:border-purple-500 transition-all' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow'}
+                className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-6 hover:border-purple-500 transition-all' : 'bg-white rounded-xl border-2 border-indigo-600 p-6 hover:shadow-md transition-shadow'}
               >
                 <div className="flex justify-between items-start mb-4">
                   <h3 className={theme === 'dark' ? 'text-lg font-semibold text-white' : 'text-lg font-semibold text-gray-900'}>{client.name}</h3>

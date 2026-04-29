@@ -177,7 +177,7 @@ export default function CompanyProfilePage() {
           <div className="flex items-center gap-6">
             {(logoPreview || logoFile) ? (
               <img src={logoFile ? URL.createObjectURL(logoFile) : logoPreview}
-                alt="Logo" className="w-20 h-20 rounded-lg object-contain border border-gray-200" />
+                alt="Logo" className="w-20 h-20 rounded-lg object-contain border-2 border-indigo-600" />
             ) : (
               <div className={`w-20 h-20 rounded-lg flex items-center justify-center text-3xl ${theme === 'dark' ? 'bg-purple-900/20 border-2 border-purple-500/30' : 'bg-gray-100 border-2 border-gray-200'}`}>🏢</div>
             )}
@@ -407,7 +407,7 @@ export default function CompanyProfilePage() {
                   {/* Existing whitelist */}
                   <div className="space-y-2 mb-3">
                     {ingest.expenseWhitelistedEmails.map((email, i) => (
-                      <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${theme === 'dark' ? 'bg-black border border-purple-500/20' : 'bg-white border border-gray-200'}`}>
+                      <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm ${theme === 'dark' ? 'bg-black border border-purple-500/20' : 'bg-white border-2 border-indigo-600'}`}>
                         <span className={`flex-1 ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{email}</span>
                         <button type="button" onClick={() => setIngest(prev => ({
                           ...prev,
@@ -451,7 +451,7 @@ export default function CompanyProfilePage() {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <button type="button" onClick={() => router.push('/dashboard')} className={t.btnSecondary}>Cancel</button>
+          <button type="button" onClick={() => router.push('/dashboard')} className={t.btnGhost}>Cancel</button>
           <button type="submit" disabled={saving} className={t.btnPrimary}>
             {saving ? 'Saving...' : 'Save Profile'}
           </button>

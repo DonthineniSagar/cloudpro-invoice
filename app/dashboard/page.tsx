@@ -151,10 +151,10 @@ export default function DashboardPage() {
 
   const card = dark
     ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40'
-    : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
+    : 'bg-white p-6 rounded-xl border-2 border-indigo-600';
   const cardHover = dark
     ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40 hover:border-purple-500 transition-all'
-    : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
+    : 'bg-white p-6 rounded-xl border-2 border-indigo-600';
   const label = dark ? 'text-sm text-slate-400 mb-1' : 'text-sm text-gray-600 mb-1';
   const heading = dark ? 'text-lg font-semibold text-white mb-4' : 'text-lg font-semibold text-gray-900 mb-4';
   const muted = dark ? 'text-slate-400' : 'text-gray-600';

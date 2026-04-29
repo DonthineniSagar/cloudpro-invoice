@@ -375,7 +375,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           )}
           <button
             onClick={handleCopyPortalLink}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className={s.btnSecondary}
           >
             <Link2 className="w-4 h-4" />
             {invoice.portalToken ? 'Copy Portal Link' : 'Create Portal Link'}
@@ -391,7 +391,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
           <button
             onClick={handleDownloadPDF}
             disabled={pdfGenerating}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className={s.btnSecondary}
           >
             {pdfGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : invoice.pdfUrl ? <FileCheck className="w-4 h-4" /> : <Download className="w-4 h-4" />}
             {pdfGenerating ? 'Generating...' : invoice.pdfUrl ? 'Download PDF' : 'Generate & Save PDF'}
@@ -399,7 +399,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         </div>
 
         {/* Invoice */}
-        <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-8' : 'bg-white rounded-xl shadow-sm border border-gray-200 p-8'}>
+        <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 p-8' : 'bg-white rounded-xl border-2 border-indigo-600 p-8'}>
           {/* Header */}
           <div className="flex justify-between items-start mb-8">
             <div>
@@ -529,7 +529,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
       {/* Email Dialog */}
       {showEmailDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className={`w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6 ${theme === 'dark' ? 'bg-gray-900 border-2 border-purple-500/40' : 'bg-white shadow-xl border border-gray-200'}`}>
+          <div className={`w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl p-6 ${theme === 'dark' ? 'bg-gray-900 border-2 border-purple-500/40' : 'bg-white shadow-xl border-2 border-indigo-600'}`}>
             <div className="flex justify-between items-center mb-4">
               <h2 className={theme === 'dark' ? 'text-lg font-bold text-white' : 'text-lg font-bold text-gray-900'}>Send Invoice</h2>
               <button onClick={() => setShowEmailDialog(false)} className={theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}>
@@ -541,7 +541,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
               {/* From (read-only) */}
               <div>
                 <label className={s.label}>From (set by server)</label>
-                <div className={`px-4 py-3 rounded-lg text-sm ${theme === 'dark' ? 'bg-gray-800 text-slate-400 border border-purple-500/20' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
+                <div className={`px-4 py-3 rounded-lg text-sm ${theme === 'dark' ? 'bg-gray-800 text-slate-400 border border-purple-500/20' : 'bg-gray-100 text-gray-500 border-2 border-indigo-600'}`}>
                   Configured in server settings
                 </div>
               </div>

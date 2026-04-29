@@ -275,7 +275,7 @@ export default function NewInvoicePage() {
             </div>
 
             {selectedClient && (
-              <div className={dark ? 'bg-black border-2 border-purple-500/40 p-4 rounded-lg space-y-3' : 'bg-gray-50 border border-gray-200 p-4 rounded-lg space-y-3'}>
+              <div className={dark ? 'bg-black border-2 border-purple-500/40 p-4 rounded-lg space-y-3' : 'bg-gray-50 border-2 border-indigo-600 p-4 rounded-lg space-y-3'}>
                 <h4 className={dark ? 'font-medium text-white' : 'font-medium text-gray-900'}>Bill To:</h4>
                 <div>
                   <label className={t.label}>Client Name</label>
@@ -392,7 +392,7 @@ export default function NewInvoicePage() {
               <button type="submit" disabled={saving} className={`flex-1 ${t.btnPrimary}`}>
                 {saving ? 'Creating...' : 'Create Invoice'}
               </button>
-              <Link href="/dashboard" className={t.btnSecondary}>Cancel</Link>
+              <Link href="/dashboard" className={t.btnGhost}>Cancel</Link>
             </div>
           </form>
         </div>

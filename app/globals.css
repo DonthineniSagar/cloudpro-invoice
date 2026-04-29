@@ -2,29 +2,195 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   MyBiz Design Tokens
+   Indigo by day, electric purple by night.
+   Light mode: sober & professional. Dark mode: vivid & confident.
+   ============================================================ */
+
+:root {
+  /* Brand — Indigo primary (light mode) */
+  --brand:           #4F46E5;
+  --brand-hover:     #4338CA;
+  --brand-press:     #3730A3;
+  --brand-soft:      #EEF2FF;
+  --brand-tint:      #E0E7FF;
+  --brand-fg:        #312E81;
+  --on-brand:        #FFFFFF;
+
+  /* Accent — Purple */
+  --accent:          #A855F7;
+  --accent-hover:    #9333EA;
+  --accent-soft:     #FAF5FF;
+  --accent-tint:     #F3E8FF;
+  --accent-fg:       #581C87;
+
+  /* Dark-mode CTA gradient — available in both modes */
+  --brand-gradient:       linear-gradient(135deg, #A855F7 0%, #EC4899 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #9333EA 0%, #DB2777 100%);
+
+  /* Surfaces */
+  --bg:              #F8F6FF;   /* Cards: barely-there lavender, not glaring */
+  --bg-page:         #EDE8FF;   /* Page wash: soft indigo-purple brand tint */
+  --bg-subtle:       #E4DEFF;
+  --bg-inverse:      #111827;
+
+  /* Foreground */
+  --fg:              #111827;
+  --fg-strong:       #111827;
+  --fg-muted:        #4B5563;
+  --fg-subtle:       #9CA3AF;
+
+  /* Borders */
+  --border:          #4F46E5;   /* indigo-600 — brand-tinted card borders */
+  --border-strong:   #4338CA;   /* indigo-700 */
+  --border-subtle:   #C7D2FE;   /* indigo-200 */
+
+  /* Status */
+  --success:         #10B981;
+  --success-soft:    #ECFDF5;
+  --success-tint:    #D1FAE5;
+  --success-fg:      #065F46;
+
+  --warning:         #F59E0B;
+  --warning-soft:    #FFFBEB;
+  --warning-tint:    #FEF3C7;
+  --warning-fg:      #92400E;
+
+  --danger:          #EF4444;
+  --danger-soft:     #FEF2F2;
+  --danger-tint:     #FEE2E2;
+  --danger-fg:       #991B1B;
+
+  --info:            #3B82F6;
+  --info-soft:       #EFF6FF;
+  --info-tint:       #DBEAFE;
+  --info-fg:         #1E40AF;
+
+  /* Shadows */
+  --shadow-sm:   0 1px 3px 0 rgba(17,24,39,0.10), 0 1px 2px -1px rgba(17,24,39,0.10);
+  --shadow-md:   0 4px 6px -1px rgba(17,24,39,0.10), 0 2px 4px -2px rgba(17,24,39,0.10);
+  --shadow-lg:   0 10px 15px -3px rgba(17,24,39,0.10), 0 4px 6px -4px rgba(17,24,39,0.10);
+  --shadow-brand: 0 10px 15px -3px rgba(79,70,229,0.20), 0 4px 6px -4px rgba(79,70,229,0.20);
+  --shadow-focus: 0 0 0 3px rgba(79,70,229,0.35);
+
+  /* Motion */
+  --ease-out:  cubic-bezier(0.2, 0.7, 0.1, 1);
+  --dur-fast:  120ms;
+  --dur-base:  200ms;
+}
+
+/* ============================================================
+   Dark mode — "electric night"
+   Pure black surfaces, purple-tinted borders, gradient CTAs.
+   Matches live theme-classes.ts conventions.
+   ============================================================ */
+.dark {
+  --brand:           #C084FC;
+  --brand-hover:     #D8B4FE;
+  --brand-press:     #A855F7;
+  --brand-soft:      rgba(168, 85, 247, 0.10);
+  --brand-tint:      rgba(168, 85, 247, 0.25);
+  --brand-fg:        #E9D5FF;
+  --on-brand:        #FFFFFF;
+
+  --accent:          #A855F7;
+  --accent-hover:    #C084FC;
+  --accent-soft:     rgba(168, 85, 247, 0.10);
+  --accent-tint:     rgba(168, 85, 247, 0.25);
+  --accent-fg:       #E9D5FF;
+
+  --bg:              #000000;
+  --bg-page:         #030712;
+  --bg-subtle:       #0B0F1A;
+  --bg-inverse:      #F9FAFB;
+
+  --fg:              #F9FAFB;
+  --fg-strong:       #FFFFFF;
+  --fg-muted:        #CBD5E1;
+  --fg-subtle:       #94A3B8;
+
+  /* Purple-tinted borders — the dark-mode signature */
+  --border:          rgba(168, 85, 247, 0.40);
+  --border-strong:   rgba(168, 85, 247, 0.60);
+  --border-subtle:   rgba(168, 85, 247, 0.20);
+
+  /* Status — one notch brighter for AA on near-black */
+  --success:         #34D399;
+  --success-soft:    rgba(16, 185, 129, 0.10);
+  --success-tint:    rgba(16, 185, 129, 0.20);
+  --success-fg:      #A7F3D0;
+
+  --warning:         #FBBF24;
+  --warning-soft:    rgba(245, 158, 11, 0.10);
+  --warning-tint:    rgba(245, 158, 11, 0.20);
+  --warning-fg:      #FDE68A;
+
+  --danger:          #F87171;
+  --danger-soft:     rgba(239, 68, 68, 0.10);
+  --danger-tint:     rgba(239, 68, 68, 0.20);
+  --danger-fg:       #FCA5A5;
+
+  --info:            #60A5FA;
+  --info-soft:       rgba(59, 130, 246, 0.10);
+  --info-tint:       rgba(59, 130, 246, 0.20);
+  --info-fg:         #BFDBFE;
+
+  --shadow-sm:   0 1px 3px 0 rgba(0,0,0,0.50), 0 1px 2px -1px rgba(0,0,0,0.40);
+  --shadow-md:   0 4px 6px -1px rgba(0,0,0,0.55), 0 2px 4px -2px rgba(0,0,0,0.45);
+  --shadow-lg:   0 10px 15px -3px rgba(0,0,0,0.60), 0 4px 6px -4px rgba(0,0,0,0.50);
+  --shadow-brand: 0 10px 30px -5px rgba(168, 85, 247, 0.35);
+  --shadow-focus: 0 0 0 3px rgba(168, 85, 247, 0.50);
+}
+
 html {
   scroll-behavior: smooth;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-feature-settings: "cv11", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Input text visibility is handled by Tailwind classes per-component */
+/* ============================================================
+   Utility classes
+   ============================================================ */
+
+/* Tabular numerals for financial figures */
+.numeric {
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum", "zero";
+}
+
+/* Eyebrow / label above sections */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-success { background: var(--success-soft); color: var(--success-fg); }
+.badge-warning { background: var(--warning-soft); color: var(--warning-fg); }
+.badge-danger  { background: var(--danger-soft);  color: var(--danger-fg); }
+.badge-info    { background: var(--info-soft);    color: var(--info-fg); }
+.badge-neutral { background: var(--bg-subtle);    color: var(--fg-muted); }
 
 @layer utilities {
   .text-balance {
