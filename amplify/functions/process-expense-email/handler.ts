@@ -6,7 +6,7 @@
  *       → Textract (PDF) or Bedrock Vision (images)
  *       → Bedrock Haiku (interpret & structure) → create draft Expense in DynamoDB.
  */
-import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { TextractClient, AnalyzeExpenseCommand } from '@aws-sdk/client-textract';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
@@ -113,12 +113,17 @@ export const handler = async (event: SESEvent) => {
       continue;
     }
 
-    if (isPdf(att)) {
-      const extracted = await processPdfWithTextractAndAI(att.content);
-      if (extracted) results.push({ expense: extracted, contentHash: hash, attachmentBytes: att.content, filename: att.filename || 'receipt.pdf', contentType: 'application/pdf' });
-    } else if (isImage(att)) {
-      const extracted = await processImageWithVision(att.content);
-      if (extracted) results.push({ expense: extracted, contentHash: hash, attachmentBytes: att.content, filename: att.filename || 'receipt.jpg', contentType: att.contentType || 'image/jpeg' });
+    try {
+      if (isPdf(att)) {
+        const extracted = await processPdfWithTextractAndAI(att.content);
+        if (extracted) results.push({ expense: extracted, contentHash: hash, attachmentBytes: att.content, filename: att.filename || 'receipt.pdf', contentType: 'application/pdf' });
+      } else if (isImage(att)) {
+        const extracted = await processImageWithVision(att.content, att.contentType);
+        if (extracted) results.push({ expense: extracted, contentHash: hash, attachmentBytes: att.content, filename: att.filename || 'receipt.jpg', contentType: att.contentType || 'image/jpeg' });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`Failed to process attachment ${att.filename || 'unknown'} (${att.contentType}): ${msg}. Skipping.`);
     }
   }
 
@@ -191,26 +196,43 @@ function isImage(att: Attachment): boolean {
 }
 
 async function processPdfWithTextractAndAI(pdfBytes: Buffer): Promise<ExtractedExpense | null> {
-  const textractResult = await textract.send(new AnalyzeExpenseCommand({
-    Document: { Bytes: pdfBytes },
-  }));
+  // PDFs must be uploaded to S3 for Textract — inline Bytes fails for many PDF formats
+  const bucket = process.env.STORAGE_BUCKET_NAME || process.env.SES_BUCKET_NAME!;
+  const tempKey = `temp-receipts/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.pdf`;
 
-  const fields: Array<{ type: string; value: string; confidence: number }> = [];
-  for (const doc of textractResult.ExpenseDocuments || []) {
-    for (const field of doc.SummaryFields || []) {
-      fields.push({
-        type: field.Type?.Text || '',
-        value: field.ValueDetection?.Text || '',
-        confidence: field.ValueDetection?.Confidence || 0,
-      });
+  await s3.send(new PutObjectCommand({ Bucket: bucket, Key: tempKey, Body: pdfBytes, ContentType: 'application/pdf' }));
+
+  try {
+    const textractResult = await textract.send(new AnalyzeExpenseCommand({
+      Document: { S3Object: { Bucket: bucket, Name: tempKey } },
+    }));
+
+    const fields: Array<{ type: string; value: string; confidence: number }> = [];
+    for (const doc of textractResult.ExpenseDocuments || []) {
+      for (const field of doc.SummaryFields || []) {
+        fields.push({
+          type: field.Type?.Text || '',
+          value: field.ValueDetection?.Text || '',
+          confidence: field.ValueDetection?.Confidence || 0,
+        });
+      }
     }
-  }
 
-  return await interpretWithAI(JSON.stringify(fields));
+    return await interpretWithAI(JSON.stringify(fields));
+  } finally {
+    try { await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: tempKey })); } catch {}
+  }
 }
 
-async function processImageWithVision(imageBytes: Buffer): Promise<ExtractedExpense | null> {
+async function processImageWithVision(imageBytes: Buffer, contentType?: string): Promise<ExtractedExpense | null> {
   const base64 = imageBytes.toString('base64');
+
+  // Detect actual media type from magic bytes instead of trusting contentType
+  let mediaType = contentType || 'image/jpeg';
+  if (imageBytes[0] === 0x89 && imageBytes[1] === 0x50) mediaType = 'image/png';
+  else if (imageBytes[0] === 0xFF && imageBytes[1] === 0xD8) mediaType = 'image/jpeg';
+  else if (imageBytes[0] === 0x47 && imageBytes[1] === 0x49) mediaType = 'image/gif';
+  else if (imageBytes[0] === 0x52 && imageBytes[1] === 0x49) mediaType = 'image/webp';
 
   const response = await bedrock.send(new InvokeModelCommand({
     modelId: BEDROCK_MODEL,
@@ -221,7 +243,7 @@ async function processImageWithVision(imageBytes: Buffer): Promise<ExtractedExpe
       messages: [{
         role: 'user',
         content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
           { type: 'text', text: EXTRACTION_PROMPT },
         ],
       }],
