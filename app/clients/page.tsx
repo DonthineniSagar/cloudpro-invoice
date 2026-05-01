@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Search, Mail, Phone, MapPin, Edit2, Trash2, TrendingUp } from 'lucide-react';
+import { Plus, Search, Mail, Phone, MapPin, Edit2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { ClientCardSkeleton } from '@/components/Skeleton';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { currentFY, getFY, fyShort } from '@/lib/fy-utils';
 
 export default function ClientsPage() {
   const { theme } = useTheme();
@@ -39,17 +40,20 @@ export default function ClientsPage() {
     }
   };
 
+  const fy = currentFY();
+
   const clientStats = (clientId: string) => {
-    const clientInvoices = invoices.filter(inv => inv.clientId === clientId);
-    const totalBilled = clientInvoices.reduce((s, inv) => s + (inv.total || 0), 0);
-    const outstanding = clientInvoices
+    const all = invoices.filter(inv => inv.clientId === clientId);
+    const fyInvoices = all.filter(inv => inv.issueDate && getFY(inv.issueDate) === fy);
+    const totalBilled = fyInvoices.reduce((s, inv) => s + (inv.total || 0), 0);
+    const outstanding = all
       .filter(inv => inv.status !== 'PAID' && inv.status !== 'CANCELLED')
       .reduce((s, inv) => s + (inv.total || 0), 0);
-    const sorted = [...clientInvoices].sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+    const sorted = [...all].sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
     const lastDate = sorted[0]?.issueDate
       ? new Date(sorted[0].issueDate).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })
       : null;
-    return { totalBilled, outstanding, lastDate, count: clientInvoices.length };
+    return { totalBilled, outstanding, lastDate, count: all.length };
   };
 
   const deleteClient = async (id: string) => {
@@ -186,21 +190,29 @@ export default function ClientsPage() {
                   const s = clientStats(client.id);
                   if (s.count === 0) return null;
                   return (
-                    <div className={`mt-4 pt-4 border-t grid grid-cols-3 gap-2 ${theme === 'dark' ? 'border-purple-500/20' : 'border-gray-100'}`}>
-                      <div className="text-center">
-                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Billed</p>
-                        <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>${s.totalBilled.toFixed(0)}</p>
+                    <div className={`mt-4 pt-4 border-t ${theme === 'dark' ? 'border-purple-500/20' : 'border-gray-100'}`}>
+                      <div className="grid grid-cols-3 gap-2 mb-3">
+                        <div className="text-center">
+                          <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>{fyShort(fy)} billed</p>
+                          <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>${s.totalBilled.toFixed(0)}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Owing</p>
+                          <p className={`text-sm font-semibold ${s.outstanding > 0 ? 'text-amber-500' : (theme === 'dark' ? 'text-slate-400' : 'text-gray-500')}`}>
+                            ${s.outstanding.toFixed(0)}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Last inv.</p>
+                          <p className={`text-xs font-medium truncate ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{s.lastDate}</p>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Owing</p>
-                        <p className={`text-sm font-semibold ${s.outstanding > 0 ? 'text-amber-500' : (theme === 'dark' ? 'text-slate-400' : 'text-gray-500')}`}>
-                          ${s.outstanding.toFixed(0)}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Last inv.</p>
-                        <p className={`text-xs font-medium truncate ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{s.lastDate}</p>
-                      </div>
+                      <Link
+                        href={`/invoices?search=${encodeURIComponent(client.name)}`}
+                        className={`block text-center text-xs font-medium py-1.5 rounded-lg transition-colors ${theme === 'dark' ? 'text-purple-400 hover:bg-purple-500/10' : 'text-indigo-600 hover:bg-indigo-50'}`}
+                      >
+                        View all {s.count} invoice{s.count !== 1 ? 's' : ''} →
+                      </Link>
                     </div>
                   );
                 })()}
