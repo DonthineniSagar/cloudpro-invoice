@@ -128,7 +128,9 @@ export default function CompanyProfilePage() {
         accentColor: profile.accentColor || '#6366F1',
         invoiceFooterText: profile.invoiceFooterText || '',
         ...(logoUrl && { logoUrl }),
-        ...ingest,
+        ...(ingest.expenseIngestKey ? { expenseIngestKey: ingest.expenseIngestKey } : {}),
+        expenseIngestActive: ingest.expenseIngestActive || false,
+        ...(ingest.expenseWhitelistedEmails?.length ? { expenseWhitelistedEmails: ingest.expenseWhitelistedEmails } : {}),
         identityId: cognitoIdentityId,
       };
       console.log('saveData:', JSON.stringify(saveData, null, 2));
