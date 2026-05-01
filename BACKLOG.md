@@ -457,6 +457,13 @@ NZ Financial Year runs April 1 – March 31. All views should be FY-aware.
 
 ---
 
+## 🔍 Smart Data Entry
+
+- [ ] **Google Places Autocomplete** — type-ahead address search on company profile and client forms, auto-fills street/city/state/postcode/country (Google Maps Places API)
+- [ ] **NZBN Lookup** — search by business name or NZBN number to auto-fill company name, trading name, address, and GST number (free NZBN API: api.business.govt.nz)
+
+---
+
 ## 📊 Performance
 
 - [ ] Lazy load charts on dashboard (dynamic import)

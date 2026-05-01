@@ -10,7 +10,7 @@ import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import AppLayout from '@/components/AppLayout';
 import MetricCard from '@/components/MetricCard';
-import { FileText, Receipt, CheckCircle2, Circle, X } from 'lucide-react';
+import { FileText, Receipt } from 'lucide-react';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { currentFY, fyLabel, fyShort, fyMonthKeys, FY_MONTHS, getFY, selectableFYs, isFYClosed } from '@/lib/fy-utils';
 import { formatNZD, preTaxMargin, netGstPosition } from '@/lib/format';
@@ -34,11 +34,8 @@ export default function DashboardPage() {
   const [recentInvoices, setRecentInvoices] = useState<any[]>([]);
   const [recentExpenses, setRecentExpenses] = useState<any[]>([]);
   const [statusBreakdown, setStatusBreakdown] = useState<Record<string, number>>({});
-  const [aged, setAged] = useState({ current: 0, d30: 0, d60: 0, d60plus: 0, currentCount: 0, d30Count: 0, d60Count: 0, d60plusCount: 0 });
   const [hasCompanyProfile, setHasCompanyProfile] = useState(false);
-  const [hasClients, setHasClients] = useState(false);
-  const [hasAnyInvoice, setHasAnyInvoice] = useState(false);
-  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [planTier, setPlanTier] = useState<string | null>(null);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
   const [selectedFY, setSelectedFY] = useState(currentFY());
 
@@ -47,8 +44,7 @@ export default function DashboardPage() {
       router.push('/auth/login');
     } else if (user) {
       loadMetrics();
-      checkSetupState();
-      setOnboardingDismissed(localStorage.getItem('cloudpro_onboarding_dismissed') === '1');
+      checkCompanyProfile();
     }
   }, [user, loading, router, selectedFY]);
 
@@ -60,8 +56,6 @@ export default function DashboardPage() {
         listAll(client.models.Invoice),
         listAll(client.models.Expense),
       ]);
-
-      setHasAnyInvoice(invoices.length > 0);
 
       // Filter to selected FY based on date (not createdAt)
       const fyInvoices = invoices.filter(inv => inv.issueDate && getFY(inv.issueDate) === selectedFY);
@@ -105,23 +99,6 @@ export default function DashboardPage() {
       });
       setStatusBreakdown(breakdown);
 
-      // Aged receivables (all-time, not FY-scoped — cash flow perspective)
-      const now = new Date();
-      const unpaid = invoices.filter(inv =>
-        inv.status !== 'PAID' && inv.status !== 'CANCELLED' && inv.dueDate
-      );
-      const agedData = { current: 0, d30: 0, d60: 0, d60plus: 0, currentCount: 0, d30Count: 0, d60Count: 0, d60plusCount: 0 };
-      for (const inv of unpaid) {
-        const due = new Date(inv.dueDate.split('T')[0]);
-        const diff = Math.floor((now.getTime() - due.getTime()) / 86400000);
-        const amount = inv.total || 0;
-        if (diff <= 0) { agedData.current += amount; agedData.currentCount++; }
-        else if (diff <= 30) { agedData.d30 += amount; agedData.d30Count++; }
-        else if (diff <= 60) { agedData.d60 += amount; agedData.d60Count++; }
-        else { agedData.d60plus += amount; agedData.d60plusCount++; }
-      }
-      setAged(agedData);
-
       // Monthly data (FY months: Apr–Mar)
       const monthly: Record<string, { revenue: number; expenses: number }> = {};
       const monthKeys = fyMonthKeys(selectedFY);
@@ -163,26 +140,23 @@ export default function DashboardPage() {
     }
   };
 
-  const checkSetupState = async () => {
+  const checkCompanyProfile = async () => {
     try {
       const client = generateClient<Schema>();
-      const [{ data: profiles }, { data: clients }] = await Promise.all([
-        client.models.CompanyProfile.list(),
-        client.models.Client.list(),
-      ]);
-      setHasCompanyProfile(!!(profiles && profiles.length > 0));
-      setHasClients(!!(clients && clients.length > 0));
+      const { data } = await client.models.CompanyProfile.list();
+      setHasCompanyProfile(data && data.length > 0);
+      if (data?.[0]) setPlanTier((data[0] as any).subscriptionPlan || null);
     } catch (error) {
-      console.error('Error checking setup state:', error);
+      console.error('Error checking company profile:', error);
     }
   };
 
   const card = dark
     ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40'
-    : 'bg-white p-6 rounded-xl border-2 border-indigo-600';
+    : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
   const cardHover = dark
     ? 'bg-black p-6 rounded-xl border-2 border-purple-500/40 hover:border-purple-500 transition-all'
-    : 'bg-white p-6 rounded-xl border-2 border-indigo-600';
+    : 'bg-white p-6 rounded-xl shadow-sm border border-gray-200';
   const label = dark ? 'text-sm text-slate-400 mb-1' : 'text-sm text-gray-600 mb-1';
   const heading = dark ? 'text-lg font-semibold text-white mb-4' : 'text-lg font-semibold text-gray-900 mb-4';
   const muted = dark ? 'text-slate-400' : 'text-gray-600';
@@ -217,50 +191,6 @@ export default function DashboardPage() {
             </select>
           </div>
         </div>
-
-        {/* Onboarding Checklist */}
-        {!onboardingDismissed && (!hasCompanyProfile || !hasClients || !hasAnyInvoice) && (
-          <div className={`mb-8 rounded-xl p-6 ${dark ? 'bg-black border-2 border-purple-500/40' : 'bg-indigo-50 border border-indigo-200'}`}>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className={`text-lg font-semibold ${dark ? 'text-white' : 'text-indigo-900'}`}>Get started in 3 steps</h3>
-                <p className={`text-sm mt-0.5 ${dark ? 'text-slate-400' : 'text-indigo-700'}`}>Complete these to send your first invoice</p>
-              </div>
-              <button
-                onClick={() => {
-                  localStorage.setItem('cloudpro_onboarding_dismissed', '1');
-                  setOnboardingDismissed(true);
-                }}
-                aria-label="Dismiss checklist"
-                className={`p-1 rounded ${dark ? 'text-slate-500 hover:text-slate-300' : 'text-indigo-400 hover:text-indigo-600'}`}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              {[
-                { done: hasCompanyProfile, label: 'Set up your company profile', href: '/settings/company', cta: 'Add details' },
-                { done: hasClients, label: 'Add your first client', href: '/clients/new', cta: 'Add client' },
-                { done: hasAnyInvoice, label: 'Create and send your first invoice', href: '/invoices/new', cta: 'New invoice' },
-              ].map((step, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  {step.done
-                    ? <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-green-500" />
-                    : <Circle className={`w-5 h-5 flex-shrink-0 ${dark ? 'text-slate-600' : 'text-indigo-300'}`} />
-                  }
-                  <span className={`text-sm flex-1 ${step.done ? (dark ? 'line-through text-slate-500' : 'line-through text-indigo-400') : (dark ? 'text-slate-200' : 'text-indigo-800')}`}>
-                    {step.label}
-                  </span>
-                  {!step.done && (
-                    <Link href={step.href} className={`text-xs font-medium px-3 py-1 rounded-lg ${dark ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
-                      {step.cta}
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -297,34 +227,8 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Aged Receivables */}
-        {!loadingMetrics && (aged.current + aged.d30 + aged.d60 + aged.d60plus) > 0 && (
-          <div className={`${card} mb-8`}>
-            <h3 className={heading}>Money owed to you</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: 'Current', sublabel: 'Not yet due', amount: aged.current, count: aged.currentCount, color: dark ? 'text-green-400' : 'text-green-600' },
-                { label: '1–30 days', sublabel: 'Overdue', amount: aged.d30, count: aged.d30Count, color: 'text-amber-500' },
-                { label: '31–60 days', sublabel: 'Overdue', amount: aged.d60, count: aged.d60Count, color: 'text-orange-500' },
-                { label: '60+ days', sublabel: 'Overdue', amount: aged.d60plus, count: aged.d60plusCount, color: 'text-red-500' },
-              ].map(bucket => (
-                <div key={bucket.label} className={`p-4 rounded-lg ${dark ? 'bg-white/5' : 'bg-gray-50'}`}>
-                  <p className={`text-xs font-medium ${muted}`}>{bucket.label}</p>
-                  <p className={`text-xs ${muted} mb-2`}>{bucket.sublabel}</p>
-                  <p className={`text-xl font-bold ${bucket.amount > 0 ? bucket.color : muted}`}>
-                    {formatNZD(bucket.amount)}
-                  </p>
-                  {bucket.count > 0 && (
-                    <p className={`text-xs mt-1 ${muted}`}>{bucket.count} invoice{bucket.count !== 1 ? 's' : ''}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Expense & GST Summary */}
-        {(() => {
+        {/* Expense & GST Summary — Business plan only */}
+        {planTier !== 'STARTER' && (() => {
           const margin = preTaxMargin(metrics.revenueExGst, metrics.expensesExGst);
           const gstNet = netGstPosition(metrics.gstCollected, metrics.gstPaid);
           const marginPct = metrics.revenueExGst > 0
@@ -390,30 +294,36 @@ export default function DashboardPage() {
               <p className={`text-xs ${muted}`}>Revenue (incl GST)</p>
               <p className={`text-lg font-bold ${text}`}>${metrics.totalRevenue.toFixed(2)}</p>
             </div>
+            {planTier !== 'STARTER' && (
             <div>
               <p className={`text-xs ${muted}`}>Expenses (incl GST)</p>
               <p className={`text-lg font-bold text-red-400`}>${metrics.totalExpenses.toFixed(2)}</p>
             </div>
+            )}
             <div>
               <p className={`text-xs ${muted}`}>Net GST Position</p>
               <p className={`text-lg font-bold ${(metrics.gstCollected - metrics.gstPaid) >= 0 ? 'text-orange-400' : 'text-green-400'}`}>
                 ${(metrics.gstCollected - metrics.gstPaid).toFixed(2)}
               </p>
             </div>
+            {planTier !== 'STARTER' && (
             <div>
               <p className={`text-xs ${muted}`}>Pre-Tax Margin</p>
               <p className={`text-lg font-bold ${(metrics.revenueExGst - metrics.expensesExGst) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 ${(metrics.revenueExGst - metrics.expensesExGst).toFixed(2)}
               </p>
             </div>
+            )}
             <div>
               <p className={`text-xs ${muted}`}>Invoices</p>
               <p className={`text-lg font-bold ${text}`}>{loadingMetrics ? '...' : metrics.invoiceCount}</p>
             </div>
+            {planTier !== 'STARTER' && (
             <div>
               <p className={`text-xs ${muted}`}>Expenses</p>
               <p className={`text-lg font-bold ${text}`}>{loadingMetrics ? '...' : metrics.expenseCount}</p>
             </div>
+            )}
           </div>
         </div>
 
@@ -512,7 +422,8 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Recent Expenses */}
+          {/* Recent Expenses — Business plan only */}
+          {planTier !== 'STARTER' && (
           <div className={card}>
             <div className="flex justify-between items-center mb-4">
               <h3 className={dark ? 'text-lg font-semibold text-white' : 'text-lg font-semibold text-gray-900'}>Recent Expenses</h3>
@@ -540,8 +451,22 @@ export default function DashboardPage() {
               <p className={`text-sm ${muted}`}>No expenses yet</p>
             )}
           </div>
+          )}
         </div>
 
+        {/* Setup Guide */}
+        {!hasCompanyProfile && (
+          <div className={dark ? 'bg-black border-2 border-purple-500/40 p-6 rounded-xl' : 'bg-indigo-50 border border-indigo-200 p-6 rounded-xl'}>
+            <h3 className={dark ? 'text-lg font-semibold text-white mb-2' : 'text-lg font-semibold text-indigo-900 mb-2'}>Complete Your Setup</h3>
+            <p className={dark ? 'text-purple-200 mb-4' : 'text-indigo-700 mb-4'}>Set up your company profile to start creating invoices</p>
+            <button
+              onClick={() => router.push('/settings/company')}
+              className={dark ? 'px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all font-medium' : 'px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all font-medium'}
+            >
+              Set Up Company Profile
+            </button>
+          </div>
+        )}
       </main>
     </AppLayout>
   );
