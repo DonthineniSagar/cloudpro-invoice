@@ -155,6 +155,8 @@ stripeWebhookLambda.addToRolePolicy(
 stripeWebhookFn.addEnvironment('COMPANY_PROFILE_TABLE_NAME', companyProfileTableName);
 stripeWebhookFn.addEnvironment('STRIPE_PRODUCT_STARTER', process.env.NEXT_PUBLIC_STRIPE_PRODUCT_STARTER || '');
 stripeWebhookFn.addEnvironment('STRIPE_PRODUCT_BUSINESS', process.env.NEXT_PUBLIC_STRIPE_PRODUCT_BUSINESS || '');
+stripeWebhookFn.addEnvironment('STRIPE_SECRET_KEY', process.env.STRIPE_SECRET_KEY || '');
+stripeWebhookFn.addEnvironment('STRIPE_WEBHOOK_SECRET', process.env.STRIPE_WEBHOOK_SECRET || '');
 
 // Function URL for Stripe to call directly
 const stripeWebhookUrl = stripeWebhookFn.addFunctionUrl({
