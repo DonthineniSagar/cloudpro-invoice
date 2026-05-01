@@ -1,4 +1,4 @@
-import { defineFunction } from '@aws-amplify/backend';
+import { defineFunction, secret } from '@aws-amplify/backend';
 
 export const stripeWebhook = defineFunction({
   name: 'stripe-webhook',
@@ -7,4 +7,8 @@ export const stripeWebhook = defineFunction({
   timeoutSeconds: 30,
   memoryMB: 256,
   resourceGroupName: 'data',
+  environment: {
+    STRIPE_SECRET_KEY: secret('STRIPE_SECRET_KEY'),
+    STRIPE_WEBHOOK_SECRET: secret('STRIPE_WEBHOOK_SECRET'),
+  },
 });
