@@ -142,7 +142,7 @@ processEmailLambda.addToRolePolicy(
 // Prod: expenses.cloudpro-digital.co.nz
 // Dev/other branches: expenses-dev.cloudpro-digital.co.nz
 // SES receipt rule set is created once and shared across branches (only one can be active per account).
-const isProd = dataStack.stackName.includes('-pr-');
+const isProd = dataStack.stackName.includes('-prod-');
 const sesDomain = isProd ? 'expenses.cloudpro-digital.co.nz' : 'expenses-dev.cloudpro-digital.co.nz';
 
 const ruleSet = ses.ReceiptRuleSet.fromReceiptRuleSetName(dataStack, 'ExpenseEmailRuleSet', 'cloudpro-expense-ingest');
