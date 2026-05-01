@@ -3,17 +3,20 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Search, Mail, Phone, MapPin, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, Mail, Phone, MapPin, Edit2, Trash2, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { ClientCardSkeleton } from '@/components/Skeleton';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function ClientsPage() {
   const { theme } = useTheme();
   const [clients, setClients] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     loadClients();
@@ -23,8 +26,12 @@ export default function ClientsPage() {
     try {
       const client = generateClient<Schema>();
       const { listAll } = await import('@/lib/list-all');
-      const data = await listAll(client.models.Client);
-      setClients(data);
+      const [clientData, invoiceData] = await Promise.all([
+        listAll(client.models.Client),
+        listAll(client.models.Invoice),
+      ]);
+      setClients(clientData);
+      setInvoices(invoiceData);
     } catch (error) {
       console.error('Error loading clients:', error);
     } finally {
@@ -32,13 +39,25 @@ export default function ClientsPage() {
     }
   };
 
+  const clientStats = (clientId: string) => {
+    const clientInvoices = invoices.filter(inv => inv.clientId === clientId);
+    const totalBilled = clientInvoices.reduce((s, inv) => s + (inv.total || 0), 0);
+    const outstanding = clientInvoices
+      .filter(inv => inv.status !== 'PAID' && inv.status !== 'CANCELLED')
+      .reduce((s, inv) => s + (inv.total || 0), 0);
+    const sorted = [...clientInvoices].sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime());
+    const lastDate = sorted[0]?.issueDate
+      ? new Date(sorted[0].issueDate).toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })
+      : null;
+    return { totalBilled, outstanding, lastDate, count: clientInvoices.length };
+  };
+
   const deleteClient = async (id: string) => {
-    if (!confirm('Delete this client?')) return;
-    
     try {
       const client = generateClient<Schema>();
       await client.models.Client.delete({ id });
-      setClients(clients.filter(c => c.id !== id));
+      setClients(prev => prev.filter(c => c.id !== id));
+      setDeleteConfirm(null);
     } catch (error) {
       console.error('Error deleting client:', error);
     }
@@ -130,7 +149,7 @@ export default function ClientsPage() {
                       <Edit2 className="w-4 h-4" />
                     </Link>
                     <button
-                      onClick={() => deleteClient(client.id)}
+                      onClick={() => setDeleteConfirm(client.id)}
                       className={theme === 'dark' ? 'text-slate-500 hover:text-red-400' : 'text-gray-400 hover:text-red-600'}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -162,11 +181,44 @@ export default function ClientsPage() {
                 {client.notes && (
                   <p className={theme === 'dark' ? 'mt-4 text-sm text-slate-500 line-clamp-2' : 'mt-4 text-sm text-gray-500 line-clamp-2'}>{client.notes}</p>
                 )}
+
+                {(() => {
+                  const s = clientStats(client.id);
+                  if (s.count === 0) return null;
+                  return (
+                    <div className={`mt-4 pt-4 border-t grid grid-cols-3 gap-2 ${theme === 'dark' ? 'border-purple-500/20' : 'border-gray-100'}`}>
+                      <div className="text-center">
+                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Billed</p>
+                        <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>${s.totalBilled.toFixed(0)}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Owing</p>
+                        <p className={`text-sm font-semibold ${s.outstanding > 0 ? 'text-amber-500' : (theme === 'dark' ? 'text-slate-400' : 'text-gray-500')}`}>
+                          ${s.outstanding.toFixed(0)}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-xs ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Last inv.</p>
+                        <p className={`text-xs font-medium truncate ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{s.lastDate}</p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteConfirm}
+        title="Delete client?"
+        description="This will permanently remove the client. Any invoices linked to this client will remain but lose the client reference."
+        confirmLabel="Delete"
+        onConfirm={() => deleteConfirm && deleteClient(deleteConfirm)}
+        onCancel={() => setDeleteConfirm(null)}
+        dark={theme === 'dark'}
+      />
     </AppLayout>
   );
 }

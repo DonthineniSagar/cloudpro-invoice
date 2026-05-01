@@ -39,8 +39,10 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [sending, setSending] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [emailPreview, setEmailPreview] = useState(false);
   const [emailForm, setEmailForm] = useState<EmailForm>({ to: [''], cc: [], subject: '', body: '', replyTo: '' });
   const [template, setTemplate] = useState<TemplateName>('modern');
+  const [celebrating, setCelebrating] = useState(false);
 
   useEffect(() => {
     loadInvoice();
@@ -74,13 +76,17 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
   const updateStatus = async (status: string) => {
     try {
       const client = generateClient<Schema>();
-      await client.models.Invoice.update({
-        id: params.id,
-        status: status as any
-      });
+      await client.models.Invoice.update({ id: params.id, status: status as any });
       setInvoice({ ...invoice, status });
       if (status === 'PAID') {
         createNotification('INVOICE_PAID', `Invoice ${invoice.invoiceNumber} paid`, `${invoice.clientName} — $${invoice.total?.toFixed(2)}`, invoice.userId, `/invoices/${params.id}`);
+        // First-payment celebration: show once per browser session
+        const key = 'cloudpro_first_payment_celebrated';
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, '1');
+          setCelebrating(true);
+          setTimeout(() => setCelebrating(false), 3500);
+        }
       }
     } catch (error) {
       console.error('Error updating status:', error);
@@ -219,6 +225,7 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
         subject: replaceTokens(profile?.emailSubjectTemplate || 'Invoice {invoiceNumber} from {companyName}'),
         body: replaceTokens(profile?.emailBodyTemplate || defaultBody),
       });
+      setEmailPreview(false);
       setShowEmailDialog(true);
     } catch {
       toast.error('Failed to load email preferences');
@@ -537,6 +544,49 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
               </button>
             </div>
 
+            {/* Write / Preview tabs */}
+            <div className={`flex rounded-lg p-1 mb-4 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
+              {(['Write', 'Preview'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setEmailPreview(tab === 'Preview')}
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    (tab === 'Preview') === emailPreview
+                      ? (theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-gray-900 shadow-sm')
+                      : (theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-gray-500 hover:text-gray-700')
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {emailPreview ? (
+              /* Preview pane */
+              <div className={`rounded-lg p-4 text-sm space-y-3 ${theme === 'dark' ? 'bg-gray-800 border border-purple-500/20' : 'bg-gray-50 border border-gray-200'}`}>
+                <div>
+                  <span className={`text-xs font-medium uppercase ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>To</span>
+                  <p className={theme === 'dark' ? 'text-slate-200' : 'text-gray-700'}>{emailForm.to.filter(Boolean).join(', ') || '—'}</p>
+                </div>
+                {emailForm.cc.some(Boolean) && (
+                  <div>
+                    <span className={`text-xs font-medium uppercase ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>CC</span>
+                    <p className={theme === 'dark' ? 'text-slate-200' : 'text-gray-700'}>{emailForm.cc.filter(Boolean).join(', ')}</p>
+                  </div>
+                )}
+                <div>
+                  <span className={`text-xs font-medium uppercase ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Subject</span>
+                  <p className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{emailForm.subject || '—'}</p>
+                </div>
+                <div className={`border-t pt-3 ${theme === 'dark' ? 'border-purple-500/20' : 'border-gray-200'}`}>
+                  <span className={`text-xs font-medium uppercase ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>Message</span>
+                  <pre className={`mt-1 whitespace-pre-wrap font-sans ${theme === 'dark' ? 'text-slate-200' : 'text-gray-700'}`}>{emailForm.body || '—'}</pre>
+                </div>
+                <p className={`text-xs italic ${theme === 'dark' ? 'text-slate-500' : 'text-gray-400'}`}>
+                  + {invoice.invoiceNumber}.pdf attached
+                </p>
+              </div>
+            ) : (
             <div className="space-y-4">
               {/* From (read-only) */}
               <div>
@@ -645,6 +695,39 @@ export default function InvoiceDetailPage({ params }: { params: { id: string } }
                 </button>
               </div>
             </div>
+            )} {/* end Write/Preview conditional */}
+
+            {/* Send button always visible in Preview mode too */}
+            {emailPreview && (
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={handleSendEmail}
+                  disabled={sending}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  {sending ? 'Sending...' : 'Send Email'}
+                </button>
+                <button onClick={() => setShowEmailDialog(false)} className={s.btnSecondary}>
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* First-payment celebration overlay */}
+      {celebrating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="text-center animate-bounce">
+            <div className="text-6xl mb-4">🎉</div>
+            <div className={`text-2xl font-bold px-6 py-3 rounded-2xl shadow-2xl ${theme === 'dark' ? 'bg-gray-900 text-white border border-purple-500/40' : 'bg-white text-gray-900 border-2 border-indigo-600'}`}>
+              First payment received!
+            </div>
+            <p className={`mt-2 text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-gray-600'}`}>
+              Congratulations on getting paid 💸
+            </p>
           </div>
         </div>
       )}

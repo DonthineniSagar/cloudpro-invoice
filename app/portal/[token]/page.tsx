@@ -71,9 +71,22 @@ export default function PortalPage({ params }: { params: { token: string } }) {
             <FileText className="w-5 h-5 text-indigo-600" />
             <span className="font-semibold text-gray-900">{invoice.companyName}</span>
           </div>
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-sm font-medium ${status.bg} ${status.color}`}>
-            <StatusIcon className="w-4 h-4" />
-            {status.label}
+          <div className="flex items-center gap-3">
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-sm font-medium ${status.bg} ${status.color}`}>
+              <StatusIcon className="w-4 h-4" />
+              {status.label}
+            </div>
+            {invoice.pdfUrl && (
+              <a
+                href={invoice.pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </a>
+            )}
           </div>
         </div>
       </div>
@@ -117,6 +130,7 @@ export default function PortalPage({ params }: { params: { token: string } }) {
 
             {/* Line Items */}
             <table className="w-full mb-6">
+              <caption className="sr-only">Invoice line items</caption>
               <thead>
                 <tr className="border-b-2 border-gray-200">
                   <th className="text-left py-3 text-xs font-medium text-gray-400 uppercase">Description</th>

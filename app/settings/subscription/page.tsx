@@ -147,11 +147,11 @@ export default function SubscriptionPage() {
   // Determine price to display
   const price = currentPlan
     ? sub.subscriptionInterval === 'ANNUAL'
-      ? currentPlan.annualPrice
+      ? (currentPlan.annualPrice ?? null)
       : currentPlan.monthlyPrice
     : null;
 
-  const priceLabel = price !== null
+  const priceLabel = price != null
     ? `$${price.toFixed(2)} NZD${sub.subscriptionInterval === 'ANNUAL' ? '/year' : '/month'}`
     : null;
 

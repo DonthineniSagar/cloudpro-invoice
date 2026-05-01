@@ -5,9 +5,10 @@ import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { Moon, Sun, Menu, X, LayoutDashboard, FileText, RefreshCw, Users, Receipt, BarChart3, Settings } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Moon, Sun, Menu, X, LayoutDashboard, FileText, RefreshCw, Users, Receipt, BarChart3, Settings, Search } from 'lucide-react';
 import NotificationBell from '@/components/NotificationBell';
+import CommandPalette from '@/components/CommandPalette';
 import TrialBanner from '@/components/TrialBanner';
 import MyBizLogo from '@/components/MyBizLogo';
 import UsageMeter from '@/components/UsageMeter';
@@ -55,8 +56,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const dark = theme === 'dark';
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key === 'k') { e.preventDefault(); setPaletteOpen(p => !p); }
+      if (meta && e.key === 'n' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault(); router.push('/invoices/new');
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [router]);
 
   const [sub, setSub] = useState<SubscriptionState>({
     plan: null,
@@ -156,6 +172,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </nav>
             </div>
             <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={() => setPaletteOpen(true)}
+                aria-label="Search (⌘K)"
+                title="Search (⌘K)"
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${dark ? 'bg-gray-800 text-slate-400 hover:text-white border border-gray-700' : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-200'}`}
+              >
+                <Search className="w-4 h-4" />
+                <span className="hidden lg:inline">Search</span>
+                <kbd className={`hidden lg:inline text-xs px-1 py-0.5 rounded font-mono ${dark ? 'bg-gray-700 text-slate-500' : 'bg-gray-200 text-gray-400'}`}>⌘K</kbd>
+              </button>
               <NotificationBell dark={dark} />
               <button onClick={toggleTheme}
                 className={dark ? 'p-2 rounded-lg bg-slate-800 text-purple-400 hover:bg-slate-700' : 'p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200'}>
@@ -238,6 +264,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <TrialBanner status={sub.status} trialEndDate={sub.trialEndDate} dark={dark} />
       )}
       <main>{children}</main>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} dark={dark} />
     </div>
   );
 }
