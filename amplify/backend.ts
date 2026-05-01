@@ -5,13 +5,14 @@ import { storage } from './storage/resource';
 import { sendInvoiceEmail } from './functions/send-invoice-email/resource';
 import { processReceipt } from './functions/process-receipt/resource';
 import { processExpenseEmail } from './functions/process-expense-email/resource';
+import { stripeWebhook } from './functions/stripe-webhook/resource';
 import { Effect, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Tags } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as ses from 'aws-cdk-lib/aws-ses';
 import * as sesActions from 'aws-cdk-lib/aws-ses-actions';
-import { Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 
 const backend = defineBackend({
   auth,
@@ -20,6 +21,7 @@ const backend = defineBackend({
   sendInvoiceEmail,
   processReceipt,
   processExpenseEmail,
+  stripeWebhook,
 });
 
 // Enable WebAuthn/Passkey as a first-factor authentication method
@@ -136,6 +138,34 @@ processEmailLambda.addToRolePolicy(
     resources: [backend.data.resources.tables['Notification'].tableArn],
   })
 );
+
+// === Stripe Webhook Lambda ===
+const stripeWebhookLambda = backend.stripeWebhook.resources.lambda;
+const stripeWebhookFn = stripeWebhookLambda as lambda.Function;
+
+// Least-privilege: only UpdateItem on CompanyProfile table
+stripeWebhookLambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['dynamodb:UpdateItem'],
+    resources: [backend.data.resources.tables['CompanyProfile'].tableArn],
+  })
+);
+
+stripeWebhookFn.addEnvironment('COMPANY_PROFILE_TABLE_NAME', companyProfileTableName);
+stripeWebhookFn.addEnvironment('STRIPE_PRODUCT_STARTER', process.env.NEXT_PUBLIC_STRIPE_PRODUCT_STARTER || '');
+stripeWebhookFn.addEnvironment('STRIPE_PRODUCT_BUSINESS', process.env.NEXT_PUBLIC_STRIPE_PRODUCT_BUSINESS || '');
+
+// Function URL for Stripe to call directly
+const stripeWebhookUrl = stripeWebhookFn.addFunctionUrl({
+  authType: lambda.FunctionUrlAuthType.NONE, // Stripe authenticates via webhook signature
+});
+
+// Output the function URL for Stripe webhook configuration
+new CfnOutput(dataStack, 'StripeWebhookUrl', {
+  value: stripeWebhookUrl.url,
+  description: 'Stripe webhook endpoint URL',
+});
 
 // SES Receipt Rule — receives emails and stores in S3, then triggers Lambda
 // NOTE: You must verify your domain in SES and set up MX records before this works.

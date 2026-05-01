@@ -128,7 +128,9 @@ export default function CompanyProfilePage() {
         accentColor: profile.accentColor || '#6366F1',
         invoiceFooterText: profile.invoiceFooterText || '',
         ...(logoUrl && { logoUrl }),
-        ...ingest,
+        ...(ingest.expenseIngestKey ? { expenseIngestKey: ingest.expenseIngestKey } : {}),
+        expenseIngestActive: ingest.expenseIngestActive || false,
+        ...(ingest.expenseWhitelistedEmails?.length ? { expenseWhitelistedEmails: ingest.expenseWhitelistedEmails } : {}),
         identityId: cognitoIdentityId,
       };
       console.log('saveData:', JSON.stringify(saveData, null, 2));
@@ -350,7 +352,8 @@ export default function CompanyProfilePage() {
           </div>
         </div>
 
-        {/* Expense Email Ingest */}
+        {/* Expense Email Ingest — Business plan only */}
+        {subPlan && subPlan !== 'STARTER' && (
         <div>
           <h2 className={`${t.sectionTitle} mb-1`}>Expense Email Ingest</h2>
           <p className={`text-xs mb-4 ${t.textMuted}`}>Forward bills and receipts to your unique email to auto-create expenses</p>
@@ -449,6 +452,7 @@ export default function CompanyProfilePage() {
             )}
           </div>
         </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-4">
           <button type="button" onClick={() => router.push('/dashboard')} className={t.btnGhost}>Cancel</button>

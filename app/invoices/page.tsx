@@ -24,6 +24,9 @@ export default function InvoicesPage() {
   const [bulkWorking, setBulkWorking] = useState(false);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get('search');
+    if (search) setSearchTerm(search);
     loadInvoices();
   }, []);
 
