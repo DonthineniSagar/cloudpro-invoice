@@ -9,7 +9,8 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
+const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || "").trim();
+console.log("SECRET_DEBUG", JSON.stringify({ len: webhookSecret.length, first5: webhookSecret.substring(0,5), last5: webhookSecret.substring(webhookSecret.length-5), charCodes: [...webhookSecret].slice(-3).map(c => c.charCodeAt(0)) }));
 const TABLE = process.env.COMPANY_PROFILE_TABLE_NAME!;
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({}));
