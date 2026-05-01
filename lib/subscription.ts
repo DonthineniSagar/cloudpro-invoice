@@ -99,7 +99,9 @@ export const PRODUCT_TO_PLAN: Record<string, PlanTier> = Object.fromEntries(
 export const VALID_PRICE_IDS = new Set(
   [
     process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY,
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL,
     process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_MONTHLY,
+    process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_ANNUAL,
   ].filter(Boolean)
 );
 

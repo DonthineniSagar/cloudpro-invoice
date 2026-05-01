@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       mode: 'subscription',
       customer_email: userEmail,
       payment_method_collection: 'if_required',
-      allow_promotion_codes: true,
+      discounts: [{ coupon: process.env.STRIPE_LAUNCH_COUPON_ID || '' }],
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: subscriptionData,
       metadata: { userId, companyProfileId, planName, interval },

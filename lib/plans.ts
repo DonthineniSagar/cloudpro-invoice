@@ -8,27 +8,27 @@ export interface PlanFeatureItem {
 export interface Plan {
   name: string;
   tier: string;
-  displayPrice: number;    // "was" price (before discount)
-  monthlyPrice: number;    // actual charge incl GST
+  fullPrice: number;       // full monthly price incl GST (before discount)
   monthlyPriceId: string;
-  annualPrice?: number;    // annual charge incl GST (10 months for 12)
-  annualPriceId?: string;
+  annualPrice: number;     // full annual price incl GST (before discount)
+  annualPriceId: string;
   highlighted: boolean;
-  discount: string | null;
   features: PlanFeatureItem[];
 }
+
+// Launch discount — 50% off, applied automatically via Stripe coupon
+export const LAUNCH_DISCOUNT = 0.5;
+export const LAUNCH_DISCOUNT_LABEL = '50% off';
 
 export const PLANS: Plan[] = [
   {
     name: 'Starter',
     tier: 'STARTER',
-    displayPrice: 19.99,
-    monthlyPrice: 11.49,
+    fullPrice: 19.99,
     monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY || '',
-    annualPrice: 114.90,
+    annualPrice: 199.90,
     annualPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL || '',
     highlighted: false,
-    discount: '50% off',
     features: [
       { name: 'Unlimited invoices', included: true },
       { name: 'Unlimited clients', included: true },
@@ -42,13 +42,11 @@ export const PLANS: Plan[] = [
   {
     name: 'Business',
     tier: 'BUSINESS',
-    displayPrice: 59.99,
-    monthlyPrice: 34.49,
+    fullPrice: 59.99,
     monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_MONTHLY || '',
-    annualPrice: 344.90,
+    annualPrice: 599.90,
     annualPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_ANNUAL || '',
     highlighted: true,
-    discount: '50% off',
     features: [
       { name: 'Unlimited invoices', included: true },
       { name: 'Unlimited clients', included: true },
