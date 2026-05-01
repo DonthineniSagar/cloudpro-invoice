@@ -79,7 +79,12 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
 
-          <div className="text-4xl mb-4">✅</div>
+          <div className="flex justify-center mb-4">
+            <svg className="w-14 h-14 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 12l3 3 6-6" />
+            </svg>
+          </div>
           <h2 className={`text-2xl font-bold mb-2 ${dark ? 'text-white' : 'text-gray-900'}`}>Password Reset</h2>
           <p className={`mb-6 ${dark ? 'text-slate-300' : 'text-gray-600'}`}>Your password has been updated successfully.</p>
           <Link

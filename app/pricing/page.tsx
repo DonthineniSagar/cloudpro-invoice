@@ -23,6 +23,9 @@ export default function PricingPage() {
   const [hasExistingTrial, setHasExistingTrial] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [interval, setInterval] = useState<'monthly' | 'annual'>('monthly');
+  const [pendingPlan, setPendingPlan] = useState<typeof PLANS[0] | null>(null);
+  const [showDowngradeWarning, setShowDowngradeWarning] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -52,13 +55,14 @@ export default function PricingPage() {
     }
     setLoadingPlan(plan.tier);
     try {
+      const priceId = interval === 'annual' && plan.annualPriceId ? plan.annualPriceId : plan.monthlyPriceId;
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          priceId: plan.monthlyPriceId,
+          priceId,
           planName: plan.tier,
-          interval: 'monthly',
+          interval,
           userId: user.id,
           userEmail: user.email,
           companyProfileId,
@@ -106,6 +110,28 @@ export default function PricingPage() {
           <p className={`mt-2 ${dark ? 'text-slate-400' : 'text-gray-600'}`}>
             {currentPlan ? 'Upgrade or change your plan anytime.' : 'Start with a 14-day free trial. No credit card required.'}
           </p>
+
+          {/* Billing interval toggle */}
+          <div className="inline-flex items-center mt-6 gap-1 p-1 rounded-xl relative" style={{ background: dark ? '#1e1e2e' : '#f3f4f6' }}>
+            {(['monthly', 'annual'] as const).map(opt => (
+              <button
+                key={opt}
+                onClick={() => setInterval(opt)}
+                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all ${
+                  interval === opt
+                    ? (dark ? 'bg-purple-600 text-white shadow' : 'bg-white text-gray-900 shadow')
+                    : (dark ? 'text-slate-400 hover:text-slate-200' : 'text-gray-500 hover:text-gray-700')
+                }`}
+              >
+                {opt === 'monthly' ? 'Monthly' : 'Annual'}
+              </button>
+            ))}
+            {interval === 'annual' && (
+              <span className="absolute -top-3 right-1 bg-green-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+                2 months free
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
@@ -134,18 +160,37 @@ export default function PricingPage() {
                   </span>
                 )}
                 <h3 className={`text-lg font-semibold ${dark ? 'text-white' : 'text-gray-900'}`}>{plan.name}</h3>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className={`text-lg line-through ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
-                    ${plan.displayPrice.toFixed(2)}
-                  </span>
-                  <span className={`text-4xl font-bold tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>
-                    ${(plan.monthlyPrice / 1.15).toFixed(2)}
-                  </span>
-                  <span className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>+GST/mo</span>
-                </div>
-                <p className={`mt-1 text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
-                  ${plan.monthlyPrice.toFixed(2)} NZD/mo incl. GST
-                </p>
+                {interval === 'annual' && plan.annualPrice ? (
+                  <div className="mt-4">
+                    <div className="flex items-baseline gap-2">
+                      <span className={`text-4xl font-bold tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>
+                        ${(plan.annualPrice / 1.15).toFixed(2)}
+                      </span>
+                      <span className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>+GST/yr</span>
+                    </div>
+                    <p className={`mt-1 text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                      ${plan.annualPrice.toFixed(2)} NZD/yr incl. GST
+                    </p>
+                    <p className={`text-xs mt-0.5 text-green-500 font-medium`}>
+                      Save ${((plan.monthlyPrice * 12) - plan.annualPrice).toFixed(2)} vs monthly
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4">
+                    <div className="flex items-baseline gap-2">
+                      <span className={`text-lg line-through ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                        ${plan.displayPrice.toFixed(2)}
+                      </span>
+                      <span className={`text-4xl font-bold tracking-tight ${dark ? 'text-white' : 'text-gray-900'}`}>
+                        ${(plan.monthlyPrice / 1.15).toFixed(2)}
+                      </span>
+                      <span className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>+GST/mo</span>
+                    </div>
+                    <p className={`mt-1 text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                      ${plan.monthlyPrice.toFixed(2)} NZD/mo incl. GST
+                    </p>
+                  </div>
+                )}
 
                 <ul className="mt-6 space-y-3 flex-1">
                   {plan.features.map((f) => (
@@ -161,7 +206,14 @@ export default function PricingPage() {
                 </ul>
 
                 <button
-                  onClick={() => handleSelectPlan(plan)}
+                  onClick={() => {
+                    if (buttonLabel === 'Downgrade') {
+                      setPendingPlan(plan);
+                      setShowDowngradeWarning(true);
+                    } else {
+                      handleSelectPlan(plan);
+                    }
+                  }}
                   disabled={isCurrentPlan || isLoading || loading}
                   className={`mt-8 block w-full text-center px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isCurrentPlan
@@ -181,6 +233,37 @@ export default function PricingPage() {
           All prices in NZD. GST (15%) applies.
         </p>
       </div>
+
+      {/* Downgrade warning */}
+      {showDowngradeWarning && pendingPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60" onClick={() => setShowDowngradeWarning(false)} />
+          <div className={`relative w-full max-w-sm rounded-xl p-6 shadow-2xl ${dark ? 'bg-gray-900 border border-amber-500/30' : 'bg-white border border-amber-200'}`}>
+            <h3 className={`text-lg font-semibold mb-2 ${dark ? 'text-white' : 'text-gray-900'}`}>
+              Downgrade to {pendingPlan.name}?
+            </h3>
+            <p className={`text-sm mb-4 ${dark ? 'text-slate-400' : 'text-gray-600'}`}>
+              Downgrading will hide your <strong>Expenses</strong> and <strong>Reports</strong> sections. Your data is safe — everything comes back if you upgrade again.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => { setShowDowngradeWarning(false); setPendingPlan(null); }}
+                className={`px-4 py-2 text-sm rounded-lg ${dark ? 'text-slate-300 hover:bg-gray-800' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                Keep current plan
+              </button>
+              <button
+                onClick={() => {
+                  setShowDowngradeWarning(false);
+                  handleSelectPlan(pendingPlan);
+                  setPendingPlan(null);
+                }}
+                className="px-4 py-2 text-sm rounded-lg font-medium bg-amber-500 hover:bg-amber-600 text-white">
+                Downgrade anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
