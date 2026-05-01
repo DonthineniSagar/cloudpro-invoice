@@ -11,6 +11,8 @@ export interface Plan {
   displayPrice: number;    // "was" price (before discount)
   monthlyPrice: number;    // actual charge incl GST
   monthlyPriceId: string;
+  annualPrice?: number;    // annual charge incl GST (10 months for 12)
+  annualPriceId?: string;
   highlighted: boolean;
   discount: string | null;
   features: PlanFeatureItem[];
@@ -23,6 +25,8 @@ export const PLANS: Plan[] = [
     displayPrice: 19.99,
     monthlyPrice: 11.49,
     monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_MONTHLY || '',
+    annualPrice: 114.90,
+    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STARTER_ANNUAL || '',
     highlighted: false,
     discount: '50% off',
     features: [
@@ -41,6 +45,8 @@ export const PLANS: Plan[] = [
     displayPrice: 59.99,
     monthlyPrice: 34.49,
     monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_MONTHLY || '',
+    annualPrice: 344.90,
+    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BUSINESS_ANNUAL || '',
     highlighted: true,
     discount: '50% off',
     features: [

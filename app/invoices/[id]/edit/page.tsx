@@ -368,10 +368,13 @@ export default function EditInvoicePage({ params }: { params: { id: string } }) 
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="sm:hidden text-xs text-gray-500 mb-1 block">WBS</label>
+                      <label className="sm:hidden text-xs text-gray-500 mb-1 block">
+                        <abbr title="Work Breakdown Structure — optional project code for your records" className="no-underline cursor-help">WBS</abbr>
+                      </label>
                       <input
                         type="text"
                         placeholder="WBS"
+                        title="Work Breakdown Structure — optional project code for your records"
                         value={item.wbs}
                         onChange={(e) => updateLineItem(item.id, 'wbs', e.target.value)}
                         

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
@@ -31,6 +31,9 @@ export default function NewInvoicePage() {
   const dark = theme === 'dark';
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [hasDraft, setHasDraft] = useState(false);
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const DRAFT_KEY = 'invoice_new_draft';
   const [clients, setClients] = useState<unknown[]>([]);
   const [companyProfile, setCompanyProfile] = useState<Record<string, unknown> | null>(null);
   const [selectedClient, setSelectedClient] = useState<Record<string, unknown> | null>(null);
@@ -134,6 +137,46 @@ export default function NewInvoicePage() {
     })();
   }, [clients]);
 
+  // Auto-save draft to localStorage (debounced 2s), skip when cloning
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('clone')) return;
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      if (!formData.invoiceNumber) return; // don't save before number is set
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData, lineItems, clientDetails, savedAt: new Date().toISOString() }));
+    }, 2000);
+    return () => { if (draftTimerRef.current) clearTimeout(draftTimerRef.current); };
+  }, [formData, lineItems, clientDetails]);
+
+  // Check for saved draft on mount (skip when cloning)
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('clone')) return;
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.formData?.invoiceNumber) setHasDraft(true);
+      } catch {}
+    }
+  }, []);
+
+  const restoreDraft = () => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (!saved) return;
+    try {
+      const { formData: fd, lineItems: li, clientDetails: cd } = JSON.parse(saved);
+      if (fd) setFormData(prev => ({ ...prev, ...fd }));
+      if (li) setLineItems(li);
+      if (cd) setClientDetails(cd);
+    } catch {}
+    setHasDraft(false);
+  };
+
+  const discardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+  };
+
   const handleClientSelect = (clientId: string) => {
     const c = clients.find((c: unknown) => (c as Record<string, unknown>).id === clientId) as Record<string, unknown> | undefined;
     setSelectedClient(c || null);
@@ -205,6 +248,7 @@ export default function NewInvoicePage() {
           });
         }
       }
+      localStorage.removeItem(DRAFT_KEY);
       router.push('/invoices');
     } catch (error) {
       console.error('Error creating invoice:', error);
@@ -238,6 +282,20 @@ export default function NewInvoicePage() {
         ) : (
         <div className={t.card}>
           <h1 className={t.heading}>Create Invoice</h1>
+
+          {hasDraft && (
+            <div className={`flex items-center justify-between p-3 rounded-lg mb-4 text-sm ${dark ? 'bg-amber-900/20 border border-amber-500/30 text-amber-300' : 'bg-amber-50 border border-amber-200 text-amber-800'}`}>
+              <span>You have an unsaved draft. Restore it?</span>
+              <div className="flex gap-2 ml-4">
+                <button type="button" onClick={restoreDraft} className={`px-3 py-1 rounded text-xs font-medium ${dark ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300' : 'bg-amber-600 hover:bg-amber-700 text-white'}`}>
+                  Restore
+                </button>
+                <button type="button" onClick={discardDraft} className={`px-3 py-1 rounded text-xs ${dark ? 'text-amber-500 hover:text-amber-300' : 'text-amber-600 hover:text-amber-800'}`}>
+                  Discard
+                </button>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -344,8 +402,11 @@ export default function NewInvoicePage() {
                         onChange={(e) => updateLineItem(item.id, 'description', e.target.value)} className={t.input} />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="sm:hidden text-xs text-gray-500 mb-1 block">WBS</label>
+                      <label className="sm:hidden text-xs text-gray-500 mb-1 block">
+                        <abbr title="Work Breakdown Structure — optional project code for your records" className="no-underline cursor-help">WBS</abbr>
+                      </label>
                       <input type="text" placeholder="WBS" value={item.wbs}
+                        title="Work Breakdown Structure — optional project code for your records"
                         onChange={(e) => updateLineItem(item.id, 'wbs', e.target.value)} className={t.input} />
                     </div>
                     <div className="grid grid-cols-3 gap-2 sm:contents">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { updatePassword } from 'aws-amplify/auth';
 import { useTheme } from '@/lib/theme-context';
 import { tc } from '@/lib/theme-classes';
+import PasswordStrengthMeter from '@/components/PasswordStrengthMeter';
 
 export default function SecurityPage() {
   const { theme } = useTheme();
@@ -52,6 +53,7 @@ export default function SecurityPage() {
             <label className={t.label}>New Password</label>
             <input type="password" required value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)} className={t.input} />
+            <PasswordStrengthMeter password={newPassword} dark={theme === 'dark'} />
           </div>
           <div>
             <label className={t.label}>Confirm New Password</label>

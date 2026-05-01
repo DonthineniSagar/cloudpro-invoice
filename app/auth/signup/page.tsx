@@ -11,6 +11,7 @@ import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { Chrome, Loader2, Eye, EyeOff } from 'lucide-react';
 import { signupSchema, validate } from '@/lib/validation';
 import CompanyProfileStep from '@/components/CompanyProfileStep';
+import PasswordStrengthMeter from '@/components/PasswordStrengthMeter';
 
 type Step = 'register' | 'verification' | 'company-profile';
 
@@ -384,6 +385,7 @@ export default function SignupPage() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  <PasswordStrengthMeter password={password} dark={dark} />
                   {fieldErrors.password && (
                     <p id="password-error" role="alert" aria-live="assertive" className="mt-1 text-sm text-red-500">
                       {fieldErrors.password}

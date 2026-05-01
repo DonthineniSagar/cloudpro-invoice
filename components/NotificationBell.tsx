@@ -9,6 +9,7 @@ import { Bell, X, FileText, Receipt, Clock, CheckCircle, AlertTriangle, Zap } fr
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/lib/toast-context';
 
 const typeConfig: Record<string, { icon: typeof Bell; color: string }> = {
   EXPENSE_CREATED: { icon: Receipt, color: 'text-blue-500' },
@@ -26,6 +27,7 @@ export default function NotificationBell({ dark }: { dark: boolean }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const toast = useToast();
 
   useEffect(() => {
     loadNotifications();
@@ -51,7 +53,9 @@ export default function NotificationBell({ dark }: { dark: boolean }) {
       );
       setNotifications(sorted.slice(0, 20));
       setUnreadCount(sorted.filter((n: any) => !n.read).length);
-    } catch {}
+    } catch {
+      toast.error('Failed to load notifications');
+    }
   };
 
   const markAsRead = async (id: string) => {
@@ -60,7 +64,9 @@ export default function NotificationBell({ dark }: { dark: boolean }) {
       await client.models.Notification.update({ id, read: true });
       setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch {}
+    } catch {
+      toast.error('Failed to mark notification as read');
+    }
   };
 
   const markAllRead = async () => {
@@ -70,7 +76,9 @@ export default function NotificationBell({ dark }: { dark: boolean }) {
       await Promise.all(unread.map(n => client.models.Notification.update({ id: n.id, read: true })));
       setNotifications(notifications.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
-    } catch {}
+    } catch {
+      toast.error('Failed to mark all notifications as read');
+    }
   };
 
   const handleClick = (n: any) => {
@@ -89,7 +97,11 @@ export default function NotificationBell({ dark }: { dark: boolean }) {
 
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className={`relative p-2 rounded-lg transition-colors ${dark ? 'hover:bg-purple-500/20 text-slate-300' : 'hover:bg-gray-100 text-gray-600'}`}>
+      <button
+        onClick={() => setOpen(!open)}
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        className={`relative p-2 rounded-lg transition-colors ${dark ? 'hover:bg-purple-500/20 text-slate-300' : 'hover:bg-gray-100 text-gray-600'}`}
+      >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[18px] px-1">

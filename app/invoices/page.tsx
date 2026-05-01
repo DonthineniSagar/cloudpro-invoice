@@ -3,20 +3,25 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
-import { Plus, Search, FileText, Calendar, DollarSign, Copy } from 'lucide-react';
+import { Plus, Search, FileText, Calendar, DollarSign, Copy, CheckSquare, Square, Check } from 'lucide-react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { useTheme } from '@/lib/theme-context';
 import { TableRowSkeleton } from '@/components/Skeleton';
 import { currentFY, fyLabel, getFY, selectableFYs } from '@/lib/fy-utils';
+import { useToast } from '@/lib/toast-context';
+import { downloadCSV } from '@/lib/csv-export';
 
 export default function InvoicesPage() {
   const { theme } = useTheme();
+  const toast = useToast();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [loading, setLoading] = useState(true);
   const [fyFilter, setFyFilter] = useState(currentFY());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkWorking, setBulkWorking] = useState(false);
 
   useEffect(() => {
     loadInvoices();
@@ -33,6 +38,58 @@ export default function InvoicesPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selected.size === filteredInvoices.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filteredInvoices.map(i => i.id)));
+    }
+  };
+
+  const bulkMarkPaid = async () => {
+    if (!selected.size) return;
+    setBulkWorking(true);
+    try {
+      const client = generateClient<Schema>();
+      await Promise.all([...selected].map(id => client.models.Invoice.update({ id, status: 'PAID' as any })));
+      setInvoices(prev => prev.map(inv => selected.has(inv.id) ? { ...inv, status: 'PAID' } : inv));
+      setSelected(new Set());
+      toast.success(`${selected.size} invoice${selected.size > 1 ? 's' : ''} marked as paid`);
+    } catch {
+      toast.error('Failed to update some invoices');
+    } finally {
+      setBulkWorking(false);
+    }
+  };
+
+  const bulkExportCSV = () => {
+    const rows = filteredInvoices
+      .filter(inv => selected.has(inv.id))
+      .map(inv => [
+        inv.invoiceNumber, inv.clientName, inv.clientEmail || '',
+        new Date(inv.issueDate).toLocaleDateString('en-NZ'),
+        inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-NZ') : '',
+        inv.subtotal?.toFixed(2) || '0.00',
+        inv.gstAmount?.toFixed(2) || '0.00',
+        inv.total?.toFixed(2) || '0.00',
+        inv.status, inv.currency || 'NZD',
+      ]);
+    downloadCSV(
+      `invoices-${new Date().toISOString().split('T')[0]}.csv`,
+      ['Invoice #', 'Client', 'Email', 'Issue Date', 'Due Date', 'Subtotal', 'GST', 'Total', 'Status', 'Currency'],
+      rows
+    );
+    setSelected(new Set());
   };
 
   const filteredInvoices = invoices
@@ -141,9 +198,38 @@ export default function InvoicesPage() {
           </div>
         ) : (
           <div className={theme === 'dark' ? 'bg-black rounded-xl border-2 border-purple-500/40 overflow-hidden' : 'bg-white rounded-xl border-2 border-indigo-600 overflow-hidden'}>
+            {/* Bulk action bar */}
+            {selected.size > 0 && (
+              <div className={`flex items-center gap-3 px-4 py-2.5 border-b ${theme === 'dark' ? 'bg-purple-900/20 border-purple-500/30' : 'bg-indigo-50 border-indigo-100'}`}>
+                <span className={`text-sm font-medium ${theme === 'dark' ? 'text-purple-300' : 'text-indigo-700'}`}>
+                  {selected.size} selected
+                </span>
+                <button onClick={bulkMarkPaid} disabled={bulkWorking}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${theme === 'dark' ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50' : 'bg-green-100 text-green-700 hover:bg-green-200'} disabled:opacity-50`}>
+                  <Check className="w-3.5 h-3.5" />
+                  Mark paid
+                </button>
+                <button onClick={bulkExportCSV}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${theme === 'dark' ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'}`}>
+                  Export CSV
+                </button>
+                <button onClick={() => setSelected(new Set())} className={`ml-auto text-xs ${theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Clear
+                </button>
+              </div>
+            )}
+
             <table className="min-w-full divide-y divide-purple-500/20">
               <thead className={theme === 'dark' ? 'bg-black border-b border-purple-500/20' : 'bg-gray-50'}>
                 <tr>
+                  <th className="px-4 py-3 w-10">
+                    <button onClick={toggleSelectAll} className={theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}>
+                      {selected.size === filteredInvoices.length && filteredInvoices.length > 0
+                        ? <CheckSquare className="w-4 h-4" />
+                        : <Square className="w-4 h-4" />
+                      }
+                    </button>
+                  </th>
                   <th className={theme === 'dark' ? 'px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider' : 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'}>
                     Invoice
                   </th>
@@ -167,6 +253,11 @@ export default function InvoicesPage() {
               <tbody className={theme === 'dark' ? 'bg-black divide-y divide-purple-500/20' : 'bg-white divide-y divide-gray-200'}>
                 {filteredInvoices.map((invoice) => (
                   <tr key={invoice.id} className={theme === 'dark' ? 'hover:bg-purple-500/5' : 'hover:bg-gray-50'}>
+                    <td className="px-4 py-4 w-10">
+                      <button onClick={() => toggleSelect(invoice.id)} className={theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-gray-400 hover:text-gray-600'}>
+                        {selected.has(invoice.id) ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                      </button>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <FileText className={theme === 'dark' ? 'w-5 h-5 text-slate-500 mr-3' : 'w-5 h-5 text-gray-400 mr-3'} />
