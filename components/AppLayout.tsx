@@ -10,6 +10,7 @@ import { Moon, Sun, Menu, X, LayoutDashboard, FileText, RefreshCw, Users, Receip
 import NotificationBell from '@/components/NotificationBell';
 import CommandPalette from '@/components/CommandPalette';
 import TrialBanner from '@/components/TrialBanner';
+import SubscriptionGate from '@/components/SubscriptionGate';
 import MyBizLogo from '@/components/MyBizLogo';
 import UsageMeter from '@/components/UsageMeter';
 import { canAccessRoute, isSubscriptionActive } from '@/lib/subscription';
@@ -24,8 +25,12 @@ interface SubscriptionState {
   plan: PlanTier | null;
   status: SubscriptionStatus | null;
   trialEndDate: string | null;
+  stripeCustomerId: string | null;
+  hasPaymentSetup: boolean;
   loading: boolean;
 }
+
+const EXEMPT_PATHS = ['/pricing', '/settings/subscription', '/settings/company'];
 
 interface NavLink {
   href: string;
@@ -78,6 +83,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     plan: null,
     status: null,
     trialEndDate: null,
+    stripeCustomerId: null,
+    hasPaymentSetup: false,
     loading: true,
   });
 
@@ -100,6 +107,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             plan: (profile.subscriptionPlan as PlanTier) || null,
             status: (profile.subscriptionStatus as SubscriptionStatus) || null,
             trialEndDate: profile.trialEndDate || null,
+            stripeCustomerId: profile.stripeCustomerId || null,
+            hasPaymentSetup: !!profile.stripeSubscriptionId,
             loading: false,
           });
 
@@ -137,6 +146,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [user?.id]);
 
   const isActive = (path: string) => pathname.startsWith(path);
+
+  const shouldBlock = !sub.loading
+    && !isSubscriptionActive(sub.status)
+    && !EXEMPT_PATHS.some(p => pathname.startsWith(p));
 
   // Filter nav links based on plan — show all if trialing or no gating needed
   const effectivePlan = sub.plan;
@@ -261,9 +274,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       )}
       {/* Subscription banners */}
       {!sub.loading && (
-        <TrialBanner status={sub.status} trialEndDate={sub.trialEndDate} dark={dark} />
+        <TrialBanner
+          status={sub.status}
+          trialEndDate={sub.trialEndDate}
+          hasPaymentSetup={sub.hasPaymentSetup}
+          stripeCustomerId={sub.stripeCustomerId}
+          dark={dark}
+        />
       )}
-      <main>{children}</main>
+      {shouldBlock
+        ? <SubscriptionGate status={sub.status} stripeCustomerId={sub.stripeCustomerId} dark={dark} />
+        : <main>{children}</main>
+      }
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} dark={dark} />
     </div>
