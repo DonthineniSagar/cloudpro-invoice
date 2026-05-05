@@ -236,30 +236,28 @@ export default function EditExpensePage({ params }: { params: { id: string } }) 
               )}
             </div>
 
-            {formData.source === 'bank_import' && (
-              <div>
-                <label className={t.label}>Classification</label>
-                <div className="flex gap-2">
-                  {(['business', 'personal', 'partial'] as const).map(c => (
-                    <button key={c} type="button" disabled={isLocked} onClick={() => setFormData({ ...formData, classification: c, ...(c === 'partial' ? { businessPercent: formData.businessPercent || '50' } : {}) })}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium capitalize ${formData.classification === c
-                        ? c === 'business' ? 'bg-green-600 text-white' : c === 'personal' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-                        : dark ? 'bg-gray-800 text-slate-400 border border-gray-700' : 'bg-gray-100 text-gray-600 border-2 border-indigo-600'}`}>
-                      {c}
-                    </button>
-                  ))}
-                </div>
-                {formData.classification === 'partial' && (
-                  <div className="mt-3">
-                    <label className={t.label}>Business %</label>
-                    <input type="number" min="1" max="99" value={formData.businessPercent}
-                      disabled={isLocked}
-                      onChange={(e) => setFormData({ ...formData, businessPercent: e.target.value })}
-                      className={t.input + ' w-24'} />
-                  </div>
-                )}
+            <div>
+              <label className={t.label}>Classification</label>
+              <div className="flex gap-2">
+                {(['business', 'personal', 'partial'] as const).map(c => (
+                  <button key={c} type="button" disabled={isLocked} onClick={() => setFormData({ ...formData, classification: c, ...(c === 'partial' ? { businessPercent: formData.businessPercent || '50' } : {}) })}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium capitalize ${formData.classification === c
+                      ? c === 'business' ? 'bg-green-600 text-white' : c === 'personal' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+                      : dark ? 'bg-gray-800 text-slate-400 border border-gray-700' : 'bg-gray-100 text-gray-600 border-2 border-indigo-600'}`}>
+                    {c}
+                  </button>
+                ))}
               </div>
-            )}
+              {formData.classification === 'partial' && (
+                <div className="mt-3">
+                  <label className={t.label}>Business %</label>
+                  <input type="number" min="1" max="99" value={formData.businessPercent}
+                    disabled={isLocked}
+                    onChange={(e) => setFormData({ ...formData, businessPercent: e.target.value })}
+                    className={t.input + ' w-24'} />
+                </div>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
