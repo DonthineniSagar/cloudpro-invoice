@@ -232,6 +232,33 @@ export default function SubscriptionPage() {
             </div>
           )}
 
+          {/* Past Due — prominent payment update CTA */}
+          {sub.subscriptionStatus === 'PAST_DUE' && (
+            <div className={`p-4 rounded-lg ${dark ? 'bg-red-900/20 border border-red-500/30' : 'bg-red-50 border border-red-200'}`}>
+              <p className={`text-sm font-medium mb-1 ${dark ? 'text-red-300' : 'text-red-800'}`}>
+                Payment failed{priceLabel ? ` — ${priceLabel} due` : ''}
+              </p>
+              <p className={`text-sm mb-3 ${dark ? 'text-red-400/80' : 'text-red-600'}`}>
+                Update your payment method to avoid losing access.
+              </p>
+              {sub.stripeCustomerId && (
+                <button
+                  type="button"
+                  onClick={handleManageBilling}
+                  disabled={billingLoading}
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                    dark
+                      ? 'bg-red-600 hover:bg-red-500 text-white disabled:opacity-50'
+                      : 'bg-red-600 hover:bg-red-700 text-white disabled:opacity-50'
+                  }`}
+                >
+                  {billingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                  {billingLoading ? 'Loading...' : 'Update Payment Method'}
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Trial End / Next Payment */}
           {sub.subscriptionStatus === 'TRIALING' && sub.trialEndDate && (
             <div className={`flex items-center justify-between p-4 rounded-lg ${dark ? 'bg-slate-900 border border-purple-500/20' : 'bg-gray-50 border border-gray-100'}`}>
